@@ -1,0 +1,38 @@
+#The parser should be able to succesfully
+#parse this file
+
+     
+    #flying comment 
+(((C - MINC260) / MINC260) * 100) > 100;
+C - MINC260 / MINC260 * 100 > 100;
+(((C - MINC260) / MINC260) * 100) > 100;
+(((MAXC260 - C) / MAXC260) * 100) <= 25;
+C(2,10,H(10)) > 10;
+C{2 > 5 ? 0 : 1} > 10;
+C({2 > 5 ? 0 : 1}) > 10;
+{2 > 5 ? 0 : 1} != {2 < 5 ? 0 : 1};
+BOLLINGER_UPPER20,2 < C;
+AVGC10 > AVGC20;
+C <= 20;
+2 != 5;
+5 > 5;
+C > 5 OR C < 5;
+{C > 5 OR C < 1 ? 10 : 100} > 20;
+ABS(C) > ABS(C2);
+(((C - MINC260) / MINC260) * 100) > 100 OR  {C > 5 OR C < 1 ? 10 : 100} > 20;
+(MAXC260 - C) / MAXC260 * 100 <= 25;
+MAXC260 - C / (MAXC260 * 5) * 100 <= 25;
+C - MINC260 / MINC260 > 100;
+
+#The dreaded fractal efficiency
+(C - C60) / (ABS(C - C1) + ABS(C1 - C2) + ABS(C2 - C3) + ABS(C3 - C4) + ABS(C4 - C5) + ABS(C5 - C6) + ABS(C6 - C7) + ABS(C7 - C8) + ABS(C8 - C9) + ABS(C9 - C10) + ABS(C10 - C11) + ABS(C11 - C12) + ABS(C12 - C13) + ABS(C13 - C14) + ABS(C14 - C15) + ABS(C15 - C16) + ABS(C16 - C17) + ABS(C17 - C18) + ABS(C18 - C19) + ABS(C19 - C20) + ABS(C20 - C21) + ABS(C21 - C22) + ABS(C22 - C23) + ABS(C23 - C24) + ABS(C24 - C25) + ABS(C25 - C26) + ABS(C26 - C27) + ABS(C27 - C28) + ABS(C28 - C29) + ABS(C29 - C30) + ABS(C30 - C31) + ABS(C31 - C32) + ABS(C32 - C33) + ABS(C33 - C34) + ABS(C34 - C35) + ABS(C35 - C36) + ABS(C36 - C37) + ABS(C37 - C38) + ABS(C38 - C39) + ABS(C39 - C40) + ABS(C40 - C41) + ABS(C41 - C42) + ABS(C42 - C43) + ABS(C43 - C44) + ABS(C44 - C45) + ABS(C45 - C46) + ABS(C46 - C47) + ABS(C47 - C48) + ABS(C48 - C49) + ABS(C49 - C50) + ABS(C50 - C51) + ABS(C51 - C52) + ABS(C52 - C53) + ABS(C53 - C54) + ABS(C54 - C55) + ABS(C55 - C56) + ABS(C56 - C57) + ABS(C57 - C58) + ABS(C58 - C59) + ABS(C59 - C60) + 0.001) > 1.0;
+
+#various arg formats
+ABS(C1 - C2) > ABS(C2 - C3);
+BOLLINGER_UPPER20,2 > BOLLINGER_LOWER20,2;
+BOLLINGER_UPPER(20,2) > BOLLINGER_LOWER(20,2);
+MAX(1,2,3,4,{C > O ? C : O}) > C2;
+
+#nested ternaries
+{C > C1 ? C : {C1 > C2 ? C1 : C2}} > 10;
+{C > C1 ? C : {C1 > C2 ? C1 : {C2 > C3 ? C2 : C3}}} > 10;
