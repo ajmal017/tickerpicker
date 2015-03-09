@@ -1,3 +1,5 @@
+load 'code.rb'
+require 'pry'
 #Grammar
 
 #rule -> boolean;
@@ -40,6 +42,7 @@ class Parser
   TOKENS = GROUPING + OPERATOR + COMPARE + MACROS
 
   def initialize(rawdata)
+    @stack = []
     @tokens = []
     lines = rawdata.split("\n");
     lines.reject! {|l| l.strip.empty? || l.strip.start_with?('#')}
@@ -52,6 +55,7 @@ class Parser
   def parse_rules
     while(!@tokens.empty?)
       parse_rule() 
+      ThreeTable.new(@stack.pop)
     end
   end
 
@@ -97,6 +101,7 @@ private
 
 #rule -> boolean;
   def parse_rule
+    ast_prologue()
     if(parse_boolean())
       return token_is(';')
     end 
@@ -106,10 +111,11 @@ private
 
 #boolean -> expression compare expression boolrest
   def parse_boolean
+    ast_prologue()
     if(parse_expression())
       if(parse_compare())
         if(parse_expression())
-          return parse_boolrest()
+          return ast(parse_boolrest())
         end
       end
     end
@@ -118,107 +124,134 @@ private
 
 #boolrest ->  or boolean boolrest | epsilon
   def parse_boolrest
+    ast_prologue()
     if(token_is('OR'))
       if(parse_boolean())
-        return parse_boolrest()
+        return ast(parse_boolrest())
       end
     end
-    true
+    ast(true)
   end
 
 #expression -> (expression) exprest | value exprest
   def parse_expression
+    ast_prologue()
     if(token_is('('))
       if(parse_expression())
         if(token_is(')'))
-          return parse_exprest()
+          return ast(parse_exprest())
         end
       end
     end
 
     if(parse_value())
-      return parse_exprest()
+      return ast(parse_exprest())
     end
 
-    false
+    ast(false)
   end
 
 #exprest -> allops expression exprest | epsilon
   def parse_exprest
+    ast_prologue()
     if(parse_allops())
       if(parse_expression())
-        return parse_exprest()
+        return ast(parse_exprest())
       end
     end
-    true
+    ast(true)
   end
 
 #value -> indicator | ternary | constant
   def parse_value
-    return (parse_indicator() || parse_ternary() || parse_constant())
+    ast_prologue()
+    ast((parse_indicator() || parse_ternary() || parse_constant()))
   end
 
 #indicator -> macro arglist | macro(arglist) | macro
   def parse_indicator
+    ast_prologue()
     if(parse_macro())
       if(token_is('('))
-        return parse_arglist() && token_is(')')
+        return ast(parse_arglist() && token_is(')'))
       end
 
       if(parse_arglist())
-        return true
+        return ast(true) 
       end
 
-      return true
+      return ast(true)
     end
-    false
+    ast(false)
   end
 
 #ternary -> {boolean ? expression : expression}
   def parse_ternary
+    ast_prologue()
     if(token_is('{'))
       if(parse_boolean())
         if(token_is('?'))
           if(parse_expression())
             if(token_is(':'))
               if(parse_expression())
-                return token_is('}')
+                return ast(token_is('}'))
               end
             end
           end
         end
       end
     end
-    false
+    ast(false)
   end
 
 #arglist -> expression | expression,arglist
   def parse_arglist
+    ast_prologue()
     if(parse_expression())
-      return parse_arglist() if(token_is(','))
+      return ast(parse_arglist()) if(token_is(','))
     else
-      return false
+      return ast(false)
     end
-    true
+    return ast(true)
   end
 
   def parse_compare
-    COMPARE.any? {|c| token_is(c)}
+    ast_prologue()
+    ast(COMPARE.detect {|c| token_is(c)})
   end
 
   def parse_allops
-    OPERATOR.any? {|o| token_is(o)}
+    ast_prologue()
+    ast(OPERATOR.detect {|o| token_is(o)})
   end
 
   def parse_constant
+    ast_prologue()
     if(@tokens.first =~ /([0-9]*\.?[0-9]+)/)
-      @tokens.shift
-      return true
+      return ast(@tokens.shift)
     end
-    false
+    ast(false)
   end
 
   def parse_macro
-    MACROS.any? {|macro| token_is(macro)}
+    ast_prologue()
+    ast(MACROS.detect {|macro| token_is(macro)})
+  end
+
+  def ast(val)
+
+    if(val)
+      @stack.last.token = val unless(val.is_a? TrueClass)
+      node = @stack.pop
+      @stack.last.add_children(node)
+    else
+      @stack.pop
+    end
+
+    val
+  end
+
+  def ast_prologue
+    @stack.push(ASTNode.new)
   end
 end
