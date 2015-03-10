@@ -1,5 +1,4 @@
-load 'code.rb'
-require 'pry'
+require_relative 'code'
 #Grammar
 
 #rule -> boolean;
@@ -38,31 +37,35 @@ class Parser
 
   OPERATOR = %w(+ - / * %)
   COMPARE = %w(= <= >= != < >)
-  GROUPING = ['(', ')', ';', '?', ':', ',', '{', '}', 'OR']
+  GROUPING = ['(', ')', ';', '?', ':', ',', '{', '}', 'OR', 'AND', 'XOR']
   TOKENS = GROUPING + OPERATOR + COMPARE + MACROS
+
+  attr_reader :table
 
   def initialize(rawdata)
     @stack = []
     @tokens = []
+    @table = ThreeTable.new()
+
     lines = rawdata.split("\n");
     lines.reject! {|l| l.strip.empty? || l.strip.start_with?('#')}
 
     lines.each do |line|
-      @tokens.concat tokenize(line)
+      @tokens.concat tokenize(line.upcase)
     end
   end
 
   def parse_rules
     while(!@tokens.empty?)
       parse_rule() 
-      ThreeTable.new(@stack.pop)
+      @table.addrule(@stack.pop)
     end
   end
 
 private
 
   def next_const(line)
-    if(line =~ /([0-9]*\.?[0-9]+)/)
+    if(line =~ /(-?[0-9]*\.?[0-9]+)/)
       num = $1
       line = line[num.length..-1]
       return num
@@ -92,7 +95,7 @@ private
 
   def token_is(t)
     if(@tokens.first == t)
-      @tokens.shift
+      @last_token = @tokens.shift
       true
     else
       false
@@ -101,17 +104,16 @@ private
 
 #rule -> boolean;
   def parse_rule
-    ast_prologue()
+    ast_prologue('rule')
     if(parse_boolean())
       return token_is(';')
     end 
     abort('error parsing rule')
   end
 
-
 #boolean -> expression compare expression boolrest
   def parse_boolean
-    ast_prologue()
+    ast_prologue('boolean')
     if(parse_expression())
       if(parse_compare())
         if(parse_expression())
@@ -124,8 +126,9 @@ private
 
 #boolrest ->  or boolean boolrest | epsilon
   def parse_boolrest
-    ast_prologue()
-    if(token_is('OR'))
+    ast_prologue('boolrest')
+    if(token_is('OR') || token_is('AND') || token_is('XOR'))
+      @stack.last.token = @last_token
       if(parse_boolean())
         return ast(parse_boolrest())
       end
@@ -135,7 +138,7 @@ private
 
 #expression -> (expression) exprest | value exprest
   def parse_expression
-    ast_prologue()
+    ast_prologue('expression')
     if(token_is('('))
       if(parse_expression())
         if(token_is(')'))
@@ -153,7 +156,7 @@ private
 
 #exprest -> allops expression exprest | epsilon
   def parse_exprest
-    ast_prologue()
+    ast_prologue('exprest')
     if(parse_allops())
       if(parse_expression())
         return ast(parse_exprest())
@@ -164,13 +167,13 @@ private
 
 #value -> indicator | ternary | constant
   def parse_value
-    ast_prologue()
+    ast_prologue('value')
     ast((parse_indicator() || parse_ternary() || parse_constant()))
   end
 
 #indicator -> macro arglist | macro(arglist) | macro
   def parse_indicator
-    ast_prologue()
+    ast_prologue('indicator')
     if(parse_macro())
       if(token_is('('))
         return ast(parse_arglist() && token_is(')'))
@@ -187,7 +190,7 @@ private
 
 #ternary -> {boolean ? expression : expression}
   def parse_ternary
-    ast_prologue()
+    ast_prologue('ternary')
     if(token_is('{'))
       if(parse_boolean())
         if(token_is('?'))
@@ -206,7 +209,7 @@ private
 
 #arglist -> expression | expression,arglist
   def parse_arglist
-    ast_prologue()
+    ast_prologue('arglist')
     if(parse_expression())
       return ast(parse_arglist()) if(token_is(','))
     else
@@ -216,17 +219,17 @@ private
   end
 
   def parse_compare
-    ast_prologue()
+    ast_prologue('compare')
     ast(COMPARE.detect {|c| token_is(c)})
   end
 
   def parse_allops
-    ast_prologue()
+    ast_prologue('allops')
     ast(OPERATOR.detect {|o| token_is(o)})
   end
 
   def parse_constant
-    ast_prologue()
+    ast_prologue('constant')
     if(@tokens.first =~ /([0-9]*\.?[0-9]+)/)
       return ast(@tokens.shift)
     end
@@ -234,7 +237,7 @@ private
   end
 
   def parse_macro
-    ast_prologue()
+    ast_prologue('macro')
     ast(MACROS.detect {|macro| token_is(macro)})
   end
 
@@ -251,7 +254,7 @@ private
     val
   end
 
-  def ast_prologue
-    @stack.push(ASTNode.new)
+  def ast_prologue(p)
+    @stack.push(ASTNode.new(p))
   end
 end
