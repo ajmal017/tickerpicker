@@ -1,15 +1,15 @@
 require_relative 'code'
 #Grammar
 
-#rule -> boolean;
-#boolean -> expression compare expression boolrest
-#boolrest -> or boolean boolrest | epsilon
+#rule -> boolean | boolean or rule;
+#boolean -> expression compare expression 
 #expression -> (expression) exprest | value exprest
 #exprest -> allops expression exprest | epsilon
 #value -> indicator | ternary | constant
-#indicator -> macro arglist | macro(arglist) | macro
+#indicator -> macro clist | macro(arglist) | macro
 #ternary -> {boolean ? expression : expression}
 #arglist -> expression | expression,arglist
+#clist -> constant | constant,clist
 
 #Terminal Productions
 
@@ -102,38 +102,28 @@ private
     end
   end
 
-#rule -> boolean;
+#rule -> boolean; | boolean or rule
   def parse_rule
     ast_prologue('rule')
     if(parse_boolean())
+      if(token_is('AND') || token_is('OR') || token_is('XOR'))
+        @stack.last.token = @last_token
+        return ast(parse_rule())
+      end
       return token_is(';')
     end 
     abort('error parsing rule')
   end
 
-#boolean -> expression compare expression boolrest
+#boolean -> expression compare expression 
   def parse_boolean
     ast_prologue('boolean')
     if(parse_expression())
       if(parse_compare())
-        if(parse_expression())
-          return ast(parse_boolrest())
-        end
+        return ast(parse_expression())
       end
     end
     abort('error parsing boolean')
-  end
-
-#boolrest ->  or boolean boolrest | epsilon
-  def parse_boolrest
-    ast_prologue('boolrest')
-    if(token_is('OR') || token_is('AND') || token_is('XOR'))
-      @stack.last.token = @last_token
-      if(parse_boolean())
-        return ast(parse_boolrest())
-      end
-    end
-    ast(true)
   end
 
 #expression -> (expression) exprest | value exprest
@@ -171,15 +161,16 @@ private
     ast((parse_indicator() || parse_ternary() || parse_constant()))
   end
 
-#indicator -> macro arglist | macro(arglist) | macro
+#indicator -> macro clist | macro(arglist) | macro
   def parse_indicator
     ast_prologue('indicator')
+#binding.pry
     if(parse_macro())
       if(token_is('('))
         return ast(parse_arglist() && token_is(')'))
       end
 
-      if(parse_arglist())
+      if(parse_clist())
         return ast(true) 
       end
 
@@ -212,6 +203,17 @@ private
     ast_prologue('arglist')
     if(parse_expression())
       return ast(parse_arglist()) if(token_is(','))
+    else
+      return ast(false)
+    end
+    return ast(true)
+  end
+
+#clist -> constant | constant,clist
+  def parse_clist
+    ast_prologue('clist')
+    if(parse_constant())
+      return ast(parse_clist()) if(token_is(','))
     else
       return ast(false)
     end

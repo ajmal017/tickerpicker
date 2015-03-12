@@ -19,7 +19,13 @@ class ASTNode
   end
 
   def child_vars
-    ' ' + @children.map {|child| '$' + child.varname.to_s}.join(',')
+    @children.map do |child|
+      if(child.varname.class == String)
+        child.varname
+      else
+        '$' + child.varname.to_s
+      end
+    end.join(',')
   end
 
 private
@@ -43,10 +49,13 @@ class ThreeTable
   end
 
   def addrule(ruleast)
+
     #unwrap rule production
     if(ruleast.children.length == 1)
       ruleast = ruleast.children.first
       ruleast.collapse!
+    else
+      ruleast.collapse! 
     end
 
     @root = ruleast
@@ -66,12 +75,24 @@ class ThreeTable
     add_indicator(ast) if(ast.production == 'indicator') 
     process_arglist(ast) if(ast.production == 'arglist')
     process_exprest(ast) if(ast.production == 'exprest')
-    add_boolrest(ast) if (ast.production == 'boolrest')
     add_ternary(ast) if (ast.production == 'ternary')
+    process_clist(ast) if (ast.production == 'clist')
+    process_rule(ast) if (ast.production == 'rule')
+  end
+
+  def process_rule(ast)
+    code = '$' + ast.children.first.varname.to_s
+    code += " #{ast.token} "
+    code += '$' + ast.children.last.varname.to_s
+    ast.varname = add_symbol(code)
   end
 
   def process_arglist(ast)
     ast.varname = ast.child_vars 
+  end
+
+  def process_clist(ast)
+    ast.varname = ast.child_vars
   end
 
   def add_boolean(ast)
@@ -79,14 +100,6 @@ class ThreeTable
     code += " #{ast.children[1].token} "
     code += '$' + ast.children[2].varname.to_s
     ast.varname = add_symbol(code)
-
-    #handle boolrest production
-    if(ast.children.length == 4)
-      code = '$' + ast.varname.to_s
-      code += " #{ast.children.last.token} "
-      code += '$' + ast.children.last.varname.to_s
-      add_symbol(code)
-    end
   end
 
   def add_boolrest(ast)
@@ -120,7 +133,10 @@ class ThreeTable
       ast.varname = ast.children.first.varname
     else
       code = ast.children.first.token
-      ast.varname = add_symbol(code + ast.children.last.child_vars)
+      childvars = ' ' + ast.children.last.child_vars 
+      varname = ' $' + ast.children.last.varname.to_s
+      arglist = (childvars.strip.empty? ? varname : childvars)
+      ast.varname = add_symbol(code + arglist)
     end
   end
 
