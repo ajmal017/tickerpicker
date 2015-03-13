@@ -1,4 +1,4 @@
-load '../ui/cmdline/parser.rb'
+load '../ui/cmdline/codegen.rb'
 
 @testnumber = 1
 
@@ -6,7 +6,7 @@ def run_test(num, rules, expect)
 
   print "test #{@testnumber}:  "
 
-  p = Parser.new(rules)
+  p = CodeGenerator::Parser.new(rules)
   p.parse_rules
   result = {:rules => p.table.rules, :symbols => p.table.symboltable}
 
@@ -173,10 +173,13 @@ run_test(__LINE__, "1 + 0.1 > 1;", {:rules=>["$2 > $0"], :symbols=>["1", "0.1", 
 run_test(__LINE__, "1.0 + .1 > 1;", {:rules=>["$2 > $3"], :symbols=>["1.0", ".1", "$0 + $1", "1"]})
 run_test(__LINE__, "1.0 + 0.1 > 1;", {:rules=>["$2 > $3"], :symbols=>["1.0", "0.1", "$0 + $1", "1"]})
 
-#test boolrest production
+#test AND/OR/XOR
 run_test(__LINE__, "C > 1 OR C < 0;", {:rules=>["$2 OR $4"], :symbols=>["C", "1", "$0 > $1", "0", "$0 < $3"]})
 run_test(__LINE__, "C > 1 XOR C < 0;", {:rules=>["$2 XOR $4"], :symbols=>["C", "1", "$0 > $1", "0", "$0 < $3"]})
 run_test(__LINE__, "C > 1 AND C < 0;", {:rules=>["$2 AND $4"], :symbols=>["C", "1", "$0 > $1", "0", "$0 < $3"]})
+run_test(__LINE__, "C > 1 OR C > 2 OR C > 3 OR C > 5;", {:rules=>["$2 OR $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 OR $8", "$4 OR $9"]})
+run_test(__LINE__, "C > 1 XOR C > 2 XOR C > 3 XOR C > 5;", {:rules=>["$2 XOR $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 XOR $8", "$4 XOR $9"]})
+run_test(__LINE__, "C > 1 AND C > 2 AND C > 3 AND C > 5;", {:rules=>["$2 AND $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 AND $8", "$4 AND $9"]})
 
 #some general tests
 run_test(__LINE__, "BOLLINGER_UPPER20,2 > BOLLINGER_LOWER20,2;", {:rules=>["$2 > $3"], :symbols=>["20", "2", "BOLLINGER_UPPER $0,$1", "BOLLINGER_LOWER $0,$1"]})
@@ -190,6 +193,14 @@ run_test(__LINE__, "DAYCHANGE >= 10;", {:rules=>["$0 >= $1"], :symbols=>["DAYCHA
 
 #run_test(__LINE__, "100 * ((C + .01) - ( MINC65 + .01)) / (MINC65 + .01) >= 25 AND AVGC20 * AVGV20 >= 2500;", {:rules=>["$17 AND $16"], :symbols=>["100", "C", ".01", "$1 + $2", "65", "MINC $4", "$5 + $2", "$3 - $6", "$7 / $6", "$0 * $8", "25", "20", "AVGC $11", "AVGV $11", "$12 * $13", "2500", "$14 >= $15", "$9 >= $10"]})
 
+#more bad threeopcode
+run_test(__LINE__, "C(1,2,C) != C;", {:rules=>["$3 != $2"], :symbols=>["1", "2", "C", "C $0,$1,$2"]})
+run_test(__LINE__, "C(0,1+1,2) > 3;", {:rules=>["$4 > $5"], :symbols=>["0", "1", "$1 + $1", "2", "C $0,$2,$3", "3"]})
+
+#COMPOUND STATEMENTS
+
+
+
 
 #( 100 * (C - C1) / C1) >= 20 AND V > 10000 AND C >= 5;
 #(C - C1) >= 5 AND V > 10000 AND C >= 5;
@@ -198,12 +209,6 @@ run_test(__LINE__, "DAYCHANGE >= 10;", {:rules=>["$0 >= $1"], :symbols=>["DAYCHA
 #run_test(__LINE__, "C20 >= 5 AND (AVGC20 * AVGV20) >= 250000 AND 100 * (C - C20) / C20 >= 5;", {})
 #run_test(__LINE__, "(C > C1) AND (C > AVGC50) AND (AVGC50 > AVGC200) AND (V > 1.5 * AVGV50) AND (AVGV50 >= 200) AND (C > 4);", {})
 
-#more bad threeopcode
-run_test(__LINE__, "C(1,2,C) != C;", {:rules=>["$3 != $2"], :symbols=>["1", "2", "C", "C $0,$1,$2"]})
-run_test(__LINE__, "C(0,1+1,2) > 3;", {:rules=>["$4 > $5"], :symbols=>["0", "1", "$1 + $1", "2", "C $0,$2,$3", "3"]})
-run_test(__LINE__, "C > 1 OR C > 2 OR C > 3 OR C > 5;", {:rules=>["$2 OR $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 OR $8", "$4 OR $9"]})
-run_test(__LINE__, "C > 1 XOR C > 2 XOR C > 3 XOR C > 5;", {:rules=>["$2 XOR $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 XOR $8", "$4 XOR $9"]})
-run_test(__LINE__, "C > 1 AND C > 2 AND C > 3 AND C > 5;", {:rules=>["$2 AND $10"], :symbols=>["C", "1", "$0 > $1", "2", "$0 > $3", "3", "$0 > $5", "5", "$0 > $7", "$6 AND $8", "$4 AND $9"]})
 #run_test(__LINE__, "{C > 1 OR C > 2 ? 0 : 1} > 1;", {})
 #run_test(__LINE__, "C({0 > 1 ? 2 : 3} + 4) > C1;", {})
 #{1 > 1 OR 2 > 2 ? 0 : 1} > 0;

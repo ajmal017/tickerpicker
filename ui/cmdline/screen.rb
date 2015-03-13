@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'trollop'
-load 'parser.rb'
+load 'codegen.rb'
 require 'date'
 
 opts = Trollop::options do
@@ -19,8 +19,8 @@ Trollop::die "You must specify a list of stocks to screen" unless opts[:list] ||
 
 rawlist = (opts[:list] ? File.read(opts[:list]) : opts[:tickers].split(','))
 rawscreen = (opts[:screen] ? File.read(opts[:screen]) : opts[:criteria])
+p = CodeGenerator::Parser.new(rawscreen)
 
-p = Parser.new(rawscreen)
 p.parse_rules
 screen = {rules: p.table.rules, symbols: p.table.symboltable}
 puts screen if opts[:dump]
