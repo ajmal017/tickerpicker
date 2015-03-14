@@ -212,7 +212,7 @@ module CodeGenerator
   #clist -> constant | constant,clist
     def parse_clist
       ast_prologue('clist')
-      if(parse_constant())
+      if(parse_constant(false))
         return ast(parse_clist()) if(token_is(','))
       else
         return ast(false)
@@ -230,10 +230,12 @@ module CodeGenerator
       ast(OPERATOR.detect {|o| token_is(o)})
     end
   
-    def parse_constant
+    def parse_constant(signable=true)
       ast_prologue('constant')
+      signed = (signable && token_is('-'))
       if(@tokens.first =~ /([0-9]*\.?[0-9]+)/)
-        return ast(@tokens.shift)
+        constant = (signed ? '-' : '') + @tokens.shift
+        return ast(constant)
       end
       ast(false)
     end
@@ -396,9 +398,9 @@ module CodeGenerator
       else
         code = ast.children.first.token
         childvars = ' ' + ast.children.last.child_vars 
-        varname = ' $' + ast.children.last.varname.to_s
-        arglist = (childvars.strip.empty? ? varname : childvars)
-        ast.varname = add_symbol(code + arglist)
+        varname = ast.children.last.varname.to_s
+        varname = (varname.start_with?('$') ?  ' ' + varname : " $#{varname}")
+        ast.varname = add_symbol(code + varname)
       end
     end
   
