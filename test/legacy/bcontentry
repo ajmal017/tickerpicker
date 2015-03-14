@@ -1,0 +1,3 @@
+L < BOLLINGER_LOWER20,2; 
+C > 5; 
+C > AVGC200;
