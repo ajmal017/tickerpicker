@@ -7,16 +7,22 @@ class date {
 
   public:
     date(string);
+    date(unsigned int);
     string to_s();
+    int int_image();
     void next_day();
     void prev_day();
     void next_business_day();
     void prev_business_day();
     bool is_weekday();
 
-    bool operator==(date);
-    bool operator<(date);
-    bool operator>(date);
+    int getyear();
+    int getmonth();
+    int getday();
+
+    bool operator==(const date) const;
+    bool operator<(const date) const;
+    bool operator>(const date) const;
   private:
   
     bool is_leap_year();

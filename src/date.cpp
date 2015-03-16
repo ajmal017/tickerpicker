@@ -13,6 +13,13 @@ date::date(string s) {
   month = m;
 }
 
+date::date(unsigned int dcode) {
+  day = dcode % 100;
+  dcode /= 100;
+  month = dcode % 100;
+  year = dcode / 100;
+}
+
 string date::to_s() {
   ostringstream rval;
   rval << year << '-';
@@ -98,11 +105,11 @@ bool date::is_leap_year() {
   return false;
 }
 
-bool date::operator==(date d) {
+bool date::operator==(date d) const {
   return (year == d.year) && (month == d.month) && (day == d.day);
 }
 
-bool date::operator<(date d) {
+bool date::operator<(date d) const {
   if(year > d.year)
     return false;
 
@@ -119,7 +126,7 @@ bool date::operator<(date d) {
   return true;
 }
 
-bool date::operator>(date d) {
+bool date::operator>(date d) const {
   if(year < d.year)
     return false;
 
@@ -134,4 +141,20 @@ bool date::operator>(date d) {
   }
 
   return true;
+}
+
+int date::int_image() {
+  return (year * 10000) + (month * 100) + day;
+}
+
+int date::getyear() {
+  return year;
+}
+
+int date::getmonth() {
+  return month;
+}
+
+int date::getday() {
+  return day;
 }

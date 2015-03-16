@@ -1,10 +1,12 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    sequel (4.20.0)
     trollop (2.1.1)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  sequel (= 4.20.0)
   trollop (~> 2.1.1)
