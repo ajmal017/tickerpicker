@@ -2,15 +2,17 @@
 
 require 'trollop'
 load 'codegen.rb'
+require 'open3'
 require 'date'
+require 'json'
 
 opts = Trollop::options do
   opt :screen, "Screening criteria file", :type => :string
   opt :list, "Stock universe to run screen against", :type => :string
   opt :tickers, "Comma separated list of tickers to screen", :type => :string
   opt :criteria, "Semicolon separated list of screening rules", :type => :string
-  opt :engine, "Path for the screening engine, if not current directory", :type => :string
   opt :date, "Date to run screen on", :type => :string, :default => DateTime.now.strftime("%Y-%m-%d")
+  opt :engine, "Path for the screening engine, if not current directory", :type => :string, :default => "../../src/a.out"
   opt :dump, "Dump resulting three address code", :type => :boolean
 end
 
@@ -24,3 +26,6 @@ p = CodeGenerator::Parser.new(rawscreen)
 p.parse_rules
 screen = {rules: p.table.rules, symbols: p.table.symboltable}
 puts screen if opts[:dump]
+
+results = Open3.capture3(opts[:engine], :stdin_data => {screen: screen}.to_json)
+puts results
