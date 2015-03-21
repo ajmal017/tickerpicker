@@ -12,7 +12,8 @@ opts = Trollop::options do
   opt :tickers, "Comma separated list of tickers to screen", :type => :string
   opt :criteria, "Semicolon separated list of screening rules", :type => :string
   opt :date, "Date to run screen on", :type => :string, :default => DateTime.now.strftime("%Y-%m-%d")
-  opt :engine, "Path for the screening engine, if not current directory", :type => :string, :default => "../../src/a.out"
+  opt :exename, "Name of the engine executable file", :type => :string, :default => "a.out"
+  opt :engine, "Path for the screening engine, if not current directory", :type => :string, :default => "../../src/"
   opt :dump, "Dump resulting three address code", :type => :boolean
 end
 
@@ -27,5 +28,10 @@ p.parse_rules
 screen = {rules: p.table.rules, symbols: p.table.symboltable}
 puts screen if opts[:dump]
 
-results = Open3.capture3(opts[:engine], :stdin_data => {screen: screen}.to_json)
-puts results
+
+Dir.chdir(opts[:engine])
+stdin, stdout, stderr, wait_thr = Open3.popen3("./" + opts[:exename])
+stdin.puts({screen: screen}.to_json + "\n")
+stdin.close
+
+stdout.each_line {|line| puts line }

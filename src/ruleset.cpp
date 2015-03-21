@@ -21,7 +21,7 @@ ruleset::ruleset(vector<string> rules, vector<string> symbols) {
 
 void ruleset::reset_scratchpad() {
   for(int i = 0; i < scratch.size(); i++) {
-    scratch[i].evaled = false;
+    scratch[i]->evaled = false;
   }
 }
 
@@ -35,7 +35,7 @@ bool ruleset::eval(stock s) {
     eval_symbol(rule.rval);
 
     svalue result;
-    eval_op(rule.op, scratch[rule.lval], scratch[rule.rval], result);
+    eval_op(rule.op, scratch[rule.lval], scratch[rule.rval], &result);
 
     if(!result.bval) {
       return false;
@@ -47,9 +47,9 @@ bool ruleset::eval(stock s) {
 
 void ruleset::eval_symbol(int symidx) {
   ruleset::symbol sym = table[symidx];
-  ruleset::svalue cur = scratch[symidx];
+  ruleset::svalue* cur = scratch[symidx];
 
-  if(cur.evaled || sym.op == VAL) {
+  if(cur->evaled || sym.op == VAL) {
     return;
   }
 
@@ -66,66 +66,66 @@ void ruleset::eval_symbol(int symidx) {
   eval_symbol(sym.lval);
   eval_symbol(sym.rval);
 
-  ruleset::svalue rval = scratch[sym.rval];
-  ruleset::svalue lval = scratch[sym.lval];
+  ruleset::svalue* rval = scratch[sym.rval];
+  ruleset::svalue* lval = scratch[sym.lval];
 
   eval_op(sym.op, lval, rval, cur);
-  cur.evaled = true;
+  cur->evaled = true;
 }
 
 
-void ruleset::eval_op(operation op, svalue lval, svalue rval, svalue cur) {
+void ruleset::eval_op(operation op, svalue* lval, svalue* rval, svalue* cur) {
   switch(op) {
     case ADD:
-      cur.nval = lval.nval + rval.nval;
+      cur->nval = lval->nval + rval->nval;
       break;
     case SUB:
-      cur.nval = lval.nval - rval.nval;
+      cur->nval = lval->nval - rval->nval;
       break;
     case MUL:
-      cur.nval = lval.nval * rval.nval;
+      cur->nval = lval->nval * rval->nval;
       break;
     case DIV:
-      cur.nval = lval.nval / rval.nval;
+      cur->nval = lval->nval / rval->nval;
       break;
     case EQU:
-      cur.bval = lval.nval == rval.nval;
+      cur->bval = lval->nval == rval->nval;
       break;
     case AND:
-      cur.bval = lval.bval && lval.bval;
+      cur->bval = lval->bval && lval->bval;
       break;
     case XOR:
-      cur.bval = lval.bval ^ rval.bval;
+      cur->bval = lval->bval ^ rval->bval;
       break;
     case OR:
-      cur.bval = lval.bval || rval.bval;
+      cur->bval = lval->bval || rval->bval;
       break;
     case GT:
-      cur.bval = lval.nval > rval.nval;
+      cur->bval = lval->nval > rval->nval;
       break;
     case LT:
-      cur.bval = lval.nval < rval.nval;
+      cur->bval = lval->nval < rval->nval;
       break;
     case GTE:
-      cur.bval = lval.nval >= rval.nval;
+      cur->bval = lval->nval >= rval->nval;
       break;
     case LTE:
-      cur.bval = lval.nval <= rval.nval;
+      cur->bval = lval->nval <= rval->nval;
       break;
   }
 }
 
 void ruleset::eval_ternary(int symidx) {
   ruleset::symbol sym = table[symidx];
-  ruleset::svalue cur = scratch[symidx];
+  ruleset::svalue* cur = scratch[symidx];
 
-  if(cur.evaled) {
+  if(cur->evaled) {
     return;
   }
 
   eval_symbol(sym.tbranch);
 
-  if(scratch[sym.tbranch].bval) 
+  if(scratch[sym.tbranch]->bval) 
     eval_symbol(sym.lval);
   else
     eval_symbol(sym.rval);
@@ -133,15 +133,16 @@ void ruleset::eval_ternary(int symidx) {
 
 void ruleset::eval_fn(int symidx) {
   ruleset::symbol sym = table[symidx];
-  ruleset::svalue cur = scratch[symidx];
-  current_stock->eval_indicator(sym.indicator);
+  ruleset::svalue* cur = scratch[symidx];
+  cur->nval = current_stock->eval_indicator(sym.indicator);
 }
 
 ruleset::symbol ruleset::parse_rule(string rule) {
   stringstream ss(rule);
   symbol current;
   string temp;
-  svalue val;  
+
+  svalue* val = new svalue; 
 
   ss >> temp;
 
@@ -152,7 +153,7 @@ ruleset::symbol ruleset::parse_rule(string rule) {
   } else {
 
     if(is_number(temp)) {
-      val.nval = (float) atof(temp.c_str());
+      val->nval = (float) atof(temp.c_str());
       current.op = VAL; 
     } else {
       current.indicator = temp;

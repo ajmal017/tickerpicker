@@ -38,12 +38,12 @@ class ruleset {
   void eval_fn(int);
   void eval_ternary(int);
   void eval_symbol(int);
-  void eval_op(operation, svalue, svalue, svalue);
+  void eval_op(operation, svalue*, svalue*, svalue*);
 
   stock* current_stock;
   vector<symbol> rules;
   vector<symbol> table;
-  vector<svalue> scratch; 
+  vector<svalue*> scratch; 
   map<string, ruleset::operation> opmap;
 };
 

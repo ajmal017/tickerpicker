@@ -13,6 +13,12 @@ date::date(string s) {
   month = m;
 }
 
+date::date(const date& src) {
+  day = src.day;
+  year = src.year;
+  month = src.month;
+}
+
 date::date(unsigned int dcode) {
   day = dcode % 100;
   dcode /= 100;

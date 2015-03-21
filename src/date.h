@@ -7,6 +7,7 @@ class date {
 
   public:
     date(string);
+    date(const date&);
     date(unsigned int);
     string to_s();
     int int_image();
