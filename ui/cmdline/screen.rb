@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'trollop'
 load 'codegen.rb'
+require 'trollop'
 require 'open3'
 require 'date'
 require 'json'
@@ -28,9 +28,11 @@ p.parse_rules
 screen = {rules: p.table.rules, symbols: p.table.symboltable}
 puts screen if opts[:dump]
 
-
 Dir.chdir(opts[:engine])
-stdin, stdout, stderr, wait_thr = Open3.popen3("./" + opts[:exename])
+cmdline = "./#{opts[:exename]} #{opts[:date]} "
+cmdline += (opts[:list].nil? ? "-l #{opts[:tickers]}" : "-f #{opts[:list]}")
+
+stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
 stdin.puts({screen: screen}.to_json + "\n")
 stdin.close
 

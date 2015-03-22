@@ -20,8 +20,14 @@ vector<string> screen::eval(date curdate) {
     string ticker = universe[i];
 
     if(all.count(ticker) == 0) {
-      stock cur(ticker);
-      all.insert(std::pair<string, stock>(ticker, cur));
+
+      try {
+        stock cur(ticker);
+        all.insert(std::pair<string, stock>(ticker, cur));
+      } catch(exception e) {
+        continue;
+      }
+      
     }
 
     stock cur = all.find(ticker)->second; 

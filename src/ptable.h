@@ -28,7 +28,7 @@ class ptable {
 
   private:
 
-  void init_file();
+  void open();
   void find_row(int);
   int find_row(date);
   void read_splits();

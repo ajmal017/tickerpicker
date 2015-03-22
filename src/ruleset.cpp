@@ -31,8 +31,12 @@ bool ruleset::eval(stock s) {
   for(int i = 0; i < rules.size(); i++) {
     symbol rule = rules[i];
 
-    eval_symbol(rule.lval);
-    eval_symbol(rule.rval);
+    try {
+      eval_symbol(rule.lval);
+      eval_symbol(rule.rval);
+    } catch(exception &e) {
+      return false;
+    }
 
     svalue result;
     eval_op(rule.op, scratch[rule.lval], scratch[rule.rval], &result);

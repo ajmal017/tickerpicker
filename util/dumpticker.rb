@@ -78,11 +78,14 @@ end
 
 tickers.each do |ticker|
   puts "DUMPING #{ticker}"
-  path = (@opts[:path].nil? ? '' : @opts[:path] + '/') 
-  data = File.open("#{path}#{ticker}.ptab", "w")
   rows = prices.where(:ticker => ticker).all.reverse
-  write_index(rows, data)
-  write_splits(data, ticker)
-  write_price_data(rows, data)
-  data.close
+
+  if(rows.count > 0)
+    path = (@opts[:path].nil? ? '' : @opts[:path] + '/') 
+    data = File.open("#{path}#{ticker.gsub(/\//, '-')}.ptab", "w")
+    write_index(rows, data)
+    write_splits(data, ticker)
+    write_price_data(rows, data)
+    data.close
+  end
 end

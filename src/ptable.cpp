@@ -29,22 +29,29 @@
  */
 
 #include <arpa/inet.h>
+#include <algorithm>
 #include <iostream>
 #include <utility>
 #include "ptable.h"
 
 ptable::ptable(string ticker) {
+  replace(ticker.begin(), ticker.end(), '/', '-');
   symbol = ticker;
-  init_file();
+  open();
 }
 
-void ptable::init_file() {
-  string fname = symbol + ".ptab";
+void ptable::open() {
+  string fname = "ptabs/" + symbol + ".ptab";
   binfile.open(fname.c_str(), ios::in | ios::binary);
-  read_index_header();
-  read_splits();
-  read_rowcount();
-  rstart = binfile.tellg();
+
+  if(binfile.is_open()) {
+    read_index_header();
+    read_splits();
+    read_rowcount();
+    rstart = binfile.tellg();
+  } else {
+    throw exception();
+  }
 }
 
 pdata ptable::pull_history_by_limit(date start, int limit) {
@@ -111,6 +118,11 @@ void ptable::read_rowcount() {
 }
 
 int ptable::find_row(date target) {
+
+  if(rcount == 0) {
+    return 0;
+  }
+
   std::map<uint16_t, uint32_t>::iterator it = index.find(target.getyear());
   unsigned int start, end;
 

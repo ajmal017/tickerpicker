@@ -1,3 +1,4 @@
+require 'pry-debugger'
 module CodeGenerator
 
   #Grammar
@@ -86,8 +87,8 @@ module CodeGenerator
     def tokenize(line)
       tokens = []
       tokens << next_token(line)
-  
-      while(tokens.last != ';')
+
+      until(line.empty?)
         tokens << next_token(line)
       end
    
