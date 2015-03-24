@@ -22,6 +22,7 @@ class ruleset {
     int lval;
     int tbranch;
     string indicator;
+    vector<int> arglist;
     ruleset::operation op;
   };
 
@@ -38,6 +39,7 @@ class ruleset {
   void eval_fn(int);
   void eval_ternary(int);
   void eval_symbol(int);
+  vector<int> parse_arglist(string);
   void eval_op(operation, svalue*, svalue*, svalue*);
 
   stock* current_stock;

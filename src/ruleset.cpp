@@ -138,7 +138,16 @@ void ruleset::eval_ternary(int symidx) {
 void ruleset::eval_fn(int symidx) {
   ruleset::symbol sym = table[symidx];
   ruleset::svalue* cur = scratch[symidx];
-  cur->nval = current_stock->eval_indicator(sym.indicator);
+  vector<float> args;
+
+  for(int i = 0; i < sym.arglist.size(); i++) {
+    int argidx = sym.arglist[i];
+    eval_symbol(argidx);
+    ruleset::svalue* arg = scratch[argidx];
+    args.push_back(arg->nval);
+  }
+
+  cur->nval = current_stock->eval_indicator(sym.indicator, args);
 }
 
 ruleset::symbol ruleset::parse_rule(string rule) {
@@ -161,6 +170,7 @@ ruleset::symbol ruleset::parse_rule(string rule) {
       current.op = VAL; 
     } else {
       current.indicator = temp;
+      current.arglist = parse_arglist(rule);
       current.op = FN;
     }
     
@@ -187,6 +197,27 @@ ruleset::symbol ruleset::parse_rule(string rule) {
 
   scratch.push_back(val);
   return current;
+}
+
+vector<int> ruleset::parse_arglist(string list) {
+
+  string::size_type lastPos = list.find_first_not_of(",", 0);
+  string::size_type pos = list.find_first_of(",", lastPos);
+  vector<int> rval;
+
+  while (string::npos != pos || string::npos != lastPos) {
+    string arg = list.substr(lastPos, pos - lastPos);
+    lastPos = list.find_first_not_of(",", pos);
+    pos = list.find_first_of(",", lastPos);
+
+    arg.erase(0, 1);
+    if(arg.size() > 0) {
+      int argindex = atoi(arg.c_str());
+      rval.push_back(argindex);
+    }
+  }
+
+  return rval;
 }
 
 void ruleset::init_opmap() {
