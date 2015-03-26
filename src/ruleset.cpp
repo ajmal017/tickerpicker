@@ -17,6 +17,9 @@ ruleset::ruleset(vector<string> rules, vector<string> symbols) {
     symbol s = parse_rule(symbols[i]);
     table.push_back(s);
   }
+
+  ruleset_sort ssort(this->rules, table, symbols);
+  this->rules = ssort.sorted_rules(); 
 }
 
 void ruleset::reset_scratchpad() {
@@ -167,6 +170,7 @@ ruleset::symbol ruleset::parse_rule(string rule) {
 
     if(is_number(temp)) {
       val->nval = (float) atof(temp.c_str());
+      current.value = val->nval;
       current.op = VAL; 
     } else {
       current.indicator = temp;
@@ -210,8 +214,8 @@ vector<int> ruleset::parse_arglist(string list) {
     lastPos = list.find_first_not_of(",", pos);
     pos = list.find_first_of(",", lastPos);
 
-    arg.erase(0, 1);
-    if(arg.size() > 0) {
+    arg.erase(0, arg.find_first_of("$")+1);
+    if(arg.size() > 0 && is_number(arg)) {
       int argindex = atoi(arg.c_str());
       rval.push_back(argindex);
     }

@@ -54,18 +54,20 @@ void ptable::open() {
   }
 }
 
-pdata ptable::pull_history_by_limit(date start, int limit) {
-  int datastart = find_row(start);
-  int blocksize = limit * ROW_SIZE;
-  find_row(datastart);
-
+pdata ptable::read(int rowcount) {
+  int blocksize = rowcount * ROW_SIZE;
   uint32_t* rawdata = new uint32_t[blocksize];
   binfile.read((char *) rawdata, blocksize);
-  limit = binfile.gcount() / ROW_SIZE;
-
-  pdata rval = store_rows(rawdata, limit); 
+  rowcount = binfile.gcount() / ROW_SIZE;
+  pdata rval = store_rows(rawdata, rowcount); 
   delete[] rawdata;
   return rval;
+}
+
+pdata ptable::pull_history_by_limit(date start, int limit) {
+  int datastart = find_row(start);
+  find_row(datastart);
+  return read(limit);
 }
 
 void ptable::pull_history_by_dates() {

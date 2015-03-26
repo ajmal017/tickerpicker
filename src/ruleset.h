@@ -7,13 +7,9 @@
 
 using namespace std;
 
-class ruleset {
+class symbol_table {
+
   public:
-
-  ruleset(vector<string>, vector<string>);
-  bool eval(stock);
-
-  private:
 
   enum operation {FN, VAL, EQU, ADD, SUB, MUL, DIV, AND, OR, XOR, GT, LT, GTE, LTE, TERNARY};
 
@@ -21,10 +17,25 @@ class ruleset {
     int rval;
     int lval;
     int tbranch;
+    float value;
     string indicator;
     vector<int> arglist;
-    ruleset::operation op;
+    symbol_table::operation op;
   };
+
+  protected:
+
+  vector<symbol> rules;
+  vector<symbol> table;
+};
+
+class ruleset : symbol_table {
+  public:
+
+  ruleset(vector<string>, vector<string>);
+  bool eval(stock);
+
+  private:
 
   struct svalue {
     bool bval;
@@ -43,10 +54,28 @@ class ruleset {
   void eval_op(operation, svalue*, svalue*, svalue*);
 
   stock* current_stock;
-  vector<symbol> rules;
-  vector<symbol> table;
   vector<svalue*> scratch; 
   map<string, ruleset::operation> opmap;
+};
+
+class ruleset_sort : symbol_table {
+  public:
+  ruleset_sort(vector<symbol>, vector<symbol>, vector<string>);
+  vector<symbol_table::symbol> sorted_rules();
+
+  private:
+
+  struct sort_pred {
+    bool operator()(const std::pair<int, symbol> &left, const std::pair<int, symbol> &right) {
+      return left.first < right.first;
+    }
+  };
+
+  int lookback_for(symbol);
+  int greater_value(symbol);
+  int function_value(symbol);
+
+  vector<string> rawsymbols;
 };
 
 #endif

@@ -13,6 +13,9 @@ class stock {
 
   private:
 
+    void clear_history();
+    void concat_history(pdata);
+
     indicators icore;
     date* pulldate;
     string ticker;
