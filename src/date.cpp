@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iomanip>
+#include <time.h>
 #include "date.h"
 
 const short date::MONTH_LENGTHS[] = {-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
@@ -88,10 +89,14 @@ void date::prev_business_day() {
 //0 is a sunday, 6 is a saturday.  Works for year > 1752
 //see: http://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
 
-bool date::is_weekday() {
+int date::day_of_week() {
   int y = year; //year isn't always preserved
   y -= month < 3;
-  int code = (y + y/4 - y/100 + y/400 + MONTH_CODES[month-1] + day) % 7;
+  return (y + y/4 - y/100 + y/400 + MONTH_CODES[month-1] + day) % 7;
+}
+
+bool date::is_weekday() {
+  int code = day_of_week();
   return (code != 0 && code != 6);
 }
 
@@ -109,6 +114,66 @@ bool date::is_leap_year() {
   }
 
   return false;
+}
+
+int date::diff_days(date other) {
+  struct tm thisday;
+  struct tm otherday;
+
+  thisday.tm_sec = 0;
+  thisday.tm_min = 0;
+  thisday.tm_hour = 0;
+  thisday.tm_mday = day;
+  thisday.tm_year = year;
+  thisday.tm_mon = month - 1;
+
+  otherday.tm_sec = 0;
+  otherday.tm_min = 0;
+  otherday.tm_hour = 0;
+  otherday.tm_mday = other.day;
+  otherday.tm_year = other.year;
+  otherday.tm_mon = other.month - 1;
+
+  time_t thistime = time_to_epoch(&thisday);
+  time_t othertime = time_to_epoch(&otherday);
+
+  uint32_t diff = thistime - othertime;
+  return diff / SECONDS_PER_DAY;
+}
+
+
+//replacement for pathetically slow native mktime
+//causing literal order of magnitude slowdown
+//translated from https://gmbabar.wordpress.com/2010/12/01/mktime-slow-use-custom-function/
+
+time_t date::time_to_epoch (const struct tm *ltm) {
+   const int mon_days [] =
+      {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+   long tyears, tdays, leaps, utc_hrs;
+   int i;
+
+   tyears = ltm->tm_year - 70 ; // tm->tm_year is from 1900.
+   leaps = (tyears + 2) / 4; // no of next two lines until year 2100.
+
+   tdays = 0;
+   for (i=0; i < ltm->tm_mon; i++) tdays += mon_days[i];
+
+   tdays += ltm->tm_mday-1; // days of month passed.
+   tdays = tdays + (tyears * 365) + leaps;
+
+   utc_hrs = ltm->tm_hour - 5; //Eastern Standard Time
+   return (tdays * 86400) + (utc_hrs * 3600) + (ltm->tm_min * 60) + ltm->tm_sec;
+}
+
+//Translated from internet sources:
+//http://alecpojidaev.wordpress.com/2009/10/29/work-days-calculation-with-c/
+//http://stackoverflow.com/questions/1617049/calculate-the-number-of-business-days-between-two-dates
+
+int date::diff_bdays(date other) {
+  int diff = 1 + (diff_days(other) * 5 - (other.day_of_week() - day_of_week()) * 2) / 7;
+  if (day_of_week() == 6) diff--;
+  if (other.day_of_week() == 0) diff--;
+  return diff;
 }
 
 bool date::operator==(date d) const {

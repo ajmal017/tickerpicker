@@ -1,18 +1,9 @@
 #ifndef PTABLE 
 #define PTABLE 
 #include <fstream>
-#include <vector>
+#include "pdata.h"
 #include "date.h"
 #include <map>
-
-struct pdata {
-  vector<float> low;
-  vector<float> open;
-  vector<float> high;
-  vector<float> close;
-  vector<uint32_t> date;
-  vector<uint32_t> volume;
-};
 
 class ptable {
   public:
