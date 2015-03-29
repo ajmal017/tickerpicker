@@ -15,7 +15,6 @@ class ptable {
   pdata pull_history_by_limit(date, int);
   float pull_close_on_date(date);
   void pull_history_by_dates();
-  static void dump_data(pdata);
   void pull_dividends();
 
   private:
@@ -25,6 +24,7 @@ class ptable {
   int find_row(date);
   void read_splits();
   void read_rowcount();
+  void find_splits(pdata*);
   void read_index_header();
   int binary_search(int, int, int);
   pdata store_rows(uint32_t*, int);

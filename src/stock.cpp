@@ -14,7 +14,7 @@ void stock::onday(date d) {
 
 float stock::eval_indicator(string indicator, vector<float> args) {
   int pull_len = icore.eval_lookback(indicator, args);
-  int histlen = history.close.size();
+  int histlen = history.size();
 
   if(histlen == 0) {
     history = data->pull_history_by_limit(*pulldate, pull_len);
@@ -25,8 +25,11 @@ float stock::eval_indicator(string indicator, vector<float> args) {
 
   } else {
     int pullsize = pull_len - histlen;
-    pdata temp = data->read(pullsize);
-    history.concat_history(temp);
+
+    if(pullsize > 0) {
+      pdata temp = data->read(pullsize);
+      history.concat_history(temp);
+    }
   }
 
   if(history.has_gaps() || history.size() < pull_len) {

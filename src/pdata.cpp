@@ -1,5 +1,6 @@
 #include "ptable.h"
 #include <vector>
+#include <algorithm>
 #include <iostream>
 
 int pdata::size() {
@@ -38,12 +39,33 @@ bool pdata::has_gaps() {
 }
 
 void pdata::concat_history(pdata newdata) {
+  concat_prices(newdata);
+  concat_splits(newdata);
+}
+
+void pdata::concat_prices(pdata newdata) {
   low.insert(low.end(), newdata.low.begin(), newdata.low.end());
   open.insert(open.end(), newdata.open.begin(), newdata.open.end());
   high.insert(high.end(), newdata.high.begin(), newdata.high.end());
   close.insert(close.end(), newdata.close.begin(), newdata.close.end());
   volume.insert(volume.end(), newdata.volume.begin(), newdata.volume.end());
   date.insert(date.end(), newdata.date.begin(), newdata.date.end());
+}
+
+void pdata::concat_splits(pdata newdata) {
+  std::map<uint32_t, pair<uint16_t, uint16_t> >::iterator it;
+
+  //apply existing splits first
+  //starting from first day of new data
+  ::date firstday(newdata.date[0]);
+  for(it = splitlist.begin(); it != splitlist.end(); it++) {
+    apply_split(firstday, it->second.first, it->second.second);
+  }
+
+  //now add new splits to splitlist
+  for(it = newdata.splitlist.begin(); it != newdata.splitlist.end(); it++) {
+    splitlist[it->first] = it->second; 
+  }
 }
 
 void pdata::clear() {
@@ -53,4 +75,33 @@ void pdata::clear() {
   close.clear();
   volume.clear();
   date.clear();
+}
+
+void pdata::add_split(::date d, pair<uint16_t, uint16_t> split) {
+  apply_split(d, split.first, split.second);
+  splitlist[d.int_image()] = split;
+}
+
+void pdata::apply_split(::date d, uint16_t before, uint16_t after) {
+  vector<uint32_t>::iterator it = find(date.begin(), date.end(), d.int_image());
+  float ratio = (float)before / after;
+
+  for(int i = it - date.begin() + 1; i < size(); i++) {
+    low[i] *= ratio;
+    high[i] *= ratio;
+    open[i] *= ratio;
+    close[i] *= ratio;
+  }
+}
+
+void pdata::dump_data() {
+  for(int i = 0; i < size(); i++) {
+    ::date d(date[i]);
+    cout << d.to_s() << "\t";
+    cout << open[i] << "\t";
+    cout << high[i] << "\t";
+    cout << low[i] << "\t";
+    cout << close[i] << "\t";
+    cout << volume[i] << "\n";
+  }
 }

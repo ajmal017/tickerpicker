@@ -60,6 +60,7 @@ pdata ptable::read(int rowcount) {
   binfile.read((char *) rawdata, blocksize);
   rowcount = binfile.gcount() / ROW_SIZE;
   pdata rval = store_rows(rawdata, rowcount); 
+  find_splits(&rval);
   delete[] rawdata;
   return rval;
 }
@@ -156,18 +157,6 @@ void ptable::read_index_header() {
   }
 }
 
-void ptable::dump_data(pdata p) {
-  for(int i = 0; i < p.close.size(); i++) {
-    date d(p.date[i]);
-    cout << d.to_s() << "\t";
-    cout << p.open[i] << "\t";
-    cout << p.high[i] << "\t";
-    cout << p.low[i] << "\t";
-    cout << p.close[i] << "\t";
-    cout << p.volume[i] << "\n";
-  }
-}
-
 int ptable::binary_search(int key, int imin, int imax) {
   uint32_t curdate, imid;
 
@@ -191,4 +180,18 @@ int ptable::binary_search(int key, int imin, int imax) {
   }
 
   return imid;
+}
+
+void ptable::find_splits(pdata* tab) {
+  date firstday(tab->date[0]);
+  date lastday(tab->date.back());
+
+  std::map<date, pair<uint16_t, uint16_t> >::iterator it;
+
+  for(it = splits.begin(); it != splits.end(); it++) {
+    if(firstday > it->first && lastday < it->first) {
+      date thissplit = it->first;
+      tab->add_split(it->first, it->second);
+    }
+  }
 }
