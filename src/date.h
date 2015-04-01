@@ -25,6 +25,8 @@ class date {
     int getday();
 
     bool operator==(const date) const;
+    bool operator<=(const date) const;
+    bool operator>=(const date) const;
     bool operator<(const date) const;
     bool operator>(const date) const;
   private:

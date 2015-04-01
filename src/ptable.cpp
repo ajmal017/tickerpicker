@@ -189,7 +189,7 @@ void ptable::find_splits(pdata* tab) {
   std::map<date, pair<uint16_t, uint16_t> >::iterator it;
 
   for(it = splits.begin(); it != splits.end(); it++) {
-    if(firstday > it->first && lastday < it->first) {
+    if(firstday >= it->first && lastday < it->first) {
       date thissplit = it->first;
       tab->add_split(it->first, it->second);
     }

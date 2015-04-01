@@ -214,6 +214,15 @@ bool date::operator>(date d) const {
   return true;
 }
 
+bool date::operator<=(const date d) const {
+  return this->date::operator<(d) || this->date::operator==(d);
+}
+
+bool date::operator>=(const date d) const {
+  return this->date::operator>(d) || this->date::operator==(d);
+}
+
+
 int date::int_image() {
   return (year * 10000) + (month * 100) + day;
 }
