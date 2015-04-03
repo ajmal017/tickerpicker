@@ -127,6 +127,9 @@ RSpec.describe "Screener" do
     #HBI, IWM, and XOM have 10 day gaps from 2015-02-10 to 2015-02-20
     hits = run_screen("C100 > 0;", %w(XOM HBI IWM), "2015-03-23")
     expect(hits).to be_empty
+
+    hits = run_screen("ATR40 > 0;", %w(XOM), "2015-03-13")
+    expect(hits).to be_empty
   end
 
   it "handles a mixed list of stocks with and without gaps" do
@@ -284,6 +287,139 @@ RSpec.describe "Screener" do
   end
 end
 
+RSpec.describe "Indicators" do
+
+  it "Minimum Close" do
+  end
+
+  it "Maximum Close" do
+  end
+
+  it "Average True Range" do
+    hits = run_screen("ATR = ATR14", %w(AAPL XOM IKAN), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL XOM IKAN))
+
+    hits = run_screen("ATR > 2.86; ATR < 2.87;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 > 2.57; ATR20 < 2.58;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR50 > 2.804; ATR50 < 2.805;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR50 = 6.0008;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR20 > 5.623; ATR20 < 5.624;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR > 5.7971; ATR < 5.7972;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR > 1.0564; ATR < 1.0565;", %w(XOM), "2015-03-13")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ATR20 > 2.025; ATR20 < 2.026;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ATR50 > 2.018; ATR50 < 2.019;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Relative Strength Index" do
+    hits = run_screen("RSI = RSI14", %w(AAPL XOM IKAN), "2013-09-17")
+    expect(hits).to match_array(%w(AAPL XOM IKAN))
+
+    hits = run_screen("RSI > 38.860; RSI < 38.861;", %w(AAPL), "2013-09-17")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI > 55.38; RSI < 55.39;", %w(AAPL), "2005-12-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI40 > 44.636; RSI40 < 44.637;", %w(AAPL), "2014-02-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI40 > 64.186; RSI40 < 64.187;", %w(AAPL), "2012-09-21")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI > 51.8; RSI < 51.9;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("RSI50 > 47.9; RSI50 < 48;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("RSI100 > 48.02; RSI100 < 48.03;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Simple Moving Average" do
+    hits = run_screen("AVGC20 = 545.037;", %w(AAPL), "2014-01-28")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 > 483.11; AVGC200 < 483.13;", %w(AAPL), "2014-01-28")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("AVGC20 = 38.3225;", %w(AAPL), "2004-10-13")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 = 29.0594;", %w(AAPL), "2004-10-13")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 = 97.9015;", %w(XOM), "2014-11-10")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC20 = 93.9135;", %w(XOM), "2014-11-10")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC200 = 67.497;", %w(XOM), "2010-07-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC20 = 60.388;", %w(XOM), "2010-07-02")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Exponential Moving Average" do
+    hits = run_screen("EMAC100 > 91.54; EMAC100 < 91.55;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC50 > 93.02; EMAC50 < 93.03;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC20 > 95.25; EMAC20 < 95.26;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC20 > 1.35; EMAC20 < 1.36;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("EMAC50 > 1.18; EMAC50 < 1.19;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("EMAC200 > 0.983; EMAC200 < 0.984;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Weighted Moving Average" do
+    hits = run_screen("WMAC200 > 0.963; WMAC200 < 0.964;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC50 > 1.237; WMAC50 < 1.238;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC100 > 1.084; WMAC100 < 1.085;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC50 > 11.724; WMAC50 < 11.725;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+
+    hits = run_screen("WMAC200 > 10.07; WMAC200 < 10.08;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+
+    hits = run_screen("WMAC300 > 9.34; WMAC300 < 9.35;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+  end
+end
+
 RSpec.describe "Legacy Tests" do
 
   it "test #1" do
@@ -302,4 +438,6 @@ RSpec.describe "Defect Tests" do
     expect(hits).to be_empty
     expect($?).to eq(0)
   end
+
+#RSI with any period other than default
 end
