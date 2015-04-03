@@ -36,4 +36,9 @@ stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
 stdin.puts({screen: screen}.to_json + "\n")
 stdin.close
 
+sys_stat = wait_thr.value.to_i
+if(sys_stat != 0)
+  abort("RUNTIME ERROR: #{sys_stat}")
+end
+
 stdout.each_line {|line| puts line }

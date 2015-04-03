@@ -9,6 +9,7 @@ CHECKSUMS = {
 	'AAPL' => '9311faba6c4bb734645ee58dfcb0a9e4',
 	'IKAN' => 'cd6305889f082302c865fbe01be716df',
 	'FLEX' => 'c647090608d10ce02fd379cddc031768',
+	'ABV-C' => '8dd6bb7329a71449b0a1b292b5999164',
 	} 
 
 def run_screen(screen, tickers, date)
@@ -294,5 +295,11 @@ RSpec.describe "Defect Tests" do
   it "splits should be on date less than or equal to" do
     hits = run_screen("C1 = 101.25; O1 = 98.5; H1 = 103.94;", %w(AAPL), "2000-06-21")
     expect(hits).to be_empty
+  end
+
+  it "should not crash on truncated ptab files" do
+    hits = run_screen("C > 0;", %w(ABV-C), "2015-03-20")
+    expect(hits).to be_empty
+    expect($?).to eq(0)
   end
 end
