@@ -94,6 +94,16 @@ void pdata::apply_split(::date d, uint16_t before, uint16_t after) {
   }
 }
 
+vector<float> pdata::volume_as_floats() {
+  vector<float> rval;
+
+  for(int i = 0; i < size(); i++) {
+    rval.push_back((float) volume[i]);
+  }
+
+  return rval;
+}
+
 void pdata::dump_data() {
   for(int i = 0; i < size(); i++) {
     ::date d(date[i]);

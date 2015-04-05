@@ -21,6 +21,7 @@ class pdata {
   bool is_valid(::date, int);
   void concat_history(pdata);
   void add_split(::date, pair<uint16_t, uint16_t>); 
+  vector<float> volume_as_floats();
 
   private:
   void concat_prices(pdata);

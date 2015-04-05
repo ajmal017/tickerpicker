@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <math.h>
 
 ruleset::ruleset(vector<string> rules, vector<string> symbols) {
   init_opmap();
@@ -96,7 +97,7 @@ void ruleset::eval_op(operation op, svalue* lval, svalue* rval, svalue* cur) {
       cur->nval = lval->nval / rval->nval;
       break;
     case EQU:
-      cur->bval = lval->nval == rval->nval;
+      cur->bval = (fabs(lval->nval - rval->nval) < EPSILON);
       break;
     case AND:
       cur->bval = lval->bval && lval->bval;

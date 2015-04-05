@@ -20,7 +20,7 @@ def run_screen(screen, tickers, date)
   output.split 
 end
 
-RSpec.describe "Screener" do
+RSpec.describe "Dates and data handling" do
 
   before(:each) do
    Dir.chdir(HOMEDIR)
@@ -290,9 +290,51 @@ end
 RSpec.describe "Indicators" do
 
   it "Minimum Close" do
+    hits = run_screen("MINC50 = 1.61;", %w(IKAN), "2010-01-12")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("MINC200 = 1.03;", %w(IKAN), "2009-09-15")
+    expect(hits).to match_array(%w(IKAN))
+    
+    hits = run_screen("MINC100 = 50.67;", %w(AAPL), "2006-09-26")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINC20 = 13.12;", %w(AAPL), "2003-05-08")
+    expect(hits).to match_array(%w(AAPL))
   end
 
   it "Maximum Close" do
+    hits = run_screen("MAXC50 = 567.90;", %w(AAPL), "2013-12-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC260 = 702.10;", %w(AAPL), "2012-10-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC100 = 636.23;", %w(AAPL), "2012-05-18")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC50 = 1.5;", %w(IKAN), "2012-11-14")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("MAXC300 = 3.41;", %w(IKAN), "2010-07-01")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Average Volume" do
+    hits = run_screen("AVGV20 = 58827025;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV200 = 19129470;", %w(AAPL), "2012-12-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV100 = 20846127;", %w(AAPL), "2011-11-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV21 = 24065034;", %w(XOM), "2012-06-25")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGV50 = 20625078;", %w(XOM), "2012-01-03")
+    expect(hits).to match_array(%w(XOM))
   end
 
   it "Average True Range" do
@@ -418,12 +460,97 @@ RSpec.describe "Indicators" do
     hits = run_screen("WMAC300 > 9.34; WMAC300 < 9.35;", %w(ABD), "2012-04-30")
     expect(hits).to match_array(%w(ABD))
   end
-end
 
-RSpec.describe "Legacy Tests" do
+  it "Normalized Average True Range" do
+    hits = run_screen("NATR > 3.85; NATR < 3.86;", %w(AAPL), "2012-04-30")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("NATR > 1.864; NATR < 1.865;", %w(AAPL), "2010-08-11")
+    expect(hits).to match_array(%w(AAPL))
 
-  it "test #1" do
+    hits = run_screen("NATR30 > 2.993; NATR30 < 2.994;", %w(AAPL), "2013-01-02")
+    expect(hits).to match_array(%w(AAPL))
 
+    hits = run_screen("NATR30 > 1.632; NATR30 < 1.633;", %w(AAPL), "2014-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR > 2.22; NATR < 2.23;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("NATR > 1.738; NATR < 1.739;", %w(XOM), "2009-08-11")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("NATR50 > 2.076; NATR50 < 2.077;", %w(XOM), "2009-08-11")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Rate Of Change" do
+    hits = run_screen("ROC12 = ROC;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 > 10.18; ROC20 < 10.19;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC50 > 20.92; ROC50 < 20.93;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 < -2.941; ROC20 > -2.942;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ROC50 > 3.12; ROC50 < 3.13;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Bollinger Bands" do
+    hits = run_screen("BOLLINGER_UPPER = BOLLINGER_UPPER20,2; BOLLINGER_LOWER = BOLLINGER_LOWER20,2;", %w(XOM), "2013-12-31")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("BOLLINGER_UPPER = 135.102; BOLLINGER_LOWER = 116.125;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 572.97; BOLLINGER_LOWER = 545.865;", %w(AAPL), "2014-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER50,2 = 712.389; BOLLINGER_LOWER50,2 = 605.522;", %w(AAPL), "2012-10-31")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER20,2 = 1.33; BOLLINGER_LOWER20,2 = 1.135;", %w(IKAN), "2013-12-31")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("BOLLINGER_UPPER50,2 = 1.396; BOLLINGER_LOWER50,2 = 1.081;", %w(IKAN), "2013-12-31")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Arithmetic parameter lists" do
+    hits = run_screen("ATR30 = ATR(15+15)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(10+10+10)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(15*2)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(10*3)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(5*6)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR50 = ATR(15+15)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(10+10+10)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(15*2)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to be_empty
+
+    hits = run_screen("ATR50 = ATR(10*3)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(5*6)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to be_empty
   end
 end
 
@@ -439,5 +566,9 @@ RSpec.describe "Defect Tests" do
     expect($?).to eq(0)
   end
 
-#RSI with any period other than default
+  it "should recognize OBV token with no conflicts" do
+    hits = run_screen("OBV > 0;", %w(AAPL), "2015-03-20")
+    expect(hits).to match_array(%w(AAPL))
+    expect($?).to eq(0)
+  end
 end

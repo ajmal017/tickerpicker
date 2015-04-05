@@ -5,6 +5,8 @@
 #include "stock.h"
 #include <map>
 
+#define EPSILON 0.001
+
 using namespace std;
 
 class symbol_table {

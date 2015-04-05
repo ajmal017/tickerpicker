@@ -46,10 +46,15 @@ void indicators::init_fntable() {
   fn_table["WMAO"] = &indicators::wmao;
   fn_table["WMAV"] = &indicators::wmav;
 
-  fn_table["ABS"] = &indicators::abs_value;
   fn_table["ATR"] = &indicators::avg_true_range;
+  fn_table["ABS"] = &indicators::abs_value;
+  fn_table["ROC"] = &indicators::roc;
+  fn_table["NATR"] = &indicators::natr;
   fn_table["RSI"] = &indicators::rsi;
   fn_table["OBV"] = &indicators::obv;
+
+  fn_table["BOLLINGER_UPPER"] = &indicators::bollinger_upper;
+  fn_table["BOLLINGER_LOWER"] = &indicators::bollinger_lower;
 }
 
 void indicators::init_lookback_table() {
@@ -89,10 +94,15 @@ void indicators::init_lookback_table() {
   lookback_table["WMAL"] = &indicators::identity_lookback;
   lookback_table["WMAV"] = &indicators::identity_lookback;
 
-  lookback_table["ABS"] = &indicators::absval_lookback;
   lookback_table["ATR"] = &indicators::avg_true_range_lookback;
+  lookback_table["ABS"] = &indicators::absval_lookback;
+  lookback_table["ROC"] = &indicators::roc_lookback;
   lookback_table["RSI"] = &indicators::rsi_lookback;
-  lookback_table["OBV"] = &indicators::identity_lookback;
+  lookback_table["OBV"] = &indicators::obv_lookback;
+  lookback_table["NATR"] = &indicators::natr_lookback;
+
+  lookback_table["BOLLINGER_UPPER"] = &indicators::bollinger_lookback;
+  lookback_table["BOLLINGER_LOWER"] = &indicators::bollinger_lookback;
 }
 
 int indicators::eval_lookback(std::string indicator, std::vector<float> args) {
@@ -133,6 +143,34 @@ int indicators::avg_true_range_lookback() {
     return TA_ATR_Lookback(14) + 1;
   } else {
     return TA_ATR_Lookback((int) arglist[0]) + 1;
+  }
+}
+
+int indicators::natr_lookback() {
+  if(arglist.size() == 0) {
+    return TA_ATR_Lookback(14) + 1;
+  } else {
+    return TA_ATR_Lookback((int) arglist[0]) + 1;
+  }
+}
+
+int indicators::obv_lookback() {
+  return 1;
+}
+
+int indicators::roc_lookback() {
+  if(arglist.size() == 0) {
+    return 13;
+  } else {
+    return ((int) arglist[0]) + 1;
+  }
+}
+
+int indicators::bollinger_lookback() {
+  if(arglist.size() == 0) {
+    return TA_BBANDS_Lookback(20, 2.0, 2.0, TA_MAType_SMA) + 1;
+  } else {
+    return TA_BBANDS_Lookback((int)arglist[0], arglist[1], arglist[1], TA_MAType_SMA) + 1;
   }
 }
 
@@ -261,7 +299,7 @@ float indicators::avgl() {
 }
 
 float indicators::avgv() {
- //to do : implement volume
+  return sma(current_prices->volume_as_floats());
 }
 
 float indicators::sma(vector<float> prices) {
@@ -290,7 +328,7 @@ float indicators::eavgl() {
 }
 
 float indicators::eavgv() {
-//  return eavg(current_prices->close);
+  return eavg(current_prices->volume_as_floats());
 }
 
 float indicators::eavg(vector<float> data) {
@@ -323,7 +361,7 @@ float indicators::wmal() {
 }
 
 float indicators::wmav() {
-// volume here
+  return wma(current_prices->volume_as_floats());
 }
 
 float indicators::wma(vector<float> data) {
@@ -359,6 +397,28 @@ float indicators::avg_true_range() {
   return (float) rval;
 }
 
+float indicators::natr() {
+  int period = avg_true_range_lookback() - 1;
+
+  vector<float> closes = current_prices->close;
+  vector<float> highs = current_prices->high;
+  vector<float> lows = current_prices->low;
+
+  std::reverse(closes.begin(), closes.end());
+  std::reverse(highs.begin(), highs.end());
+  std::reverse(lows.begin(), lows.end());
+
+  float *c = &(*closes.begin());
+  float *h = &(*highs.begin());
+  float *l = &(*lows.begin());
+
+  double rval;
+  int ostart, onum;
+
+  TA_S_NATR(0, period, h, l, c, period, &ostart, &onum, &rval);
+  return (float) rval;
+}
+
 float indicators::rsi() {
   int period = rsi_lookback() / 4;
   vector<float> closes = current_prices->close;
@@ -372,5 +432,53 @@ float indicators::rsi() {
 }
 
 float indicators::obv() {
+  vector<float> volumes = current_prices->volume_as_floats();
+  vector<float> prices = current_prices->close;
+
+  std::reverse(volumes.begin(), volumes.end());
+  std::reverse(prices.begin(), prices.end());
+
+  float *v = &(*volumes.begin());
+  float *c = &(*prices.begin());
+  double rval[OUTPUT_BUFSIZE];
+  int num, start;
+
+  TA_S_OBV(0, volumes.size() - 1, c, v, &start, &num, &rval[0]);
+  return (float) rval[num - 1];
+}
+
+float indicators::roc() {
+    int period = arglist[0];
+    float close = current_prices->close[0];
+    float prev = current_prices->close[period];
+    return ((close - prev) / prev) * 100;
+}
+
+float indicators::bollinger_upper() {
+  double upper, lower;
+  bollinger_values(&upper, &lower);
+  return (float) upper;
+}
+
+float indicators::bollinger_lower() {
+  double upper, lower;
+  bollinger_values(&upper, &lower);
+  return (float) lower;
+}
+
+void indicators::bollinger_values(double *upper, double *lower) {
+
+  vector<float> prices = current_prices->close;
+  std::reverse(prices.begin(), prices.end());
+  float* c = &(*prices.begin());
   
+  int s, n, period = 20;
+  double avg, devs = 2;
+
+  if(arglist.size() > 0) {
+    period = (int) arglist[0];
+    devs = arglist[1];
+  }
+
+  TA_S_BBANDS(0, prices.size() - 1, c, period, devs, devs, TA_MAType_SMA, &s, &n, upper, &avg, lower); 
 }
