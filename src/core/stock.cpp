@@ -14,6 +14,16 @@ void stock::onday(date d) {
 
 float stock::eval_indicator(string indicator, vector<float> args) {
   int pull_len = icore.eval_lookback(indicator, args);
+
+  if(pull_len > 0) {
+    pull_history(pull_len); 
+  }
+
+  return icore.eval_indicator(indicator, args, &history);
+}
+
+void stock::pull_history(int pull_len) {
+
   int histlen = history.size();
 
   if(histlen == 0) {
@@ -35,6 +45,4 @@ float stock::eval_indicator(string indicator, vector<float> args) {
   if(history.has_gaps() || history.size() < pull_len) {
     throw std::out_of_range("insufficient data");
   }
-
-  return icore.eval_indicator(indicator, args, &history);
 }

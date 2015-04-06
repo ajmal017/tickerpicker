@@ -33,6 +33,38 @@ RSpec.describe "Dates and data handling" do
     end
   end
 
+  it "has an epsilon of .001" do
+    hits = run_screen("1.0 = 1.0", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("1.0 = 2.0", %w(XOM), "2015-02-01")
+    expect(hits).to be_empty
+
+    hits = run_screen("1.1 = 1.1", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("1.1 = 1.2", %w(XOM), "2015-02-01")
+    expect(hits).to be_empty
+
+    hits = run_screen("1.12 = 1.12", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("1.12 = 1.11", %w(XOM), "2015-02-01")
+    expect(hits).to be_empty
+
+    hits = run_screen("1.123 = 1.123", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("1.123 = 1.122", %w(XOM), "2015-02-01")
+    expect(hits).to be_empty
+   
+    hits = run_screen("1.1234 = 1.1234", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("1.1234 = 1.1235", %w(XOM), "2015-02-01")
+    expect(hits).to match_array(%w(XOM))
+  end
+
   it "screens data at the given date" do
     hits = run_screen("O = 84.54; H = 84.85; L = 84.02; C = 84.08; V = 12957300", %w(XOM), "2015-03-17")
     expect(hits).to match_array(%w(XOM))
@@ -288,6 +320,23 @@ RSpec.describe "Dates and data handling" do
 end
 
 RSpec.describe "Indicators" do
+
+  it "Absolute Value" do
+    hits = run_screen("ABS(1) = ABS(1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(1) = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("1 = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(ROC20) = 2.941;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("-1 * ABS(ROC20) = -2.941;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+  end
 
   it "Minimum Close" do
     hits = run_screen("MINC50 = 1.61;", %w(IKAN), "2010-01-12")

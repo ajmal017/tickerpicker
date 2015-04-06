@@ -14,6 +14,7 @@ class stock {
   private:
 
     void clear_history();
+    void pull_history(int);
     void concat_history(pdata);
 
     indicators icore;
