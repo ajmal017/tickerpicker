@@ -1,3 +1,19 @@
+/* Class for sorting rulesets.  This is an important optimization for
+ * the overall speed of the screening (and by extension, backtesting)
+ * process.  Rules are sorted in ascending order by their lookback periods,
+ * so that rules requiring the least amount of data are evaluated first,
+ * allowing short circuit evaluation with respect to slow and expensive
+ * external I/O operations.  Since this process also involves an evaluation
+ * of rules, both this class and the ruleset are descendants of a generic
+ * symbol table.  In this case, the ruleset is evaluated exactly once, at
+ * startup.  A recursive walk of the rules populates the symbol table with
+ * the lookback period for each symbol, and expressions are given the larger
+ * value of the lookbacks for the lvalue and rvalue.  This continues up the
+ * tree until each rule receives it's lookback value, the largest lookback
+ * for any of the subexpressions it consists of.  The rules are then sorted
+ * by their lookback periods.
+ */
+
 #include "indicators.h"
 #include "ruleset.h"
 #include <algorithm>

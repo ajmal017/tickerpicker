@@ -5,7 +5,7 @@ CFLAGS= -I data -I indicators -I core
 app: main.o indicator data core
 	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o main.o 
 
-indicator: indicators.o
+indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o
 
 data: data/date.o data/pdata.o data/ptable.o
 
@@ -14,8 +14,14 @@ core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
 main.o : main.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o main.o main.cpp
 
-indicators.o: indicators/indicators.cpp
+indicators/indicators.o: indicators/indicators.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp
+
+indicators/lookbacks.o: indicators/lookbacks.cpp
+	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/lookbacks.o indicators/lookbacks.cpp
+
+indicators/tables.o: indicators/tables.cpp
+	$(CC) $(CFLAGS) -c -o ./indicators/tables.o indicators/tables.cpp
 
 data/date.o: data/date.cpp data/date.h
 	$(CC) $(CFLAGS) -c -o ./data/date.o data/date.cpp

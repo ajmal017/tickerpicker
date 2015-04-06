@@ -1,3 +1,21 @@
+/* This is the class that ultimately evaluates the expressions given to the
+ * screener and backtester.  Rules are passed in via the constructor and 
+ * parsed into an internal representation.  The evaluation consists of
+ * performing a recursive walk of the three address code, which is stored 
+ * in two tables: rules, which has the code for the top level boolean rule 
+ * statements, and table, which is the table of subexpressions and constants 
+ * that the lvalue and rvalue of a rule reference.  Each side of the rule is 
+ * recursively evaluated down to constants, and values for the expressions 
+ * computed and stored in the scratch table.  The svalue structs in the scratch 
+ * table also have a flag to prevent repeated evaluation of a single subexpression, 
+ * which effectively caches potentially expensive indicator functions. Constants 
+ * are just added to the scratch table, indicators are called on the current stock, 
+ * and their values added to the scratch table, and expressions are evaluated
+ * in eval_op, and their result added to the scratch table.  Once the evaluation
+ * is complete, the scratch table entries for the boolean lvalue and rvalue of 
+ * each rule are populated, and the rule is evaluated to yield true or false.
+ */
+
 #include "ruleset.h"
 #include <string>
 #include <cstdlib>
