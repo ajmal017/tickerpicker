@@ -1,4 +1,4 @@
-load '../ui/cmdline/codegen.rb'
+load '../cmdline/codegen.rb'
 
 @testnumber = 1
 

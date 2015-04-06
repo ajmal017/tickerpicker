@@ -601,6 +601,34 @@ RSpec.describe "Indicators" do
     hits = run_screen("ATR50 = ATR(5*6)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
     expect(hits).to be_empty
   end
+
+  it "Indicators have no side effects" do
+    hits = run_screen("ROC10 = 1.581; NATR20 = 1.722; ATR50 = 2.643; EMAC70 = 116.935;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 = 4.452; NATR20 = 3.147; ATR20 = 11.761; EMAC20 = 374.782;", %w(AAPL), "2011-08-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 = 4.452; NATR30 = 2.712; ATR40 = 9.739; EMAC50 = 363.294;", %w(AAPL), "2011-08-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC7 = -2.272; NATR21 = 9.191; ATR36 = 0.04; EMAC42 = 0.499;", %w(IKAN), "2014-07-03")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ROC10 = 15.529; NATR23 = 4.96; ATR36 = 1.197;", %w(IKAN), "2006-02-17")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Indicators are order insenstive" do
+    hits = run_screen("NATR20 = 1.722; EMAC70 = 116.935; ATR50 = 2.643; ROC10 = 1.581;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR50 = 2.643; NATR20 = 1.722; ROC10 = 1.581; EMAC70 = 116.935;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAC70 = 116.935; ATR50 = 2.643; NATR20 = 1.722; ROC10 = 1.581;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
 end
 
 RSpec.describe "Defect Tests" do
