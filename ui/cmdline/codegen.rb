@@ -67,7 +67,7 @@ module CodeGenerator
   private
   
     def next_const(line)
-      if(line =~ /(-?[0-9]*\.?[0-9]+)/)
+      if(line =~ /(-?[0-9|_]*\.?[0-9|_]+)/)
         num = $1
         line = line[num.length..-1]
         return num
@@ -236,6 +236,7 @@ module CodeGenerator
       signed = (signable && token_is('-'))
       if(@tokens.first =~ /([0-9]*\.?[0-9]+)/)
         constant = (signed ? '-' : '') + @tokens.shift
+	constant.gsub!('_', '')
         return ast(constant)
       end
       ast(false)

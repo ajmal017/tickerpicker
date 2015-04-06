@@ -166,6 +166,13 @@ run_test(__LINE__, "(1*(2*3)) > 4;", {:rules=>["$4 > $5"], :symbols=>["1", "2", 
 run_test(__LINE__, "((1+2)+3) > 4;", {:rules=>["$4 > $5"], :symbols=>["1", "2", "$0 + $1", "3", "$2 + $3", "4"]})
 run_test(__LINE__, "((1*2)*3) > 4;", {:rules=>["$4 > $5"], :symbols=>["1", "2", "$0 * $1", "3", "$2 * $3", "4"]})
 
+#underscore separators
+run_test(__LINE__, "100000 = 100_000;", {:rules=>["$0 = $0"], :symbols=>["100000"]})
+run_test(__LINE__, "100000 = 100_00_00;", {:rules=>["$0 = $1"], :symbols=>["100000", "1000000"]}) 
+run_test(__LINE__, "-1000 = -1_0_00;", {:rules=>["$0 = $0"], :symbols=>["-1000"]})
+run_test(__LINE__, "1000 = 1_0_0_0;", {:rules=>["$0 = $0"], :symbols=>["1000"]})
+run_test(__LINE__, "100_0 = 1_000;", {:rules=>["$0 = $0"], :symbols=>["1000"]})
+
 #floating point numbers
 run_test(__LINE__, "1.0 > 1;", {:rules=>["$0 > $1"], :symbols=>["1.0", "1"]})
 run_test(__LINE__, "1.0 > 2.0;", {:rules=>["$0 > $1"], :symbols=>["1.0", "2.0"]})
