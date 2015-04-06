@@ -152,6 +152,7 @@ void ruleset::eval_fn(int symidx) {
   }
 
   cur->nval = current_stock->eval_indicator(sym.indicator, args);
+  scratch[symidx]->evaled = true;
 }
 
 ruleset::symbol ruleset::parse_rule(string rule) {
