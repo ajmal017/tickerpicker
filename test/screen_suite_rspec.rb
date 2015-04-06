@@ -13,7 +13,7 @@ CHECKSUMS = {
 	} 
 
 def run_screen(screen, tickers, date)
-  Dir.chdir("../ui/cmdline")
+  Dir.chdir("../cmdline")
   cmdline = "./screen.rb -t #{tickers.join(',')} -d #{date} -c \"#{screen}\""
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)

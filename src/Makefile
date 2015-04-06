@@ -1,14 +1,46 @@
 CC=g++
-CFLAGS= -I /usr/local/include/ta-lib/ -L/usr/local/lib64/ -lta_lib 
+TAFLAGS= -I /usr/local/include/ta-lib/ -L/usr/local/lib64/ -lta_lib
+CFLAGS= -I data -I indicators -I core
 
-app: indicators other
-	g++ $(CFLAGS) *.o
+app: main.o indicator data core
+	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o main.o 
 
-indicators:
-	$(CC) $(CFLAGS) -c -o indicators.o indicators.cpp
+indicator: indicators.o
 
-other: main.o date.o pdata.o ptable.o ruleset.o rulesorter.o screen.o stock.o
+data: data/date.o data/pdata.o data/ptable.o
+
+core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
+
+main.o : main.cpp
+	$(CC) $(CFLAGS) $(TAFLAGS) -c -o main.o main.cpp
+
+indicators.o: indicators/indicators.cpp
+	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp
+
+data/date.o: data/date.cpp data/date.h
+	$(CC) $(CFLAGS) -c -o ./data/date.o data/date.cpp
+
+data/pdata.o: data/pdata.cpp data/pdata.h
+	$(CC) $(CFLAGS) -c -o ./data/pdata.o data/pdata.cpp
+
+data/ptable.o: data/ptable.cpp data/ptable.h
+	$(CC) $(CFLAGS) -c -o ./data/ptable.o data/ptable.cpp
+
+core/ruleset.o: core/ruleset.cpp core/ruleset.h
+	$(CC) $(CFLAGS) -c -o ./core/ruleset.o core/ruleset.cpp
+
+core/rulesorter.o: core/rulesorter.cpp
+	$(CC) $(CFLAGS) -c -o ./core/rulesorter.o core/rulesorter.cpp
+
+core/screen.o: core/screen.cpp core/screen.h
+	$(CC) $(CFLAGS) -c -o ./core/screen.o core/screen.cpp
+
+core/stock.o: core/stock.cpp core/stock.h
+	$(CC) $(CFLAGS) -c -o ./core/stock.o core/stock.cpp
 
 clean:
-	rm *.o
+	rm indicators/*.o
+	rm core/*.o
+	rm data/*.o
+	rm main.o
 	rm a.out
