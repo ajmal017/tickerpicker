@@ -39,8 +39,10 @@ bool pdata::has_gaps() {
 }
 
 void pdata::concat_history(pdata newdata) {
-  concat_prices(newdata);
-  concat_splits(newdata);
+  if(newdata.size() > 0) {
+    concat_prices(newdata);
+    concat_splits(newdata);
+  }
 }
 
 void pdata::concat_prices(pdata newdata) {

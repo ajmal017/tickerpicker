@@ -9,6 +9,7 @@ CHECKSUMS = {
 	'AAPL' => '9311faba6c4bb734645ee58dfcb0a9e4',
 	'IKAN' => 'cd6305889f082302c865fbe01be716df',
 	'FLEX' => 'c647090608d10ce02fd379cddc031768',
+	'CGNT' => '687d643eeb4ac4bc7982e9be27843a2b',
 	'ABV-C' => '8dd6bb7329a71449b0a1b292b5999164',
 	} 
 
@@ -646,6 +647,12 @@ RSpec.describe "Defect Tests" do
   it "should recognize OBV token with no conflicts" do
     hits = run_screen("OBV > 0;", %w(AAPL), "2015-03-20")
     expect(hits).to match_array(%w(AAPL))
+    expect($?).to eq(0)
+  end
+
+  it "should reject subsequent data pulls without enough data" do
+    hits = run_screen("(((C - MINC260) / MINC260) * 100) > 100;", %w(CGNT), "2015-04-07")
+    expect(hits).to be_empty
     expect($?).to eq(0)
   end
 end
