@@ -632,6 +632,53 @@ RSpec.describe "Indicators" do
   end
 end
 
+RSpec.describe "Logical Operations" do
+  it "AND" do
+    hits = run_screen("1 > 0 AND 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 > 0 AND 2 > 1 AND 3 > 2;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 < 0 AND 2 > 1", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty
+
+    hits = run_screen("1 < 0 AND 2 < 1", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty
+  end
+
+  it "OR" do
+    hits = run_screen("1 > 0 OR 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 > 0 OR 2 > 1 OR 3 > 2;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 < 0 OR 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 < 0 OR 2 < 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty 
+  end
+
+  it "XOR" do
+    hits = run_screen("1 > 0 XOR 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("1 > 0 XOR 2 > 1 XOR 3 > 2;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 > 0 XOR 2 > 1 XOR 3 < 2;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("1 < 0 XOR 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
+
+    hits = run_screen("1 < 0 XOR 2 < 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
+    expect(hits).to be_empty 
+  end
+end
+
 RSpec.describe "Defect Tests" do
   it "splits should be on date less than or equal to" do
     hits = run_screen("C1 = 101.25; O1 = 98.5; H1 = 103.94;", %w(AAPL), "2000-06-21")
@@ -654,5 +701,10 @@ RSpec.describe "Defect Tests" do
     hits = run_screen("(((C - MINC260) / MINC260) * 100) > 100;", %w(CGNT), "2015-04-07")
     expect(hits).to be_empty
     expect($?).to eq(0)
+  end
+
+  it "should evaluate the rvalue of an AND statement as well" do
+    hits = run_screen("C > 0 AND C > 100;", %w(XOM,AAPL,FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
   end
 end

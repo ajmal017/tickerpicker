@@ -99,7 +99,6 @@ void ruleset::eval_symbol(int symidx) {
   cur->evaled = true;
 }
 
-
 void ruleset::eval_op(operation op, svalue* lval, svalue* rval, svalue* cur) {
   switch(op) {
     case ADD:
@@ -118,10 +117,10 @@ void ruleset::eval_op(operation op, svalue* lval, svalue* rval, svalue* cur) {
       cur->bval = (fabs(lval->nval - rval->nval) < EPSILON);
       break;
     case AND:
-      cur->bval = lval->bval && lval->bval;
+      cur->bval = lval->bval && rval->bval;
       break;
     case XOR:
-      cur->bval = lval->bval ^ rval->bval;
+      cur->bval = (lval->bval ? !rval->bval : rval->bval); 
       break;
     case OR:
       cur->bval = lval->bval || rval->bval;
