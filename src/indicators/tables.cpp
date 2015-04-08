@@ -43,6 +43,10 @@ void indicators::init_fntable() {
   fn_table["NATR"] = &indicators::natr;
   fn_table["RSI"] = &indicators::rsi;
   fn_table["OBV"] = &indicators::obv;
+  fn_table["AROON_OSC"] = &indicators::aroon_osc;
+
+  fn_table["ACCELERATION_UPPER"] = &indicators::accl_upper;
+  fn_table["ACCELERATION_LOWER"] = &indicators::accl_lower;
 
   fn_table["BOLLINGER_UPPER"] = &indicators::bollinger_upper;
   fn_table["BOLLINGER_LOWER"] = &indicators::bollinger_lower;
@@ -91,6 +95,10 @@ void indicators::init_lookback_table() {
   lookback_table["RSI"] = &indicators::rsi_lookback;
   lookback_table["OBV"] = &indicators::obv_lookback;
   lookback_table["NATR"] = &indicators::natr_lookback;
+  lookback_table["AROON_OSC"] = &indicators::aroon_osc_lookback;
+
+  lookback_table["ACCELERATION_UPPER"] = &indicators::accl_lookback;
+  lookback_table["ACCELERATION_LOWER"] = &indicators::accl_lookback;
 
   lookback_table["BOLLINGER_UPPER"] = &indicators::bollinger_lookback;
   lookback_table["BOLLINGER_LOWER"] = &indicators::bollinger_lookback;

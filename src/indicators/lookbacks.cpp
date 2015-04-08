@@ -43,6 +43,14 @@ int indicators::avg_true_range_lookback() {
   }
 }
 
+int indicators::accl_lookback() {
+  if(arglist.size() == 0) {
+    return 21;
+  } else {
+    return arglist[0] + 1;
+  }
+}
+
 int indicators::natr_lookback() {
   if(arglist.size() == 0) {
     return TA_ATR_Lookback(14) + 1;
@@ -71,3 +79,10 @@ int indicators::bollinger_lookback() {
   }
 }
 
+int indicators::aroon_osc_lookback() {
+  if(arglist.size() == 0) {
+    return TA_AROONOSC_Lookback(25) + 1;
+  } else {
+    return TA_AROONOSC_Lookback(arglist[0]) + 1;
+  }
+}

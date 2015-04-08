@@ -571,6 +571,79 @@ RSpec.describe "Indicators" do
     expect(hits).to match_array(%w(IKAN))
   end
 
+  it "Acceleration Bands" do
+    hits = run_screen("ACCELERATION_UPPER20 = ACCELERATION_UPPER; ACCELERATION_LOWER20 = ACCELERATION_LOWER;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER = 118.463; ACCELERATION_LOWER = 104.103;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER = 105.673; ACCELERATION_LOWER = 95.34;", %w(AAPL), "2014-10-02")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ACCELERATION_UPPER = 95.091; ACCELERATION_LOWER = 85.574;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 96.374; ACCELERATION_LOWER = 86.699;", %w(XOM), "2015-01-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 100.747; ACCELERATION_LOWER = 94.576;", %w(XOM), "2014-01-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 4.002; ACCELERATION_LOWER = 2.885;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ACCELERATION_UPPER = 4.289; ACCELERATION_LOWER = 2.689;", %w(IKAN), "2015-02-18")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 121.528; ACCELERATION_LOWER80 = 109.575;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 96.953; ACCELERATION_LOWER80 = 87.987;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 100.997; ACCELERATION_LOWER80 = 93.969;", %w(XOM), "2014-10-31")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Aroon Oscillator" do
+    hits = run_screen("AROON_OSC = AROON_OSC25;", %w(AAPL), "2015-02-10")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 96;", %w(AAPL), "2015-02-10")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 56;", %w(AAPL), "2014-09-17")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 96;", %w(AAPL), "2014-08-20")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = -88;", %w(AAPL), "2014-10-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = -96;", %w(XOM), "2015-01-29")
+    expect(hits).to match_array(%w(XOM)) 
+
+    hits = run_screen("AROON_OSC = -48;", %w(XOM), "2014-12-11")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC = 20;", %w(XOM), "2015-01-12")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC50 = -32;", %w(XOM), "2015-01-12")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC50 = 66;", %w(AAPL), "2015-02-25")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC50 = 78;", %w(AAPL), "2014-08-20")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("AROON_OSC50 = 32;", %w(AAPL), "2014-10-16")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
   it "Arithmetic parameter lists" do
     hits = run_screen("ATR30 = ATR(15+15)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))

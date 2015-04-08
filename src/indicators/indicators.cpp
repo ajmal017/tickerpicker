@@ -317,3 +317,55 @@ void indicators::bollinger_values(double *upper, double *lower) {
 
   TA_S_BBANDS(0, prices.size() - 1, c, period, devs, devs, TA_MAType_SMA, &s, &n, upper, &avg, lower); 
 }
+
+float indicators::accl_upper() {
+  float upper, lower;
+  acceleration_bands(&upper, &lower);
+  return upper;
+}
+
+float indicators::accl_lower() {
+  float upper, lower;
+  acceleration_bands(&upper, &lower);
+  return lower;
+}
+
+void indicators::acceleration_bands(float *upper, float *lower) {
+
+  int period = current_prices->size() - 1;
+  float lowersum = 0, uppersum = 0;
+  float factor = 0.001;
+
+  if(arglist.size() > 1) {
+    factor = arglist[1];
+  }
+
+  for(int i = 0; i < period; i++) {
+    float low = current_prices->low[i];
+    float high = current_prices->high[i];
+    uppersum += ((high * (1 + 2 * (((high - low)/((high + low) /2)) * 1000) * factor)));
+    lowersum += ((low * (1 - 2 * (((high - low) / ((high + low) / 2)) * 1000) * factor)));
+  }
+
+  *upper = uppersum / period;
+  *lower = lowersum / period;
+}
+
+float indicators::aroon_osc() {
+  int period = aroon_osc_lookback() - 1;
+
+  vector<float> highs = current_prices->high;
+  vector<float> lows = current_prices->low;
+
+  std::reverse(highs.begin(), highs.end());
+  std::reverse(lows.begin(), lows.end());
+
+  float *h = &(*highs.begin());
+  float *l = &(*lows.begin());
+
+  double rval;
+  int ostart, onum;
+
+  TA_S_AROONOSC(0, period, h, l, period, &ostart, &onum, &rval);
+  return (float) rval;
+}

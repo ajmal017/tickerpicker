@@ -34,11 +34,13 @@ class indicators {
   int obv_lookback();
   int roc_lookback();
   int ema_lookback();
+  int accl_lookback();
   int natr_lookback();
   int ohlcv_lookback();
   int absval_lookback();
   int identity_lookback();
   int bollinger_lookback();
+  int aroon_osc_lookback();
   int avg_true_range_lookback();
   
   //actual indicator functions
@@ -61,6 +63,7 @@ class indicators {
   float wmal();
   float wmav();
   float natr();
+  float aroon_osc();
   float volume_at();
   float close_at();
   float open_at();
@@ -77,12 +80,15 @@ class indicators {
   float min_close();
   float min_volume();
   float abs_value();
+  float accl_upper();
+  float accl_lower();
   float avg_true_range();
   float bollinger_upper();
   float bollinger_lower();
   float sma(vector<float>);
   float wma(vector<float>);
   float eavg(vector<float>);
+  void acceleration_bands(float*, float*);
   void bollinger_values(double*, double*);
   float internal_minval(vector<float>, int);
   float internal_maxval(vector<float>, int);
