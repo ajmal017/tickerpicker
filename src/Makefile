@@ -50,3 +50,11 @@ clean:
 	rm data/*.o
 	rm main.o
 	rm a.out
+
+test:
+	mv ptabs ptabs.prod
+	mv ptabs.test ptabs
+
+prod:
+	mv ptabs ptabs.test
+	mv ptabs.prod ptabs
