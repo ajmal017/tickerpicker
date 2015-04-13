@@ -4,7 +4,7 @@
 #include "date.h"
 
 const short date::MONTH_LENGTHS[] = {-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-const short date::MONTH_CODES[] = {0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
+const short date::MONTH_CODES[] = {-1, 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 
 date::date(string s) {
   int y, m, d;
@@ -92,7 +92,7 @@ void date::prev_business_day() {
 int date::day_of_week() {
   int y = year; //year isn't always preserved
   y -= month < 3;
-  return (y + y/4 - y/100 + y/400 + MONTH_CODES[month-1] + day) % 7;
+  return (y + ((97*y)/400) + MONTH_CODES[month] + day) % 7;
 }
 
 bool date::is_weekday() {
@@ -147,8 +147,7 @@ int date::diff_days(date other) {
 //translated from https://gmbabar.wordpress.com/2010/12/01/mktime-slow-use-custom-function/
 
 time_t date::time_to_epoch (const struct tm *ltm) {
-   const int mon_days [] =
-      {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+   const int mon_days [] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
    long tyears, tdays, leaps, utc_hrs;
    int i;
 
@@ -168,11 +167,14 @@ time_t date::time_to_epoch (const struct tm *ltm) {
 //Translated from internet sources:
 //http://alecpojidaev.wordpress.com/2009/10/29/work-days-calculation-with-c/
 //http://stackoverflow.com/questions/1617049/calculate-the-number-of-business-days-between-two-dates
+//and then modified to avoid repeated calls to day_of_week, a runtime hotspot
 
 int date::diff_bdays(date other) {
-  int diff = 1 + (diff_days(other) * 5 - (other.day_of_week() - day_of_week()) * 2) / 7;
-  if (day_of_week() == 6) diff--;
-  if (other.day_of_week() == 0) diff--;
+  int thisday = day_of_week();
+  int otherday = other.day_of_week();
+  int diff = 1 + (diff_days(other) * 5 - (otherday - thisday) * 2) / 7;
+  if (thisday == 6) diff--;
+  if (otherday == 0) diff--;
   return diff;
 }
 
