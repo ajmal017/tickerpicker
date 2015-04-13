@@ -28,10 +28,16 @@ bool pdata::has_gaps() {
 
   for(int i = 1; i < date.size(); i++) {
     ::date day2(date[i]);
+
+    if(day2.getmonth() == day1.getmonth() && (day1.getday() - day2.getday()) == 1) {
+      goto done;
+    }
+
     if(day1.diff_bdays(day2) > MAX_GAP) {
       return true;
     }
 
+done:
     day1 = day2;
   }
 
