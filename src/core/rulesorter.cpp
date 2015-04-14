@@ -56,6 +56,12 @@ int ruleset_sort::lookback_for(symbol cur) {
     return function_value(cur);
   }
 
+  if(cur.op == SHIFT) {
+    symbol arg = table[cur.arglist[1]];
+    symbol look = table[cur.arglist[0]];
+    return lookback_for(arg) + look.value;
+  }
+
   //if we're here, then we're dealing
   //with one of the arithmetic or logical ops
   return greater_value(cur);

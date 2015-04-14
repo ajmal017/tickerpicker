@@ -1,0 +1,815 @@
+require 'digest/md5'
+
+HOMEDIR = Dir.pwd
+CHECKSUMS = {
+	'XOM' => '476e204633ab2f656be1dae36658cd17', 
+	'IWM' => '509877764a69ef70773c7adfdbe5b40b', 
+	'HBI' => 'b8313f5d4da3e2af92a312f815b730e8',
+	'ABD' => 'b1ff397823c133d21d81b9fb12c73b57',
+	'AAPL' => '9311faba6c4bb734645ee58dfcb0a9e4',
+	'IKAN' => 'cd6305889f082302c865fbe01be716df',
+	'FLEX' => 'c647090608d10ce02fd379cddc031768',
+	'CGNT' => '687d643eeb4ac4bc7982e9be27843a2b',
+	'ABV-C' => '8dd6bb7329a71449b0a1b292b5999164',
+	} 
+
+def run_screen(screen, tickers, date)
+  Dir.chdir("../cmdline")
+  cmdline = "./screen.rb -t #{tickers.join(',')} -d #{date} -c \"#{screen}\""
+  output = `#{cmdline}`
+  Dir.chdir(HOMEDIR)
+  output.split 
+end
+
+RSpec.describe "Indicators" do
+
+  before(:each) do
+   Dir.chdir(HOMEDIR)
+  end
+
+  it "ptab files are free of corruption" do
+    CHECKSUMS.each do |t, x|
+      md5 = Digest::MD5.hexdigest(File.read("./testdata/#{t}.ptab"))
+      expect(md5).to eq(x)
+    end
+  end
+
+  it "Absolute Value" do
+    hits = run_screen("ABS(1) = ABS(1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(1) = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("1 = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(ROC20) = 2.941;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("-1 * ABS(ROC20) = -2.941;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Minimum Close" do
+    hits = run_screen("MINC50 = 1.61;", %w(IKAN), "2010-01-12")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("MINC200 = 1.03;", %w(IKAN), "2009-09-15")
+    expect(hits).to match_array(%w(IKAN))
+    
+    hits = run_screen("MINC100 = 50.67;", %w(AAPL), "2006-09-26")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINC20 = 13.12;", %w(AAPL), "2003-05-08")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Maximum Close" do
+    hits = run_screen("MAXC50 = 567.90;", %w(AAPL), "2013-12-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC260 = 702.10;", %w(AAPL), "2012-10-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC100 = 636.23;", %w(AAPL), "2012-05-18")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXC50 = 1.5;", %w(IKAN), "2012-11-14")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("MAXC300 = 3.41;", %w(IKAN), "2010-07-01")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Average Volume" do
+    hits = run_screen("AVGV20 = 58827025;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV200 = 19129470;", %w(AAPL), "2012-12-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV100 = 20846127;", %w(AAPL), "2011-11-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGV21 = 24065034;", %w(XOM), "2012-06-25")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGV50 = 20625078;", %w(XOM), "2012-01-03")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Average True Range" do
+    hits = run_screen("ATR = ATR14", %w(AAPL XOM IKAN), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL XOM IKAN))
+
+    hits = run_screen("ATR > 2.86; ATR < 2.87;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 > 2.57; ATR20 < 2.58;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR50 > 2.804; ATR50 < 2.805;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR50 = 6.0008;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR20 > 5.623; ATR20 < 5.624;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR > 5.7971; ATR < 5.7972;", %w(AAPL), "2010-11-17")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ATR > 1.0564; ATR < 1.0565;", %w(XOM), "2015-03-13")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ATR20 > 2.025; ATR20 < 2.026;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ATR50 > 2.018; ATR50 < 2.019;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Relative Strength Index" do
+    hits = run_screen("RSI = RSI14", %w(AAPL XOM IKAN), "2013-09-17")
+    expect(hits).to match_array(%w(AAPL XOM IKAN))
+
+    hits = run_screen("RSI > 38.860; RSI < 38.861;", %w(AAPL), "2013-09-17")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI > 55.38; RSI < 55.39;", %w(AAPL), "2005-12-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI40 > 44.636; RSI40 < 44.637;", %w(AAPL), "2014-02-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI40 > 64.186; RSI40 < 64.187;", %w(AAPL), "2012-09-21")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI > 51.8; RSI < 51.9;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("RSI50 > 47.9; RSI50 < 48;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("RSI100 > 48.02; RSI100 < 48.03;", %w(XOM), "2015-01-21")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Simple Moving Average" do
+    hits = run_screen("AVGC20 = 545.037;", %w(AAPL), "2014-01-28")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 > 483.11; AVGC200 < 483.13;", %w(AAPL), "2014-01-28")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("AVGC20 = 38.3225;", %w(AAPL), "2004-10-13")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 = 29.0594;", %w(AAPL), "2004-10-13")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC200 = 97.9015;", %w(XOM), "2014-11-10")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC20 = 93.9135;", %w(XOM), "2014-11-10")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC200 = 67.497;", %w(XOM), "2010-07-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AVGC20 = 60.388;", %w(XOM), "2010-07-02")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Exponential Moving Average" do
+    hits = run_screen("EMAC100 > 91.54; EMAC100 < 91.55;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC50 > 93.02; EMAC50 < 93.03;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC20 > 95.25; EMAC20 < 95.26;", %w(XOM), "2013-12-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("EMAC20 > 1.35; EMAC20 < 1.36;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("EMAC50 > 1.18; EMAC50 < 1.19;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("EMAC200 > 0.983; EMAC200 < 0.984;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Weighted Moving Average" do
+    hits = run_screen("WMAC200 > 0.963; WMAC200 < 0.964;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC50 > 1.237; WMAC50 < 1.238;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC100 > 1.084; WMAC100 < 1.085;", %w(IKAN), "2012-10-17")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("WMAC50 > 11.724; WMAC50 < 11.725;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+
+    hits = run_screen("WMAC200 > 10.07; WMAC200 < 10.08;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+
+    hits = run_screen("WMAC300 > 9.34; WMAC300 < 9.35;", %w(ABD), "2012-04-30")
+    expect(hits).to match_array(%w(ABD))
+  end
+
+  it "Normalized Average True Range" do
+    hits = run_screen("NATR > 3.85; NATR < 3.86;", %w(AAPL), "2012-04-30")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("NATR > 1.864; NATR < 1.865;", %w(AAPL), "2010-08-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR30 > 2.993; NATR30 < 2.994;", %w(AAPL), "2013-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR30 > 1.632; NATR30 < 1.633;", %w(AAPL), "2014-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR > 2.22; NATR < 2.23;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("NATR > 1.738; NATR < 1.739;", %w(XOM), "2009-08-11")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("NATR50 > 2.076; NATR50 < 2.077;", %w(XOM), "2009-08-11")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Rate Of Change" do
+    hits = run_screen("ROC12 = ROC;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 > 10.18; ROC20 < 10.19;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC50 > 20.92; ROC50 < 20.93;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 < -2.941; ROC20 > -2.942;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ROC50 > 3.12; ROC50 < 3.13;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Bollinger Bands" do
+    hits = run_screen("BOLLINGER_UPPER = BOLLINGER_UPPER20,2; BOLLINGER_LOWER = BOLLINGER_LOWER20,2;", %w(XOM), "2013-12-31")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("BOLLINGER_UPPER = 135.102; BOLLINGER_LOWER = 116.125;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 572.97; BOLLINGER_LOWER = 545.865;", %w(AAPL), "2014-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER50,2 = 712.389; BOLLINGER_LOWER50,2 = 605.522;", %w(AAPL), "2012-10-31")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER20,2 = 1.33; BOLLINGER_LOWER20,2 = 1.135;", %w(IKAN), "2013-12-31")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("BOLLINGER_UPPER50,2 = 1.396; BOLLINGER_LOWER50,2 = 1.081;", %w(IKAN), "2013-12-31")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Acceleration Bands" do
+    hits = run_screen("ACCELERATION_UPPER20 = ACCELERATION_UPPER; ACCELERATION_LOWER20 = ACCELERATION_LOWER;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER = 118.463; ACCELERATION_LOWER = 104.103;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER = 105.673; ACCELERATION_LOWER = 95.34;", %w(AAPL), "2014-10-02")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("ACCELERATION_UPPER = 95.091; ACCELERATION_LOWER = 85.574;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 96.374; ACCELERATION_LOWER = 86.699;", %w(XOM), "2015-01-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 100.747; ACCELERATION_LOWER = 94.576;", %w(XOM), "2014-01-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER = 4.002; ACCELERATION_LOWER = 2.885;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ACCELERATION_UPPER = 4.289; ACCELERATION_LOWER = 2.689;", %w(IKAN), "2015-02-18")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 121.528; ACCELERATION_LOWER80 = 109.575;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 96.953; ACCELERATION_LOWER80 = 87.987;", %w(XOM), "2015-02-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("ACCELERATION_UPPER80 = 100.997; ACCELERATION_LOWER80 = 93.969;", %w(XOM), "2014-10-31")
+    expect(hits).to match_array(%w(XOM))
+  end
+
+  it "Aroon Oscillator" do
+    hits = run_screen("AROON_OSC = AROON_OSC25;", %w(AAPL), "2015-02-10")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 96;", %w(AAPL), "2015-02-10")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 56;", %w(AAPL), "2014-09-17")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = 96;", %w(AAPL), "2014-08-20")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = -88;", %w(AAPL), "2014-10-16")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC = -96;", %w(XOM), "2015-01-29")
+    expect(hits).to match_array(%w(XOM)) 
+
+    hits = run_screen("AROON_OSC = -48;", %w(XOM), "2014-12-11")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC = 20;", %w(XOM), "2015-01-12")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC50 = -32;", %w(XOM), "2015-01-12")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AROON_OSC50 = 66;", %w(AAPL), "2015-02-25")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC50 = 78;", %w(AAPL), "2014-08-20")
+    expect(hits).to match_array(%w(AAPL)) 
+
+    hits = run_screen("AROON_OSC50 = 32;", %w(AAPL), "2014-10-16")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Arithmetic parameter lists" do
+    hits = run_screen("ATR30 = ATR(15+15)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(10+10+10)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(15*2)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(10*3)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR30 = ATR(5*6)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ATR50 = ATR(15+15)", %w(AAPL XOM FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(10+10+10)", %w(AAPL XOM FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(15*2)", %w(AAPL XOM FLEX), "2015-01-02")
+    expect(hits).to be_empty
+
+    hits = run_screen("ATR50 = ATR(10*3)", %w(AAPL XOM FLEX), "2015-01-02")
+    expect(hits).to be_empty 
+
+    hits = run_screen("ATR50 = ATR(5*6)", %w(AAPL XOM FLEX), "2015-01-02")
+    expect(hits).to be_empty
+  end
+
+  it "Indicators have no side effects" do
+    hits = run_screen("ROC10 = 1.581; NATR20 = 1.722; ATR50 = 2.643; EMAC70 = 116.935;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 = 4.452; NATR20 = 3.147; ATR20 = 11.761; EMAC20 = 374.782;", %w(AAPL), "2011-08-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC20 = 4.452; NATR30 = 2.712; ATR40 = 9.739; EMAC50 = 363.294;", %w(AAPL), "2011-08-11")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC7 = -2.272; NATR21 = 9.191; ATR36 = 0.04; EMAC42 = 0.499;", %w(IKAN), "2014-07-03")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("ROC10 = 15.529; NATR23 = 4.96; ATR36 = 1.197;", %w(IKAN), "2006-02-17")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Indicators are order insensitive" do
+    hits = run_screen("NATR20 = 1.722; EMAC70 = 116.935; ATR50 = 2.643; ROC10 = 1.581;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR50 = 2.643; NATR20 = 1.722; ROC10 = 1.581; EMAC70 = 116.935;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAC70 = 116.935; ATR50 = 2.643; NATR20 = 1.722; ROC10 = 1.581;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+end
+
+RSpec.describe "Timeframe shifting" do
+
+  it "Shifts OHLCV data" do
+    hits = run_screen("C = 119.94; C10 = 112.4; DAYS_AGO(10, C) = 112.4;", %w(AAPL), "2015-02-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("C = 126.41; C30 = 109.55; DAYS_AGO(30, C) = 109.55;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("O = 128.58; O15 = 122.77; DAYS_AGO(15, O) = 122.77;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("O = 108.29; O24 = 119.27; DAYS_AGO(24, O) = 119.27;", %w(AAPL), "2015-01-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("H = 120; H10 = 110.06; DAYS_AGO(10, H) = 110.06;", %w(AAPL), "2015-02-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("H = 111.06; H9 = 108.20; DAYS_AGO(9, H) = 108.20;", %w(AAPL), "2015-01-21")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("L = 109.03; L4 = 108.27; DAYS_AGO(4, L) = 108.27;", %w(AAPL), "2015-01-27")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("L = 126.92; L13 = 115.31; DAYS_AGO(13, L) = 115.31;", %w(AAPL), "2015-02-17")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("V = 41128100; V20 = 59075100; DAYS_AGO(20, V) = 59075100;", %w(AAPL), "2014-12-31")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("V = 85708100; V30 = 34934000; DAYS_AGO(30, V) = 34934000;", %w(AAPL), "2014-12-19")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts maximum and minimum values" do
+    hits = run_screen("MAXC20 = 133; DAYS_AGO(10, MAXC20) = 128.72;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXH20 = 133.60; DAYS_AGO(10, MAXH20) = 129.03;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXL20 = 131.16; DAYS_AGO(10, MAXL20) = 128.33;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXO20 = 132.94; DAYS_AGO(10, MAXO20) = 128.47;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINC20 = 118.93; DAYS_AGO(10, MINC20) = 109.14;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINH20 = 119.84; DAYS_AGO(10, MINH20) = 111.06;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINL20 = 118.31; DAYS_AGO(10, MINL20) = 108.27;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINO20 = 118.5; DAYS_AGO(10, MINO20) = 108.95;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts simple averages" do
+    hits = run_screen("AVGC20 = 126.987; DAYS_AGO(10, AVGC20) = 119.993;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC20 = 126.987; DAYS_AGO(20, AVGC20) = 112.392;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGO20 = 101.493; DAYS_AGO(10, AVGO20) = 100.013;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGO20 = 101.493; DAYS_AGO(15, AVGO20) = 100.567;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGL10 = 111.077; DAYS_AGO(15, AVGL10) = 109.284;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGL10 = 128.287; DAYS_AGO(15, AVGL10) = 115.925;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGH15 = 113.542; DAYS_AGO(15, AVGH15) = 112.191", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGH30 = 112.867; DAYS_AGO(5, AVGH30) = 111.81", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts simple averages with different timeframes" do
+    hits = run_screen("AVGC20 = 126.987; DAYS_AGO(10, AVGC50) = 114.212;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGC20 = 126.987; DAYS_AGO(20, AVGC50) = 112.667;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGO20 = 101.493; DAYS_AGO(10, AVGO50) = 99.753;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGO20 = 101.493; DAYS_AGO(15, AVGO50) = 99.405;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGL10 = 111.077; DAYS_AGO(15, AVGL50) = 110.752;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGL10 = 128.287; DAYS_AGO(15, AVGL50) = 111.568;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGH15 = 113.542; DAYS_AGO(15, AVGH50) = 113.137;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AVGH30 = 112.867; DAYS_AGO(5, AVGH50) = 113.639;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts exponential moving averages" do
+    hits = run_screen("EMAC20 = 126.251; DAYS_AGO(10, EMAC20) = 121.167;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAC20 = 126.251; DAYS_AGO(20, EMAC20) = 113.917;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAO20 = 102.561; DAYS_AGO(10, EMAO20) = 99.651;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAO20 = 102.561; DAYS_AGO(15, EMAO20) = 100.134;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAL10 = 112.366; DAYS_AGO(15, EMAL10) = 108.487;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAL10 = 127.275; DAYS_AGO(15, EMAL10) = 116.042;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAL10 = 113.04; DAYS_AGO(15, EMAL10) = 108.802;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAH30 = 113.642; DAYS_AGO(5, EMAH30) = 111.919;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts exponential averages with different timeframes" do
+    hits = run_screen("EMAC20 = 126.251; DAYS_AGO(10, EMAC50) = 116.082;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAC20 = 126.251; DAYS_AGO(20, EMAC50) = 111.792;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    #time shifted value is not even *close*, wtf?
+    hits = run_screen("EMAO20 = 102.561; DAYS_AGO(10, EMAO50) = 98.976", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    #...and again....
+    hits = run_screen("EMAO20 = 102.561; DAYS_AGO(15, EMAO50) = 98.955;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+ 
+    #....and again
+    hits = run_screen("EMAL10 = 112.366; DAYS_AGO(15, EMAL50) = 108.927;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("EMAL10 = 127.275; DAYS_AGO(15, EMAL50) = 111.226;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    #more bullshit....
+    hits = run_screen("EMAL10 = 113.04; DAYS_AGO(15, EMAL50) = 108.977;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts weighted moving averages" do
+    hits = run_screen("WMAC20 = 128.523; DAYS_AGO(10, WMAC20) = 122.954;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAC20 = 128.523; DAYS_AGO(20, WMAC20) = 114.187;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAO20 = 102.737; DAYS_AGO(10, WMAO20) = 99.570;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAO20 = 102.737; DAYS_AGO(15, WMAO20) = 100.187;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 112.919; DAYS_AGO(15, WMAL10) = 108.054;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 128.388; DAYS_AGO(15, WMAL10) = 117.223;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 113.829; DAYS_AGO(15, WMAL10) = 108.222;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAH30 = 113.453; DAYS_AGO(5, WMAH30) = 111.606;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts weighted moving averages with different timeframes" do
+    hits = run_screen("WMAC20 = 128.523; DAYS_AGO(10, WMAC50) = 116.751;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAC20 = 128.523; DAYS_AGO(20, WMAC50) = 112.318;", %w(AAPL), "2015-03-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAO20 = 102.737; DAYS_AGO(10, WMAO50) = 100.109;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAO20 = 102.737; DAYS_AGO(15, WMAO50) = 100.186;", %w(AAPL), "2014-10-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 112.919; DAYS_AGO(15, WMAL50) = 110.808;", %w(AAPL), "2015-01-30")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 128.388; DAYS_AGO(15, WMAL50) = 111.678;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAL10 = 113.829; DAYS_AGO(15, WMAL50) = 110.786;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("WMAH30 = 113.453; DAYS_AGO(5, WMAH50) = 112.526;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Relative Strength Index" do
+    hits = run_screen("RSI10 = 61.2281; DAYS_AGO(15, RSI10) = 63.2306;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI10 = 64.472; DAYS_AGO(10, RSI10) = 36.223;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI10 = 39.113; DAYS_AGO(15, RSI10) = 42.7291;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI10 = 61.2281; DAYS_AGO(15, RSI20) = 59.829;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI10 = 64.472; DAYS_AGO(10, RSI20) = 42.1219;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("RSI10 = 39.113; DAYS_AGO(15, RSI20) = 51.647;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Average True Range" do
+    hits = run_screen("ATR20 = 2.224; DAYS_AGO(10, ATR20) = 2.772;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 = 3.361; DAYS_AGO(10, ATR20) = 2.603;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 = 2.623; DAYS_AGO(10, ATR20) = 2.89;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 = 2.224; DAYS_AGO(10, ATR40) = 2.706;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 = 3.361; DAYS_AGO(10, ATR40) = 2.746;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ATR20 = 2.623; DAYS_AGO(10, ATR40) = 2.262;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Rate of Change" do
+    hits = run_screen("ROC10 = 1.581; DAYS_AGO(12, ROC10) = 8.299;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC10 = 11.9257; DAYS_AGO(12, ROC10) = -2.417;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC10 = -0.073; DAYS_AGO(12, ROC10) = -5.944;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC10 = 1.581; DAYS_AGO(12, ROC20) = 13.30;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC10 = 11.9257; DAYS_AGO(12, ROC20) = 1.450;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ROC10 = -0.073; DAYS_AGO(12, ROC20) = -5.211;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Aroon Oscillator" do
+    hits = run_screen("AROON_OSC20 = 75; DAYS_AGO(8, AROON_OSC20) = 95;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = 85; DAYS_AGO(8, AROON_OSC20) = -25;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = -40; DAYS_AGO(20, AROON_OSC20) = 75;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = 75; DAYS_AGO(8, AROON_OSC40) = 70;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = 85; DAYS_AGO(8, AROON_OSC40) = -67.5;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = -40; DAYS_AGO(8, AROON_OSC40) = 57.5;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AROON_OSC20 = -40; DAYS_AGO(20, AROON_OSC40) = 72.5;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Bollinger Bands" do
+    hits = run_screen("BOLLINGER_UPPER = 116.273; DAYS_AGO(10, BOLLINGER_UPPER) = 121.047", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 118.892; DAYS_AGO(10, BOLLINGER_UPPER) = 115.545;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 135.102; DAYS_AGO(10, BOLLINGER_UPPER) = 128.585;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 116.273; DAYS_AGO(10, BOLLINGER_UPPER40,2) = 119.992;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 118.892; DAYS_AGO(10, BOLLINGER_UPPER40,2) = 119.388;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_UPPER = 135.102; DAYS_AGO(10, BOLLINGER_UPPER40,2) = 124.7;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 107.402; DAYS_AGO(8, BOLLINGER_LOWER) = 106.819;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 103.321; DAYS_AGO(8, BOLLINGER_LOWER) = 105.077;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 116.125; DAYS_AGO(8, BOLLINGER_LOWER) = 107.584;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 107.402; DAYS_AGO(8, BOLLINGER_LOWER40,2) = 104.175;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 103.321; DAYS_AGO(8, BOLLINGER_LOWER40,2) = 104.851;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("BOLLINGER_LOWER = 116.125; DAYS_AGO(8, BOLLINGER_LOWER40,2) = 102.121;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Normalized Average True Range" do
+    hits = run_screen("NATR20 = 1.7228; DAYS_AGO(10, NATR20) = 2.1817;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR20 = 2.8336; DAYS_AGO(10, NATR20) = 2.456;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))   
+    
+    hits = run_screen("NATR20 = 2.399; DAYS_AGO(10, NATR20) = 2.641;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR20 = 1.7228; DAYS_AGO(10, NATR50) = 2.185;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR20 = 2.8336; DAYS_AGO(10, NATR50) = 2.413;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("NATR20 = 2.399; DAYS_AGO(10, NATR50) = 2.107;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Acceleration Bands" do
+    hits = run_screen("ACCELERATION_UPPER30 = 126.841; DAYS_AGO(12, ACCELERATION_UPPER30) = 119.911;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ACCELERATION_UPPER30 = 118.031; DAYS_AGO(12, ACCELERATION_UPPER30) = 118.154;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_UPPER30 = 119.971; DAYS_AGO(12, ACCELERATION_UPPER30) = 119.182;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_UPPER30 = 126.841; DAYS_AGO(12, ACCELERATION_UPPER80) = 117.551;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_UPPER30 = 118.031; DAYS_AGO(12, ACCELERATION_UPPER80) = 113.652;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_UPPER30 = 119.971; DAYS_AGO(12, ACCELERATION_UPPER80) =  110.843;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 115.281; DAYS_AGO(12, ACCELERATION_LOWER30) = 106.824;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 105.284; DAYS_AGO(12, ACCELERATION_LOWER30) = 105.057;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 107.407; DAYS_AGO(12, ACCELERATION_LOWER30) = 107.334;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 115.281; DAYS_AGO(12, ACCELERATION_LOWER80) = 106.189;", %w(AAPL), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 105.284; DAYS_AGO(12, ACCELERATION_LOWER80) = 102.774;", %w(AAPL), "2015-02-02")
+    expect(hits).to match_array(%w(AAPL))
+    
+    hits = run_screen("ACCELERATION_LOWER30 = 107.407; DAYS_AGO(12, ACCELERATION_LOWER80) = 100.7;", %w(AAPL), "2015-01-02")
+    expect(hits).to match_array(%w(AAPL))
+  end
+end

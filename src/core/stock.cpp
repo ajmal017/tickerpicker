@@ -12,14 +12,15 @@ void stock::onday(date d) {
   history.clear();
 }
 
-float stock::eval_indicator(string indicator, vector<float> args) {
-  int pull_len = icore.eval_lookback(indicator, args);
+float stock::eval_indicator(string indicator, vector<float> args, int offset) {
+  int pull_len = icore.eval_lookback(indicator, args) + offset;
+
 
   if(pull_len > 0) {
     pull_history(pull_len); 
   }
 
-  return icore.eval_indicator(indicator, args, &history);
+  return icore.eval_indicator(indicator, args, &history, offset);
 }
 
 void stock::pull_history(int pull_len) {

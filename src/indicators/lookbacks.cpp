@@ -18,6 +18,14 @@ int indicators::identity_lookback(indicators* thisptr) {
   return ((int) thisptr->arglist[0]);
 }
 
+int indicators::minimax_lookback(indicators* thisptr) {
+  if(thisptr->arglist.size() == 0) {
+    return 1;
+  } else {
+    return thisptr->arglist[0] + 1;
+  }
+}
+
 int indicators::rsi_lookback(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
     return TA_RSI_Lookback(14) * 4;

@@ -78,10 +78,10 @@ RSpec.describe "Legacy Suite" do
     expect(hits).to match_array(%w(AAME))   
 
     hits = run_screen(test425803.gsub("\n", ""), %w(FISI WMG), "2011-02-01")
-    expect(hits).to be_empty 
+    expect(hits).to match_array(%w(FISI))
 
     hits = run_screen(test746722.gsub("\n", ""), %w(FISI WMG), "2011-02-01")
-    expect(hits).to be_empty
+    expect(hits).to match_array(%w(FISI))
   end
 
   it "discards data with gaps in it" do

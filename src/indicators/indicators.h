@@ -17,10 +17,11 @@ class indicators {
 
   indicators();
   int eval_lookback(std::string, std::vector<float>);
-  float eval_indicator(std::string, std::vector<float>, pdata*);
+  float eval_indicator(std::string, std::vector<float>, pdata*, int offset=0);
 
   private:
 
+  int offset;
   pdata *current_prices;
   std::vector<float> arglist;
   static std::map<std::string, float (*)(indicators*)> fn_table;
@@ -38,6 +39,7 @@ class indicators {
   static int natr_lookback(indicators*);
   static int ohlcv_lookback(indicators*);
   static int absval_lookback(indicators*);
+  static int minimax_lookback(indicators*);
   static int identity_lookback(indicators*);
   static int bollinger_lookback(indicators*);
   static int aroon_osc_lookback(indicators*);
@@ -89,9 +91,9 @@ class indicators {
   static float wma(indicators*, vector<float>);
   static float eavg(indicators*, vector<float>);
   static void acceleration_bands(indicators*,float*, float*);
-  static void bollinger_values(indicators*,double*, double*);
-  static float internal_minval(vector<float>, int);
-  static float internal_maxval(vector<float>, int);
+  static void bollinger_values(indicators*,double*, double*, int*);
+  static float internal_minval(indicators*, vector<float>);
+  static float internal_maxval(indicators*, vector<float>);
 };
 
 #endif

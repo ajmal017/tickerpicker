@@ -11,8 +11,9 @@ indicators::indicators() {
   }
 }
 
-float indicators::eval_indicator(std::string indicator, std::vector<float> args, pdata* data) {
+float indicators::eval_indicator(std::string indicator, std::vector<float> args, pdata* data, int offset) {
   arglist = args;
+  this->offset = offset;
   current_prices = data;
   return (*fn_table[indicator])(this);
 }
@@ -23,100 +24,104 @@ float indicators::abs_value(indicators* thisptr) {
 
 float indicators::volume_at(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
-    return thisptr->current_prices->volume[0];
+    return thisptr->current_prices->volume[thisptr->offset];
   } else {
     int idx = (int) thisptr->arglist[0];
-    return thisptr->current_prices->volume[idx];
+    return thisptr->current_prices->volume[idx + thisptr->offset];
   }
 }
 
 float indicators::close_at(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
-    return thisptr->current_prices->close[0];
+    return thisptr->current_prices->close[thisptr->offset];
   } else {
     int idx = (int) thisptr->arglist[0];
-    return thisptr->current_prices->close[idx];
+    return thisptr->current_prices->close[idx + thisptr->offset];
   }
 }
 
 float indicators::open_at(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
-    return thisptr->current_prices->open[0];
+    return thisptr->current_prices->open[thisptr->offset];
   } else {
     int idx = (int) thisptr->arglist[0];
-    return thisptr->current_prices->open[idx];
+    return thisptr->current_prices->open[idx + thisptr->offset];
   }
 }
 
 float indicators::high_at(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
-    return thisptr->current_prices->high[0];
+    return thisptr->current_prices->high[thisptr->offset];
   } else {
     int idx = (int) thisptr->arglist[0];
-    return thisptr->current_prices->high[idx];
+    return thisptr->current_prices->high[idx + thisptr->offset];
   }
 }
 
 float indicators::low_at(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
-    return thisptr->current_prices->low[0];
+    return thisptr->current_prices->low[thisptr->offset];
   } else {
     int idx = (int) thisptr->arglist[0];
-    return thisptr->current_prices->low[idx];
+    return thisptr->current_prices->low[idx + thisptr->offset];
   }
 }
 
 float indicators::max_open(indicators* thisptr) {
-  return indicators::internal_maxval(thisptr->current_prices->open, (int)thisptr->arglist[0]);
+  return indicators::internal_maxval(thisptr, thisptr->current_prices->open);
 }
 
 float indicators::max_high(indicators* thisptr) {
-  return indicators::internal_maxval(thisptr->current_prices->high, (int)thisptr->arglist[0]);
+  return indicators::internal_maxval(thisptr, thisptr->current_prices->high);
 }
 
 float indicators::max_low(indicators* thisptr) {
-  return indicators::internal_maxval(thisptr->current_prices->low, (int)thisptr->arglist[0]);
+  return indicators::internal_maxval(thisptr, thisptr->current_prices->low);
 }
 
 float indicators::max_close(indicators* thisptr) {
-  return indicators::internal_maxval(thisptr->current_prices->close, (int)thisptr->arglist[0]);
+  return indicators::internal_maxval(thisptr, thisptr->current_prices->close);
 }
 
 float indicators::max_volume(indicators* thisptr) {
 }
 
 float indicators::min_open(indicators* thisptr) {
-  return indicators::internal_minval(thisptr->current_prices->open, (int)thisptr->arglist[0]);
+  return indicators::internal_minval(thisptr, thisptr->current_prices->open);
 }
 
 float indicators::min_high(indicators* thisptr) {
-  return indicators::internal_minval(thisptr->current_prices->high, (int)thisptr->arglist[0]);
+  return indicators::internal_minval(thisptr, thisptr->current_prices->high);
 }
 
 float indicators::min_low(indicators* thisptr) {
-  return indicators::internal_minval(thisptr->current_prices->low, (int)thisptr->arglist[0]);
+  return indicators::internal_minval(thisptr, thisptr->current_prices->low);
 }
 
 float indicators::min_close(indicators* thisptr) {
-  return indicators::internal_minval(thisptr->current_prices->close, (int)thisptr->arglist[0]);
+  return indicators::internal_minval(thisptr, thisptr->current_prices->close);
 }
 
 float indicators::min_volume(indicators* thisptr) {
   //return internal_minval(thisptr->current_prices->volume, (int)thisptr->arglist[0]);
 }
 
-float indicators::internal_minval(std::vector<float> series, int size) {
+float indicators::internal_minval(indicators* thisptr, std::vector<float> series) {
   std::vector<float>::iterator result;
-  result = std::min_element(series.begin(), series.end());
-  int offset = std::distance(series.begin(), result);
-  return series[offset];
+  std::vector<float>::iterator start = series.begin() + thisptr->offset;
+  std::vector<float>::iterator end = start + thisptr->arglist[0] + 1;
+  result = std::min_element(start, end);
+  int offset = std::distance(start, result);
+  return series[thisptr->offset + offset];
 }
 
-float indicators::internal_maxval(std::vector<float> series, int size) {
+float indicators::internal_maxval(indicators* thisptr, std::vector<float> series) {
   std::vector<float>::iterator result;
-  result = std::max_element(series.begin(), series.end());
-  int offset = std::distance(series.begin(), result);
-  return series[offset];
+  std::vector<float>::iterator start = series.begin() + thisptr->offset;
+  std::vector<float>::iterator end = start + thisptr->arglist[0] + 1;
+  result = std::max_element(start, end);
+  int offset = std::distance(start, result);
+  return series[thisptr->offset + offset];
 }
 
 float indicators::avgc(indicators* thisptr) {
@@ -141,11 +146,11 @@ float indicators::avgv(indicators* thisptr) {
 
 float indicators::sma(indicators* thisptr, vector<float> prices) {
   float* vals = &(*prices.begin());
+  double rval[OUTPUT_BUFSIZE];
   int start, count;
-  double rval;
 
-  TA_S_SMA(0, thisptr->arglist[0] - 1, vals, thisptr->arglist[0], &start, &count, &rval);
-  return (float) rval;
+  TA_S_SMA(0, prices.size() - 1, vals, thisptr->arglist[0], &start, &count, &rval[0]);
+  return (float) rval[thisptr->offset];
 }
 
 float indicators::eavgc(indicators* thisptr) {
@@ -177,8 +182,8 @@ float indicators::eavg(indicators* thisptr, vector<float> data) {
   int lookback = indicators::ema_lookback(thisptr);
   int start, count;
 
-  TA_S_EMA(0, lookback - 1, vals, thisptr->arglist[0], &start, &count, &rval[0]);
-  return (float) rval[count - 1];
+  TA_S_EMA(0, data.size() - 1, vals, thisptr->arglist[0], &start, &count, &rval[0]);
+  return (float) rval[count - thisptr->offset - 1];
 }
 
 float indicators::wmac(indicators* thisptr) {
@@ -205,11 +210,11 @@ float indicators::wma(indicators* thisptr, vector<float> data) {
   vector<float> prices = data;
   std::reverse(prices.begin(), prices.end());
   float* vals = &(*prices.begin());
+  double rval[OUTPUT_BUFSIZE];
   int start, count;
-  double rval;
 
-  TA_S_WMA(0, thisptr->arglist[0] - 1, vals, thisptr->arglist[0], &start, &count, &rval);
-  return (float) rval;
+  TA_S_WMA(0, data.size() - 1, vals, thisptr->arglist[0], &start, &count, &rval[0]);
+  return (float) rval[count - thisptr->offset - 1];
 }
 
 float indicators::avg_true_range(indicators* thisptr) {
@@ -227,11 +232,11 @@ float indicators::avg_true_range(indicators* thisptr) {
   float *h = &(*highs.begin());
   float *l = &(*lows.begin());
 
-  double rval;
+  double rval[OUTPUT_BUFSIZE];
   int ostart, onum;
 
-  TA_S_ATR(0, period, h, l, c, period, &ostart, &onum, &rval);
-  return (float) rval;
+  TA_S_ATR(0, closes.size() - 1, h, l, c, period, &ostart, &onum, &rval[0]);
+  return (float) rval[onum - thisptr->offset - 1];
 }
 
 float indicators::natr(indicators* thisptr) {
@@ -249,11 +254,11 @@ float indicators::natr(indicators* thisptr) {
   float *h = &(*highs.begin());
   float *l = &(*lows.begin());
 
-  double rval;
+  double rval[OUTPUT_BUFSIZE];
   int ostart, onum;
 
-  TA_S_NATR(0, period, h, l, c, period, &ostart, &onum, &rval);
-  return (float) rval;
+  TA_S_NATR(0, closes.size() - 1, h, l, c, period, &ostart, &onum, &rval[0]);
+  return (float) rval[onum - thisptr->offset - 1];
 }
 
 float indicators::rsi(indicators* thisptr) {
@@ -264,8 +269,8 @@ float indicators::rsi(indicators* thisptr) {
   double rval[OUTPUT_BUFSIZE];
   int ostart, onum;
 
-  TA_S_RSI(0, (period * 4) - 1, c, period, &ostart, &onum, &rval[0]);
-  return (float) rval[onum - 1];
+  TA_S_RSI(0, closes.size() - 1, c, period, &ostart, &onum, &rval[0]);
+  return (float) rval[onum - thisptr->offset - 1];
 }
 
 float indicators::obv(indicators* thisptr) {
@@ -286,38 +291,42 @@ float indicators::obv(indicators* thisptr) {
 
 float indicators::roc(indicators* thisptr) {
     int period = thisptr->arglist[0];
-    float close = thisptr->current_prices->close[0];
-    float prev = thisptr->current_prices->close[period];
+    float close = thisptr->current_prices->close[thisptr->offset];
+    float prev = thisptr->current_prices->close[thisptr->offset + period];
     return ((close - prev) / prev) * 100;
 }
 
 float indicators::bollinger_upper(indicators* thisptr) {
-  double upper, lower;
-  bollinger_values(thisptr, &upper, &lower);
-  return (float) upper;
+  double upper[OUTPUT_BUFSIZE], lower[OUTPUT_BUFSIZE];
+  int last;
+
+  bollinger_values(thisptr, &upper[0], &lower[0], &last);
+  return (float) upper[last - thisptr->offset - 1];
 }
 
 float indicators::bollinger_lower(indicators* thisptr) {
-  double upper, lower;
-  bollinger_values(thisptr, &upper, &lower);
-  return (float) lower;
+  double upper[OUTPUT_BUFSIZE], lower[OUTPUT_BUFSIZE];
+  int last;
+
+  bollinger_values(thisptr, &upper[0], &lower[0], &last);
+  return (float) lower[last - thisptr->offset - 1];
 }
 
-void indicators::bollinger_values(indicators* thisptr, double *upper, double *lower) {
+void indicators::bollinger_values(indicators* thisptr, double *upper, double *lower, int *count) {
 
   vector<float> prices = thisptr->current_prices->close;
   std::reverse(prices.begin(), prices.end());
   float* c = &(*prices.begin());
   
-  int s, n, period = 20;
-  double avg, devs = 2;
+  int s, period = 20;
+  double avg[OUTPUT_BUFSIZE], devs = 2;
 
   if(thisptr->arglist.size() > 0) {
     period = (int) thisptr->arglist[0];
     devs = thisptr->arglist[1];
   }
 
-  TA_S_BBANDS(0, prices.size() - 1, c, period, devs, devs, TA_MAType_SMA, &s, &n, upper, &avg, lower); 
+  TA_S_BBANDS(0, prices.size() - 1, c, period, devs, devs, TA_MAType_SMA, &s, count, upper, &avg[0], lower); 
 }
 
 float indicators::accl_upper(indicators* thisptr) {
@@ -334,7 +343,7 @@ float indicators::accl_lower(indicators* thisptr) {
 
 void indicators::acceleration_bands(indicators* thisptr, float *upper, float *lower) {
 
-  int period = thisptr->current_prices->size() - 1;
+  int period = indicators::accl_lookback(thisptr) - 1;
   float lowersum = 0, uppersum = 0;
   float factor = 0.001;
 
@@ -342,7 +351,7 @@ void indicators::acceleration_bands(indicators* thisptr, float *upper, float *lo
     factor = thisptr->arglist[1];
   }
 
-  for(int i = 0; i < period; i++) {
+  for(int i = thisptr->offset; i < thisptr->offset + period; i++) {
     float low = thisptr->current_prices->low[i];
     float high = thisptr->current_prices->high[i];
     uppersum += ((high * (1 + 2 * (((high - low)/((high + low) /2)) * 1000) * factor)));
@@ -365,9 +374,9 @@ float indicators::aroon_osc(indicators* thisptr) {
   float *h = &(*highs.begin());
   float *l = &(*lows.begin());
 
-  double rval;
+  double rval[OUTPUT_BUFSIZE];
   int ostart, onum;
 
-  TA_S_AROONOSC(0, period, h, l, period, &ostart, &onum, &rval);
-  return (float) rval;
+  TA_S_AROONOSC(0, highs.size() - 1, h, l, period, &ostart, &onum, &rval[0]);
+  return (float) rval[onum - thisptr->offset - 1];
 }

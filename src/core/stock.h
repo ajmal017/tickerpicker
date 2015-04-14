@@ -9,7 +9,7 @@ class stock {
   public:
     stock(string);
     void onday(date);
-    float eval_indicator(string, vector<float>);
+    float eval_indicator(string, vector<float>, int offset=0);
 
   private:
 

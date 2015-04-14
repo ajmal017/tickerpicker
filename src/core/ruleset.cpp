@@ -50,6 +50,7 @@ void ruleset::reset_scratchpad() {
 bool ruleset::eval(stock s) {
   reset_scratchpad();
   current_stock = &s;
+
   for(int i = 0; i < rules.size(); i++) {
     symbol rule = rules[i];
 
@@ -81,6 +82,11 @@ void ruleset::eval_symbol(int symidx) {
 
   if(sym.op == FN) {
     eval_fn(symidx);
+    return;
+  }
+
+  if(sym.op == SHIFT) {
+    shift_timeframe(symidx);
     return;
   }
 
@@ -154,6 +160,8 @@ void ruleset::eval_ternary(int symidx) {
     eval_symbol(sym.lval);
   else
     eval_symbol(sym.rval);
+
+  cur->evaled = true;
 }
 
 void ruleset::eval_fn(int symidx) {
@@ -168,7 +176,24 @@ void ruleset::eval_fn(int symidx) {
     args.push_back(arg->nval);
   }
 
-  cur->nval = current_stock->eval_indicator(sym.indicator, args);
+  cur->nval = current_stock->eval_indicator(sym.indicator, args, data_offset);
+  scratch[symidx]->evaled = true;
+}
+
+void ruleset::shift_timeframe(int symidx) {
+  ruleset::symbol sym = table[symidx];
+  ruleset::svalue* cur = scratch[symidx];
+
+  int shiftidx = sym.arglist[0];
+  eval_symbol(shiftidx);
+
+  reset_scratchpad();
+  data_offset += scratch[shiftidx]->nval;
+  eval_symbol(sym.arglist[1]);
+  data_offset -= scratch[shiftidx]->nval;
+  reset_scratchpad();
+
+  cur->nval = scratch[sym.arglist[1]]->nval;
   scratch[symidx]->evaled = true;
 }
 
@@ -191,6 +216,9 @@ ruleset::symbol ruleset::parse_rule(string rule) {
       val->nval = (float) atof(temp.c_str());
       current.value = val->nval;
       current.op = VAL; 
+    } else if(temp == "DAYS_AGO") {
+      current.op = SHIFT;
+      current.arglist = parse_arglist(rule);
     } else {
       current.indicator = temp;
       current.arglist = parse_arglist(rule);

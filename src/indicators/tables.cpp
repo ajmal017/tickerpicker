@@ -62,17 +62,17 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["C"] = &indicators::ohlcv_lookback;
   indicators::lookback_table["V"] = &indicators::ohlcv_lookback;
 
-  indicators::lookback_table["MAXO"] = &indicators::identity_lookback;
-  indicators::lookback_table["MAXH"] = &indicators::identity_lookback;
-  indicators::lookback_table["MAXL"] = &indicators::identity_lookback;
-  indicators::lookback_table["MAXC"] = &indicators::identity_lookback;
-  indicators::lookback_table["MAXV"] = &indicators::identity_lookback;
+  indicators::lookback_table["MAXO"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MAXH"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MAXL"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MAXC"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MAXV"] = &indicators::minimax_lookback;
 
-  indicators::lookback_table["MINO"] = &indicators::identity_lookback;
-  indicators::lookback_table["MINH"] = &indicators::identity_lookback;
-  indicators::lookback_table["MINL"] = &indicators::identity_lookback;
-  indicators::lookback_table["MINC"] = &indicators::identity_lookback;
-  indicators::lookback_table["MINV"] = &indicators::identity_lookback;
+  indicators::lookback_table["MINO"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MINH"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MINL"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MINC"] = &indicators::minimax_lookback;
+  indicators::lookback_table["MINV"] = &indicators::minimax_lookback;
 
   indicators::lookback_table["AVGO"] = &indicators::identity_lookback;
   indicators::lookback_table["AVGH"] = &indicators::identity_lookback;
