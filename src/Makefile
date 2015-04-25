@@ -2,8 +2,8 @@ CC=g++
 TAFLAGS= -I /usr/local/include/ta-lib/ -L/usr/local/lib64/ -lta_lib
 CFLAGS= -I data -I indicators -I core
 
-app: main.o indicator data core
-	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o main.o 
+app: screen.o indicator data core
+	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o screen.o -o screen.bin 
 
 indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o
 
@@ -11,8 +11,8 @@ data: data/date.o data/pdata.o data/ptable.o
 
 core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
 
-main.o : main.cpp
-	$(CC) $(CFLAGS) $(TAFLAGS) -c -o main.o main.cpp
+screen.o : screen.cpp
+	$(CC) $(CFLAGS) $(TAFLAGS) -c -o screen.o screen.cpp
 
 indicators/indicators.o: indicators/indicators.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp
@@ -48,8 +48,8 @@ clean:
 	rm indicators/*.o
 	rm core/*.o
 	rm data/*.o
-	rm main.o
-	rm a.out
+	rm screen.o
+	rm screen.bin
 
 test:
 	mv ptabs ptabs.prod

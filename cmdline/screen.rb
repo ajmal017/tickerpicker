@@ -12,7 +12,7 @@ opts = Trollop::options do
   opt :tickers, "Comma separated list of tickers to screen", :type => :string
   opt :criteria, "Semicolon separated list of screening rules", :type => :string, :multi => true
   opt :date, "Date to run screen on", :type => :string, :default => DateTime.now.strftime("%Y-%m-%d")
-  opt :exename, "Name of the engine executable file", :type => :string, :default => "a.out"
+  opt :exename, "Name of the engine executable file", :type => :string, :default => "screen.bin"
   opt :engine, "Path for the screening engine, if not current directory", :type => :string, :default => "../src/"
   opt :dump, "Dump resulting three address code", :type => :boolean
 end
