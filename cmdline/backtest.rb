@@ -1,7 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'pry'
-
 load 'codegen.rb'
 require 'trollop'
 require 'open3'
@@ -21,6 +19,26 @@ def merge_opts(strat, target, opt)
     strat[target].map! {|x| x += ';' unless x[-1] == ';'} 
     strat[target] = strat[target].join(' ') 
   end
+end
+
+def merge_entry(entry, key, opt)
+  unless(entry[key].nil?)
+    rules = entry[key]
+    entry[key] += ';' unless rules[-1] == ';'
+    entry[key] += opt unless opt.nil?
+  end
+end
+
+def process_expression(exp)
+ p = CodeGenerator::Parser.new(exp)
+ p.parse_exp
+ p.table.symboltable 
+end
+
+def process_screen(s)
+ p = CodeGenerator::Parser.new(s)
+ p.parse_rules
+ {rules: p.table.rules, symbols: p.table.symboltable} 
 end
 
 opts = Trollop::options do
@@ -67,6 +85,35 @@ merge_opts(strategy[:long], :size, opts[:lsize])
 merge_opts(strategy[:long], :filter, opts[:lfilter])
 merge_opts(strategy[:long], :reject, opts[:lreject])
 
+merge_entry(strategy[:long][:enter], :trigger, opts[:letrig])
+merge_entry(strategy[:long][:enter], :signal, opts[:lesig])
+merge_entry(strategy[:long][:exit], :trigger, opts[:lxtrig])
+merge_entry(strategy[:long][:exit], :signal, opts[:lxsig])
+
+processed = {}
+
+if(strategy[:long])
+  processed[:long] = {}
+  raw = strategy[:long]
+
+  if(raw[:enter])
+    processed[:long][:enter] = {}
+    processed[:long][:enter][:signal] = process_screen(raw[:enter][:signal]) if raw[:enter][:signal]
+    processed[:long][:enter][:trigger] = process_screen(raw[:enter][:trigger]) if raw[:enter][:trigger]
+  end
+
+  if(raw[:exit])
+    processed[:long][:exit] = {}
+    processed[:long][:exit][:signal] = process_screen(raw[:exit][:signal]) if raw[:exit][:signal]
+    processed[:long][:exit][:trigger] = process_screen(raw[:exit][:trigger]) if raw[:exit][:trigger]
+  end
+
+  processed[:long][:stop] = process_expression(raw[:stop]) if raw[:stop]
+  processed[:long][:size] = process_expression(raw[:size]) if raw[:size]
+  processed[:long][:filter] = process_expression(raw[:filter]) if raw[:filter]
+  processed[:long][:reject] = process_expression(raw[:reject]) if raw[:reject]
+end
+
 if(opts[:dump])
-  puts strategy
+  puts processed
 end

@@ -58,7 +58,14 @@ module CodeGenerator
         @table.addrule(@stack.pop)
       end
     end
-  
+
+    def parse_exp
+      ast_prologue('expression')
+      parse_expression()
+      @stack.first.children.first.collapse!
+      @table.generate(@stack.first.children.first)
+    end
+
   private
   
     def next_const(line)
@@ -323,7 +330,7 @@ module CodeGenerator
       generate(ruleast)
       @rules.push(@symboltable.pop)
     end
-  
+
     def generate(ast)
       ast.children.each {|child| generate(child) }
       evaluate(ast) 
