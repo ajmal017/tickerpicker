@@ -115,5 +115,20 @@ if(strategy[:long])
 end
 
 if(opts[:dump])
-  puts processed
+  puts processed.to_json
 end
+
+Dir.chdir(opts[:engine])
+cmdline = "./#{opts[:exename]} #{opts[:start]} #{opts[:finish]} "
+cmdline += (opts[:list].nil? ? "-l #{opts[:tickers]}" : "-f #{opts[:list]}")
+
+stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
+stdin.puts(processed.to_json + "\n")
+stdin.close
+
+sys_stat = wait_thr.value.to_i
+if(sys_stat != 0)
+  abort("RUNTIME ERROR: #{sys_stat}")
+end
+
+stdout.each_line {|line| puts line }

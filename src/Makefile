@@ -1,10 +1,10 @@
 CC=g++
 TAFLAGS= -I /usr/local/include/ta-lib/ -L/usr/local/lib64/ -lta_lib
-CFLAGS= -I data -I indicators -I core
+CFLAGS= -I data -I indicators -I core -I backtest
 
-app: screen.o btest.o indicator data core
+app: screen.o btest.o indicator data core backtest
 	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o screen.o -o screen.bin 
-	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o btest.o -o btest.bin 
+	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o ./backtest/*.o btest.o -o btest.bin 
 
 indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o indicators/math.o
 
@@ -12,11 +12,16 @@ data: data/date.o data/pdata.o data/ptable.o
 
 core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
 
+backtest: backtest/strategy.o
+
 btest.o : btest.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o btest.o btest.cpp
 
 screen.o : screen.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o screen.o screen.cpp
+
+backtest/strategy.o : backtest/strategy.cpp
+	$(CC) $(CFLAGS) -c -o ./backtest/strategy.o backtest/strategy.cpp
 
 indicators/indicators.o: indicators/indicators.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp
@@ -53,10 +58,12 @@ core/stock.o: core/stock.cpp core/stock.h
 
 clean:
 	rm indicators/*.o
+	rm backtest/*.o
 	rm core/*.o
 	rm data/*.o
 	rm screen.o
-	rm screen.bin
+	rm btest.o
+	rm *.bin
 
 test:
 	mv ptabs ptabs.prod
