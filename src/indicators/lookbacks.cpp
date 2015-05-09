@@ -6,6 +6,10 @@ int indicators::eval_lookback(std::string indicator, std::vector<float> args) {
   return (*lookback_table[indicator])(this);
 }
 
+int indicators::null_lookback(indicators* thisptr) {
+  return 0;
+}
+
 int indicators::ohlcv_lookback(indicators* thisptr) {
   if(thisptr->arglist.size() == 0) {
     return 1;
@@ -36,10 +40,6 @@ int indicators::rsi_lookback(indicators* thisptr) {
 
 int indicators::ema_lookback(indicators* thisptr) {
   return TA_EMA_Lookback((int) thisptr->arglist[0]) * 4;
-}
-
-int indicators::absval_lookback(indicators* thisptr) {
-  return 0;
 }
 
 int indicators::avg_true_range_lookback(indicators* thisptr) {

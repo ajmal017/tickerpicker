@@ -1,8 +1,19 @@
+/*
+* As you look at this, you may be asking yourself, "why the Perl style thisptr
+* being passed everywhere?"  The reason is that profiling revealed a hotspot
+* in the table initialization code for the indicator class, which was spending
+* about 20% of the runtime just building new copies of the lookukp tables.  So
+* the lookup tables were changed to static members, which meant that the members
+* they pointed to had to be static too.  The easiest way to have all static 
+* indicator functions and still access per-object data was to just...pass a pointer
+* around...
+*/
+
+
 #include "indicators.h"
 #include <ta_libc.h>
 #include <algorithm>
 #include <iostream>
-#include <cmath>
 
 indicators::indicators() {
   if(lookback_table.size() == 0 && fn_table.size() == 0) {
@@ -16,10 +27,6 @@ float indicators::eval_indicator(std::string indicator, std::vector<float> args,
   this->offset = offset;
   current_prices = data;
   return (*fn_table[indicator])(this);
-}
-
-float indicators::abs_value(indicators* thisptr) {
-  return abs(thisptr->arglist[0]);
 }
 
 float indicators::volume_at(indicators* thisptr) {

@@ -365,6 +365,64 @@ RSpec.describe "Logical Operations" do
     hits = run_screen("1 < 0 XOR 2 < 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
     expect(hits).to be_empty 
   end
+
+  it "MIN and MAX" do
+    hits = run_screen("MAX(1, 2, 3, 4, 5) = 5;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("MIN(1, 2, 3, 4, 5) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("MAX(1.1, 2.2, 3.3, 4.4, 5.5) = 5.5;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("MIN(1.1, 2.2, 3.3, 4.4, 5.5) = 1.1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("MIN(C,(C1),(C2),(C3)) = MINC3;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))   
+
+    hits = run_screen("MAX(C,(C1),(C2),(C3)) = MAXC3;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))   
+
+    hits = run_screen("MAX(C,(C1),(C2),(C3),(C4),(C5)) = C4;", %w(AAPL), "2015-02-27")
+    expect(hits).to match_array(%w(AAPL))   
+
+    hits = run_screen("MIN(C,(C1),(C2),(C3),(C4),(C5)) = C3;", %w(AAPL), "2015-03-16")
+    expect(hits).to match_array(%w(AAPL))   
+  end
+
+  it "FLOOR, CEIL and ROUND" do
+    hits = run_screen("CEIL(1.2) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("FLOOR(1.2) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("CEIL(1.2, 3.4) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("FLOOR(1.2, 3.4) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.4) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.6) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.5) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.4, 2,5) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.6, 3.7) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("ROUND(1.5, 3.2) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+  end
 end
 
 RSpec.describe "Defect Tests" do

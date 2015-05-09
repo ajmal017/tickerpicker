@@ -41,7 +41,6 @@ void indicators::init_fntable() {
   indicators::fn_table["WMAV"] = &indicators::wmav;
 
   indicators::fn_table["ATR"] = &indicators::avg_true_range;
-  indicators::fn_table["ABS"] = &indicators::abs_value;
   indicators::fn_table["ROC"] = &indicators::roc;
   indicators::fn_table["NATR"] = &indicators::natr;
   indicators::fn_table["RSI"] = &indicators::rsi;
@@ -53,6 +52,13 @@ void indicators::init_fntable() {
 
   indicators::fn_table["BOLLINGER_UPPER"] = &indicators::bollinger_upper;
   indicators::fn_table["BOLLINGER_LOWER"] = &indicators::bollinger_lower;
+
+  indicators::fn_table["ABS"] = &indicators::abs_value;
+  indicators::fn_table["MAX"] = &indicators::largest;
+  indicators::fn_table["MIN"] = &indicators::smallest;
+  indicators::fn_table["ROUND"] = &indicators::round;
+  indicators::fn_table["FLOOR"] = &indicators::floor;
+  indicators::fn_table["CEIL"] = &indicators::ceil;
 }
 
 void indicators::init_lookback_table() {
@@ -93,7 +99,6 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["WMAV"] = &indicators::identity_lookback;
 
   indicators::lookback_table["ATR"] = &indicators::avg_true_range_lookback;
-  indicators::lookback_table["ABS"] = &indicators::absval_lookback;
   indicators::lookback_table["ROC"] = &indicators::roc_lookback;
   indicators::lookback_table["RSI"] = &indicators::rsi_lookback;
   indicators::lookback_table["OBV"] = &indicators::obv_lookback;
@@ -105,5 +110,12 @@ void indicators::init_lookback_table() {
 
   indicators::lookback_table["BOLLINGER_UPPER"] = &indicators::bollinger_lookback;
   indicators::lookback_table["BOLLINGER_LOWER"] = &indicators::bollinger_lookback;
+
+  indicators::lookback_table["ABS"] = &indicators::null_lookback;
+  indicators::lookback_table["MAX"] = &indicators::null_lookback;
+  indicators::lookback_table["MIN"] = &indicators::null_lookback;
+  indicators::lookback_table["ROUND"] = &indicators::null_lookback;
+  indicators::lookback_table["FLOOR"] = &indicators::null_lookback;
+  indicators::lookback_table["CEIL"] = &indicators::null_lookback;
 }
 

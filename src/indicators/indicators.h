@@ -31,6 +31,7 @@ class indicators {
   void init_lookback_table();
 
   //lookback period calculators
+  static int null_lookback(indicators*);
   static int rsi_lookback(indicators*);
   static int obv_lookback(indicators*);
   static int roc_lookback(indicators*);
@@ -38,13 +39,12 @@ class indicators {
   static int accl_lookback(indicators*);
   static int natr_lookback(indicators*);
   static int ohlcv_lookback(indicators*);
-  static int absval_lookback(indicators*);
   static int minimax_lookback(indicators*);
   static int identity_lookback(indicators*);
   static int bollinger_lookback(indicators*);
   static int aroon_osc_lookback(indicators*);
   static int avg_true_range_lookback(indicators*);
-  
+
   //actual indicator functions
   static float rsi(indicators*);
   static float obv(indicators*);
@@ -94,6 +94,13 @@ class indicators {
   static void bollinger_values(indicators*,double*, double*, int*);
   static float internal_minval(indicators*, vector<float>);
   static float internal_maxval(indicators*, vector<float>);
+
+  //mathematical functions
+  static float largest(indicators*);
+  static float smallest(indicators*);
+  static float round(indicators*);
+  static float floor(indicators*);
+  static float ceil(indicators*);
 };
 
 #endif

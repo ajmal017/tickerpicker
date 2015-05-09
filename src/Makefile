@@ -5,7 +5,7 @@ CFLAGS= -I data -I indicators -I core
 app: screen.o indicator data core
 	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o screen.o -o screen.bin 
 
-indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o
+indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o indicators/math.o
 
 data: data/date.o data/pdata.o data/ptable.o
 
@@ -22,6 +22,9 @@ indicators/lookbacks.o: indicators/lookbacks.cpp
 
 indicators/tables.o: indicators/tables.cpp
 	$(CC) $(CFLAGS) -c -o ./indicators/tables.o indicators/tables.cpp
+
+indicators/math.o: indicators/math.cpp
+	$(CC) $(CFLAGS) -c -o ./indicators/math.o indicators/math.cpp
 
 data/date.o: data/date.cpp data/date.h
 	$(CC) $(CFLAGS) -c -o ./data/date.o data/date.cpp
