@@ -12,7 +12,7 @@ data: data/date.o data/pdata.o data/ptable.o
 
 core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
 
-backtest: backtest/strategy.o
+backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o
 
 btest.o : btest.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o btest.o btest.cpp
@@ -20,8 +20,14 @@ btest.o : btest.cpp
 screen.o : screen.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o screen.o screen.cpp
 
+backtest/position.o : backtest/position.cpp
+	$(CC) $(CFLAGS) -c -o ./backtest/position.o backtest/position.cpp
+
 backtest/strategy.o : backtest/strategy.cpp
 	$(CC) $(CFLAGS) -c -o ./backtest/strategy.o backtest/strategy.cpp
+
+backtest/portfolio.o : backtest/portfolio.cpp
+	$(CC) $(CFLAGS) -c -o ./backtest/portfolio.o backtest/portfolio.cpp
 
 indicators/indicators.o: indicators/indicators.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp

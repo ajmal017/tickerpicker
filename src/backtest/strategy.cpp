@@ -1,34 +1,35 @@
 #include "strategy.h"
+#include <iostream>
 
 strategy::strategy() {
-
 
 }
 
 void strategy::set_universe(vector<std::string> u) {
-
+  enter_signal->set_universe(u);
+  xit_signal->set_universe(u);
 }
 
-void strategy::set_date_range(date start, date end) {
-
+void strategy::entry_trigger(screen* s) {
+  enter_trigger = s;
 }
 
-void strategy::long_entry_trigger(screen) {
-
+void strategy::entry_signal(screen* s) {
+  enter_signal = s;
 }
 
-void strategy::long_entry_signal(screen) {
-
+void strategy::exit_trigger(screen* s) {
+  xit_trigger = s;
 }
 
-void strategy::long_exit_trigger(screen) {
-
+void strategy::exit_signal(screen* s) {
+  xit_signal = s;
 }
 
-void strategy::long_exit_signal(screen) {
-
+vector<string> strategy::entry_signal(date strat_date) {
+  return enter_signal->eval(strat_date);
 }
 
-void strategy::evaluate() {
-
+vector<string> strategy::exit_signal(date strat_date) {
+  return xit_signal->eval(strat_date);
 }

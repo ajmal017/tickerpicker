@@ -7,18 +7,23 @@ class strategy {
   public:
 
     strategy();
-    void set_universe(vector<std::string>);
-    void set_date_range(date, date);
-    void long_entry_trigger(screen);
-    void long_entry_signal(screen);
-    void long_exit_trigger(screen);
-    void long_exit_signal(screen);
-    void evaluate();
+    void set_universe(std::vector<std::string>);
+    void entry_trigger(screen*);
+    void entry_signal(screen*);
+    void exit_trigger(screen*);
+    void exit_signal(screen*);
+    void set_date(date);
+
+    std::vector<std::string> entry_signal(date);
+    std::vector<std::string> exit_signal(date);
 
   private:
 
+    screen* enter_signal;
+    screen* enter_trigger;
+    screen* xit_signal;
+    screen* xit_trigger;
 
 };
-
 
 #endif

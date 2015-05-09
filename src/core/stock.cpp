@@ -15,7 +15,6 @@ void stock::onday(date d) {
 float stock::eval_indicator(string indicator, vector<float> args, int offset) {
   int pull_len = icore.eval_lookback(indicator, args) + offset;
 
-
   if(pull_len > 0) {
     pull_history(pull_len); 
   }

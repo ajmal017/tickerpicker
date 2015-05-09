@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
   d.Parse<0>(inp.c_str());
   pair<vector<string>, vector<string> > p = process_screen(d["screen"]);
 
-  vector<string> results, universe = get_universe(argv);
+  vector<string> results, universe = get_universe(argv, 2);
   screen s(p.first, p.second);
   s.set_universe(universe);
 

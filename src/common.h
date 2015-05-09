@@ -16,19 +16,19 @@ void tokenize(const std::string& str, std::vector<std::string>& tokens) {
   }
 }
 
-std::vector<std::string> get_universe(char *argv[]) {
+std::vector<std::string> get_universe(char *argv[], int startidx) {
   std::vector<std::string> u;
   std::string ticker;
   
-  if(std::string(argv[2]).compare("-f") == 0) {
+  if(std::string(argv[startidx]).compare("-f") == 0) {
 
-    std::ifstream listfile(argv[3]);
+    std::ifstream listfile(argv[startidx + 1]);
     while(getline(listfile, ticker)) {
       u.push_back(ticker);
     }
 
   } else {
-    std::string tlist(argv[3]);
+    std::string tlist(argv[startidx + 1]);
     tokenize(tlist, u);
   }
 

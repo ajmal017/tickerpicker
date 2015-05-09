@@ -24,6 +24,7 @@
 #include <math.h>
 
 ruleset::ruleset(vector<string> rules, vector<string> symbols) {
+  data_offset = 0;
   init_opmap();
 
   for(int i = 0; i < rules.size(); i++) {
