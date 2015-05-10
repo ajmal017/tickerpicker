@@ -60,6 +60,7 @@ pdata ptable::read(int rowcount) {
   binfile.read((char *) rawdata, blocksize);
   rowcount = binfile.gcount() / ROW_SIZE;
   pdata rval = store_rows(rawdata, rowcount); 
+  rval.offset = current_row();
   find_splits(&rval);
   delete[] rawdata;
   return rval;
@@ -196,4 +197,10 @@ void ptable::find_splits(pdata* tab) {
       }
     }
   }
+}
+
+int ptable::current_row() {
+  int offset = ((int)binfile.tellg()) - rstart;
+  int currow = offset / ROW_SIZE;
+  return (rcount - currow) + 1; 
 }

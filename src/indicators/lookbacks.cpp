@@ -93,3 +93,7 @@ int indicators::aroon_osc_lookback(indicators* thisptr) {
     return TA_AROONOSC_Lookback(thisptr->arglist[0]) + 1;
   }
 }
+
+int indicators::age_lookback(indicators* thisptr) {
+  return 1;
+}

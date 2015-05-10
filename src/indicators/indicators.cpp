@@ -387,3 +387,7 @@ float indicators::aroon_osc(indicators* thisptr) {
   TA_S_AROONOSC(0, highs.size() - 1, h, l, period, &ostart, &onum, &rval[0]);
   return (float) rval[onum - thisptr->offset - 1];
 }
+
+float indicators::data_age(indicators* thisptr) {
+  return thisptr->current_prices->offset;
+}

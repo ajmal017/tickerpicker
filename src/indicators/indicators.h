@@ -44,6 +44,7 @@ class indicators {
   static int bollinger_lookback(indicators*);
   static int aroon_osc_lookback(indicators*);
   static int avg_true_range_lookback(indicators*);
+  static int age_lookback(indicators*);
 
   //actual indicator functions
   static float rsi(indicators*);
@@ -94,6 +95,7 @@ class indicators {
   static void bollinger_values(indicators*,double*, double*, int*);
   static float internal_minval(indicators*, vector<float>);
   static float internal_maxval(indicators*, vector<float>);
+  static float data_age(indicators*);
 
   //mathematical functions
   static float largest(indicators*);

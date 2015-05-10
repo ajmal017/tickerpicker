@@ -53,6 +53,7 @@ void indicators::init_fntable() {
   indicators::fn_table["BOLLINGER_UPPER"] = &indicators::bollinger_upper;
   indicators::fn_table["BOLLINGER_LOWER"] = &indicators::bollinger_lower;
 
+  indicators::fn_table["AGE"] = &indicators::data_age;
   indicators::fn_table["ABS"] = &indicators::abs_value;
   indicators::fn_table["MAX"] = &indicators::largest;
   indicators::fn_table["MIN"] = &indicators::smallest;
@@ -111,6 +112,7 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["BOLLINGER_UPPER"] = &indicators::bollinger_lookback;
   indicators::lookback_table["BOLLINGER_LOWER"] = &indicators::bollinger_lookback;
 
+  indicators::lookback_table["AGE"] = &indicators::age_lookback;
   indicators::lookback_table["ABS"] = &indicators::null_lookback;
   indicators::lookback_table["MAX"] = &indicators::null_lookback;
   indicators::lookback_table["MIN"] = &indicators::null_lookback;

@@ -423,6 +423,29 @@ RSpec.describe "Logical Operations" do
     hits = run_screen("ROUND(1.5, 3.2) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
   end
+
+  it "Trading age" do
+    hits = run_screen("AGE = 18;", %w(AAPL), "1984-10-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AGE = 2546;", %w(AAPL), "1994-10-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AGE = 7589;", %w(AAPL), "2014-10-02")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("AGE = 11299;", %w(XOM), "2014-10-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AGE = 10292;", %w(XOM), "2010-10-02")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("AGE = 2242;", %w(IKAN), "2014-08-11")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("AGE = 1234;", %w(IKAN), "2010-08-10")
+    expect(hits).to match_array(%w(IKAN))
+  end
 end
 
 RSpec.describe "Defect Tests" do

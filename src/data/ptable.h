@@ -20,6 +20,7 @@ class ptable {
   private:
 
   void open();
+  int current_row();
   void find_row(int);
   int find_row(date);
   void read_splits();

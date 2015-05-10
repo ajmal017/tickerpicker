@@ -13,6 +13,7 @@ class pdata {
   vector<float> close;
   vector<uint32_t> date;
   vector<uint32_t> volume;
+  int offset;
 
   int size();
   void clear();
