@@ -60,4 +60,5 @@ int main(int argc, char* argv[]) {
   port.set_universe(universe);
 
   port.run();
+  port.print_state();
 }

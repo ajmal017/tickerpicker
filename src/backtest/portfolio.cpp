@@ -104,9 +104,12 @@ void portfolio::close_positions(vector<string> pos, date sday) {
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
       int closeindex = closelist[i];
+
       position p = cur_positions[closeindex]; 
       cur_positions.erase(cur_positions.begin() + closeindex);
       cur_cash += p.position_value(sday);      
+      p.close(sday);
+
       old_positions.push_back(p);    
     }
   }
@@ -116,9 +119,26 @@ void portfolio::update_equity_curve(date d) {
   float posvalues = 0;
 
   for(int i = 0; i < cur_positions.size(); i++) {
-    position p = cur_positions[i];
-    posvalues += p.position_value(d);
+    posvalues += cur_positions[i].position_value(d);
   }
 
   equity_curve.push_back(posvalues + cur_cash);
+}
+
+void portfolio::print_state() {
+  cout << "{\"trades\":";
+  cout << "[";
+
+  vector<position> all = old_positions;
+  all.insert(all.end(), cur_positions.begin(), cur_positions.end());
+
+  for(int i = 0; i < all.size(); i++) {
+    all[i].print_state();
+    if(i < all.size() - 1) {
+      cout << ',';
+    }
+  }
+
+  cout << "]}";
+  cout << endl;
 }

@@ -131,4 +131,12 @@ if(sys_stat != 0)
   abort("RUNTIME ERROR: #{sys_stat}")
 end
 
-stdout.each_line {|line| puts line }
+buf = ''
+stdout.each_line {|line| buf += line }
+results = JSON.parse(buf)
+
+results['trades'].each do |trade|
+  print trade.join("\t")
+  print "\t[OPEN]" if trade.size == 3
+  puts
+end

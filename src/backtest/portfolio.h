@@ -7,6 +7,7 @@ class portfolio {
 
   public:
     void run();
+    void print_state();
     void set_date_range(date, date);
     void set_universe(vector<std::string>);
     void set_long_strategies(std::vector<strategy>);
