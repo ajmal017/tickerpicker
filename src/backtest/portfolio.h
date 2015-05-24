@@ -17,15 +17,18 @@ class portfolio {
     void open_positions(std::vector<std::string>, date);
     std::vector<std::string> entry_signals(date);
     std::vector<std::string> exit_signals(date);
+    void update_equity_curve(date);
 
     std::vector<strategy> long_strategies;
     std::vector<string> stock_universe;
 
     std::vector<position> cur_positions;
     std::vector<position> old_positions;
+    std::vector<float> equity_curve;
 
     date* firstdate;
     date* lastdate;
+    float cur_cash;
 };
 
 #endif

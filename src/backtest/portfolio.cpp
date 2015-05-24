@@ -1,3 +1,12 @@
+/* This is the top level construct that drives a backtest.  It emulates a 
+ * portfolio, which consists of one or more positions and some amount of cash.
+ * The algorithm is that triggers (intraday criteria) are evaluated first, and
+ * then signals (interday criteria).  Triggers execute and update the portfolio
+ * right away, while signals are queued until the next day (next bar on the price
+ * chart).  The equity curve is updated with close of day prices for each day of
+ * the simulation.
+ */
+
 #include "portfolio.h"
 #include "position.h"
 #include <iostream>
@@ -20,19 +29,22 @@ void portfolio::set_universe(vector<std::string> u) {
   }
 }
 
+//This is the top level function
+//that drives each tick of the test
 void portfolio::run() {
 
   date today = *firstdate;
   vector<string> hits, exits;
+  cur_cash = 10000;
 
   while(today <= *lastdate) {
     close_positions(exits, today);
     open_positions(hits, today);
     hits = entry_signals(today);
     exits = exit_signals(today);
+    update_equity_curve(today);
     today.next_business_day();
   } 
-
 }
 
 vector<string> portfolio::entry_signals(date today) {
@@ -63,9 +75,17 @@ vector<string> portfolio::exit_signals(date today) {
 void portfolio::open_positions(vector<string> pos, date sday) {
   for(int i = 0; i < pos.size(); i++) {
     position newpos(sday, pos[i], 1);   
-    cur_positions.push_back(newpos);    
+    float cost = newpos.cost();
+    if(cost < cur_cash) {
+      cur_positions.push_back(newpos);    
+      cur_cash -= cost;
+    }
   }
 }
+
+//It works better to just mark and close all
+//positions instead of trying to do everything
+//in one sweep.
 
 void portfolio::close_positions(vector<string> pos, date sday) {
   vector<int> closelist;
@@ -86,7 +106,19 @@ void portfolio::close_positions(vector<string> pos, date sday) {
       int closeindex = closelist[i];
       position p = cur_positions[closeindex]; 
       cur_positions.erase(cur_positions.begin() + closeindex);
+      cur_cash += p.position_value(sday);      
       old_positions.push_back(p);    
     }
   }
+}
+
+void portfolio::update_equity_curve(date d) {
+  float posvalues = 0;
+
+  for(int i = 0; i < cur_positions.size(); i++) {
+    position p = cur_positions[i];
+    posvalues += p.position_value(d);
+  }
+
+  equity_curve.push_back(posvalues + cur_cash);
 }
