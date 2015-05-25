@@ -19,6 +19,7 @@ class portfolio {
     std::vector<std::string> entry_signals(date);
     std::vector<std::string> exit_signals(date);
     void update_equity_curve(date);
+    void update_positions(date);
 
     std::vector<strategy> long_strategies;
     std::vector<string> stock_universe;

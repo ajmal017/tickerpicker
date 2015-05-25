@@ -204,3 +204,11 @@ int ptable::current_row() {
   int currow = offset / ROW_SIZE;
   return (rcount - currow) + 1; 
 }
+
+pair<uint16_t, uint16_t> ptable::is_split_day(date day) {
+  if(splits.count(day) > 0) {
+    return splits[day];
+  }
+
+  return std::make_pair(1, 1);
+}

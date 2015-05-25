@@ -43,6 +43,7 @@ void portfolio::run() {
     hits = entry_signals(today);
     exits = exit_signals(today);
     update_equity_curve(today);
+    update_positions(today);
     today.next_business_day();
   } 
 }
@@ -123,6 +124,12 @@ void portfolio::update_equity_curve(date d) {
   }
 
   equity_curve.push_back(posvalues + cur_cash);
+}
+
+void portfolio::update_positions(date d) {
+  for(int i = 0; i < cur_positions.size(); i++) {
+    cur_positions[i].update(d);
+  }
 }
 
 void portfolio::print_state() {

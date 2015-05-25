@@ -24,6 +24,7 @@ class pdata {
   void add_split(::date, pair<uint16_t, uint16_t>); 
   vector<float> volume_as_floats();
 
+
   private:
   void concat_prices(pdata);
   void concat_splits(pdata);

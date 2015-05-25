@@ -15,6 +15,7 @@ class ptable {
   pdata pull_history_by_limit(date, int);
   float pull_close_on_date(date);
   void pull_history_by_dates();
+  pair<uint16_t, uint16_t> is_split_day(date);
   void pull_dividends();
 
   private:
