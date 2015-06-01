@@ -17,6 +17,11 @@ position::position(date start, string ticker, int shares) {
 
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(*open_date, 1);
+
+  if(t.volume[0] < shares) {
+    throw exception();
+  }
+
   open_cost = t.open[0];
   split_fraction = 0.0;
   open = true;
@@ -47,6 +52,11 @@ void position::close(date cdate) {
   close_date = new date(cdate);
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(cdate, 1);
+
+  if(t.volume[0] < count) {
+    throw exception();
+  } 
+
   close_cost = t.open[0];
   open = false;
 }

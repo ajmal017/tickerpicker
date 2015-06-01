@@ -14,10 +14,10 @@ class portfolio {
 
   private:
 
-    void close_positions(std::vector<std::string>, date);
-    void open_positions(std::vector<std::string>, date);
-    std::vector<std::string> entry_signals(date);
-    std::vector<std::string> exit_signals(date);
+    void close_positions(std::vector<std::string>*, date);
+    void open_positions(std::vector<std::string>*, date);
+    void entry_signals(date, std::vector<std::string>*);
+    void exit_signals(date, std::vector<std::string>*);
     void update_equity_curve(date);
     void update_positions(date);
 
