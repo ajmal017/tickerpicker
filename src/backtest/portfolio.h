@@ -3,7 +3,7 @@
 #include "strategy.h"
 #include "position.h"
 
-class portfolio {
+class portfolio : public restrictor {
 
   public:
     void run();
@@ -11,6 +11,7 @@ class portfolio {
     void set_date_range(date, date);
     void set_universe(vector<std::string>);
     void set_long_strategies(std::vector<strategy>);
+    bool skip_ticker(string);
 
   private:
 

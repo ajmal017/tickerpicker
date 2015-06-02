@@ -14,7 +14,7 @@ class strategy {
     void exit_signal(screen*);
     void set_date(date);
 
-    std::vector<std::string> entry_signal(date);
+    std::vector<std::string> entry_signal(date, restrictor*);
     std::vector<std::string> exit_signal(date);
 
   private:

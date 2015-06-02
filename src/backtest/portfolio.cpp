@@ -52,7 +52,7 @@ void portfolio::entry_signals(date today, vector<string>* longhits) {
 
   for(int i = 0; i < long_strategies.size(); i++) {
     strategy cur = long_strategies[i];
-    vector<string> curhits = cur.entry_signal(today);
+    vector<string> curhits = cur.entry_signal(today, this);
     longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
   }
 }
@@ -151,6 +151,16 @@ void portfolio::update_positions(date d) {
   for(int i = 0; i < cur_positions.size(); i++) {
     cur_positions[i].update(d);
   }
+}
+
+bool portfolio::skip_ticker(string target) {
+  for(int i = 0; i < cur_positions.size(); i++) {
+    if(cur_positions[i].matches(target)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void portfolio::print_state() {

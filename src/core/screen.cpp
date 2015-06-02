@@ -11,13 +11,17 @@ void screen::set_universe(vector<string> list) {
   universe = list;
 }
 
-vector<string> screen::eval(date curdate) {
+vector<string> screen::eval(date curdate, restrictor* filter) {
 
   vector<string> results;
 
   for(int i = 0; i < universe.size(); i++) {
 
     string ticker = universe[i];
+
+    if(filter != NULL && filter->skip_ticker(ticker)) {
+      continue;
+    }
 
     if(all.count(ticker) == 0) {
 

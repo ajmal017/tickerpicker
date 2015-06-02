@@ -26,8 +26,8 @@ void strategy::exit_signal(screen* s) {
   xit_signal = s;
 }
 
-vector<string> strategy::entry_signal(date strat_date) {
-  return enter_signal->eval(strat_date);
+vector<string> strategy::entry_signal(date strat_date, restrictor* filter) {
+  return enter_signal->eval(strat_date, filter);
 }
 
 vector<string> strategy::exit_signal(date strat_date) {
