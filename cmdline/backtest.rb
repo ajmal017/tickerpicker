@@ -64,6 +64,7 @@ opts = Trollop::options do
   opt :benchmark, "Benchmark ticker", :type => :string, :default => "^IXIC" 
   opt :exclude, "Comma separated list of tickers to skip", :type => :string
   opt :slippage, "Per-transaction slippage expression", :type => :string
+  opt :raw, "Dump raw trade results", :type => :boolean
 end
 
 Trollop::die "You must specify a list of stocks" unless opts[:list] || opts[:tickers]
@@ -133,10 +134,14 @@ end
 
 buf = ''
 stdout.each_line {|line| buf += line }
-results = JSON.parse(buf)
 
-results['trades'].each do |trade|
-  print trade.join("\t")
-  print "\t[OPEN]" if trade.size == 3
-  puts
+if(opts[:raw])
+  puts buf
+else
+  results = JSON.parse(buf)
+  results['trades'].each do |trade|
+    print trade.join("\t")
+    print "\t[OPEN]" if trade.size == 3
+    puts
+  end
 end
