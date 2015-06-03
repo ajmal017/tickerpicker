@@ -63,6 +63,7 @@ opts = Trollop::options do
   opt :random, "Randomize candidate selection", :type => :boolean, :default => false
   opt :benchmark, "Benchmark ticker", :type => :string, :default => "^IXIC" 
   opt :exclude, "Comma separated list of tickers to skip", :type => :string
+  opt :multi, "Allow multiple positions for the same ticker", :type => :boolean
   opt :slippage, "Per-transaction slippage expression", :type => :string
   opt :raw, "Dump raw trade results", :type => :boolean
 end
@@ -114,6 +115,11 @@ if(strategy[:long])
   processed[:long][:filter] = process_expression(raw[:filter]) if raw[:filter]
   processed[:long][:reject] = process_expression(raw[:reject]) if raw[:reject]
 end
+
+processed[:config] = {}
+processed[:config][:multipos] = opts[:multi]
+processed[:config][:slippage] = opts[:slippage]
+
 
 if(opts[:dump])
   puts processed.to_json

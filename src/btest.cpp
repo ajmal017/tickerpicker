@@ -6,6 +6,7 @@
 #include "strategy.h"
 #include "screen.h"
 #include "common.h"
+#include "config.h"
 
 using namespace std;
 
@@ -41,6 +42,12 @@ strategy process_strategy(rapidjson::Document& doc, string dir) {
   return sys;
 }
 
+void process_configuration(rapidjson::Document& doc) {
+  if(doc.HasMember("config")) {
+    config t(doc["config"]); 
+  }
+}
+
 int main(int argc, char* argv[]) {
 
   string inp;
@@ -58,6 +65,7 @@ int main(int argc, char* argv[]) {
 
   port.set_long_strategies(longstrats);
   port.set_universe(universe);
+  process_configuration(d);
 
   port.run();
   port.print_state();

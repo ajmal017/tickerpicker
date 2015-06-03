@@ -154,9 +154,11 @@ void portfolio::update_positions(date d) {
 }
 
 bool portfolio::skip_ticker(string target) {
-  for(int i = 0; i < cur_positions.size(); i++) {
-    if(cur_positions[i].matches(target)) {
-      return true;
+  if(config::single_pos()) {
+    for(int i = 0; i < cur_positions.size(); i++) {
+      if(cur_positions[i].matches(target)) {
+        return true;
+      }
     }
   }
 

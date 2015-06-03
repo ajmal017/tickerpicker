@@ -2,6 +2,7 @@
 #define PORTFOLIO
 #include "strategy.h"
 #include "position.h"
+#include "config.h"
 
 class portfolio : public restrictor {
 
