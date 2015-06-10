@@ -1,71 +1,71 @@
-/* This is the class that ultimately evaluates the expressions given to the
- * screener and backtester.  Rules are passed in via the constructor and 
- * parsed into an internal representation.  The evaluation consists of
- * performing a recursive walk of the three address code, which is stored 
- * in two tables: rules, which has the code for the top level boolean rule 
- * statements, and table, which is the table of subexpressions and constants 
- * that the lvalue and rvalue of a rule reference.  Each side of the rule is 
- * recursively evaluated down to constants, and values for the expressions 
- * computed and stored in the scratch table.  The svalue structs in the scratch 
- * table also have a flag to prevent repeated evaluation of a single subexpression, 
- * which effectively caches potentially expensive indicator functions. Constants 
- * are just added to the scratch table, indicators are called on the current stock, 
- * and their values added to the scratch table, and expressions are evaluated
- * in eval_op, and their result added to the scratch table.  Once the evaluation
- * is complete, the scratch table entries for the boolean lvalue and rvalue of 
- * each rule are populated, and the rule is evaluated to yield true or false.
+/* This is the collection of classes that ultimately evaluates the expressions
+ * given to the screener and backtester.  Rules are passed as three address code
+ * into the ruleset class through the constructor, and parsed into a set of 
+ * expression trees built up from classes that encapsulate each type of code 
+ * (Interpeter design pattern). A table mapping the index references in the  
+ * three adress code to pointers pointing to objects implementing those
+ * codes is passed to each constructor. Lvalue and rvalue references are
+ * populated using the pointers so that we dont have to parse things repeatedly,
+ * and so that repeated subexpressions are not evaluated redundantly. Once the
+ * parse trees are built the evaluation consists of looping through each rule,
+ * and building up the value of the expression until we arrive at a true or false
+ * for the rule as a whole.  Note that the expression class can also be used
+ * independently of rules to evaluate numerical expressions. 
  */
 
 #include "ruleset.h"
-#include <string>
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <math.h>
 
 ruleset::ruleset(vector<string> rules, vector<string> symbols) {
-  data_offset = 0;
-  init_opmap();
-
-  for(int i = 0; i < rules.size(); i++) {
-    symbol s = parse_rule(rules[i]);
-    this->rules.push_back(s);
-    scratch.pop_back();
-  }
+  vector<expression*> table;
 
   for(int i = 0; i < symbols.size(); i++) {
-    symbol s = parse_rule(symbols[i]);
-    table.push_back(s);
+    string cur = symbols[i];
+
+    if(is_number(cur)) {
+      table.push_back(new constant(cur));
+      continue;
+    }
+
+    if(is_expression(cur)) {
+      table.push_back(new term(cur, table));
+      continue; 
+    }   
+
+    if(is_ternary(cur)) {
+      table.push_back(new ternary(cur, table));
+      continue;
+    }
+
+    if(is_shift(cur)) {
+      table.push_back(new shift(cur, table));
+      continue;
+    }
+
+    if(is_rule(cur)) {
+      table.push_back(new rule(cur, table));
+      continue;
+    }
+
+    table.push_back(new function(cur, table));
   }
 
-  ruleset_sort ssort(this->rules, table, symbols);
-  this->rules = ssort.sorted_rules(); 
-}
-
-void ruleset::reset_scratchpad() {
-  for(int i = 0; i < scratch.size(); i++) {
-    scratch[i]->evaled = false;
+  for(int i = 0; i < rules.size(); i++) {
+    string raw = rules[i];
+    this->rules.push_back(new rule(raw, table));
   }
+
+  sort_ruleset();
 }
 
 bool ruleset::eval(stock s) {
-  reset_scratchpad();
-  current_stock = &s;
-
   for(int i = 0; i < rules.size(); i++) {
-    symbol rule = rules[i];
-
-    try {
-      eval_symbol(rule.lval);
-      eval_symbol(rule.rval);
-    } catch(exception &e) {
-      return false;
-    }
-
-    svalue result;
-    eval_op(rule.op, scratch[rule.lval], scratch[rule.rval], &result);
-
-    if(!result.bval) {
+    if(!rules[i]->eval(s)) {
       return false;
     }
   }
@@ -73,220 +73,237 @@ bool ruleset::eval(stock s) {
   return true;
 }
 
-void ruleset::eval_symbol(int symidx) {
-  ruleset::symbol sym = table[symidx];
-  ruleset::svalue* cur = scratch[symidx];
-
-  if(cur->evaled || sym.op == VAL) {
-    return;
-  }
-
-  if(sym.op == FN) {
-    eval_fn(symidx);
-    return;
-  }
-
-  if(sym.op == SHIFT) {
-    shift_timeframe(symidx);
-    return;
-  }
-
-  if(sym.op == TERNARY) {
-    eval_ternary(symidx);
-    return;
-  }
-
-  eval_symbol(sym.lval);
-  eval_symbol(sym.rval);
-
-  ruleset::svalue* rval = scratch[sym.rval];
-  ruleset::svalue* lval = scratch[sym.lval];
-
-  eval_op(sym.op, lval, rval, cur);
-  cur->evaled = true;
+bool ruleset::is_number(const string& s) {
+  return(s.find_first_not_of("-.0123456789") == string::npos);
 }
 
-void ruleset::eval_op(operation op, svalue* lval, svalue* rval, svalue* cur) {
-  switch(op) {
-    case ADD:
-      cur->nval = lval->nval + rval->nval;
-      break;
-    case SUB:
-      cur->nval = lval->nval - rval->nval;
-      break;
-    case MUL:
-      cur->nval = lval->nval * rval->nval;
-      break;
-    case DIV:
-      cur->nval = lval->nval / rval->nval;
-      break;
-    case EQU:
-      cur->bval = (fabs(lval->nval - rval->nval) < EPSILON);
-      break;
-    case AND:
-      cur->bval = lval->bval && rval->bval;
-      break;
-    case XOR:
-      cur->bval = (lval->bval ? !rval->bval : rval->bval); 
-      break;
-    case OR:
-      cur->bval = lval->bval || rval->bval;
-      break;
-    case GT:
-      cur->bval = lval->nval > rval->nval;
-      break;
-    case LT:
-      cur->bval = lval->nval < rval->nval;
-      break;
-    case GTE:
-      cur->bval = lval->nval >= rval->nval;
-      break;
-    case LTE:
-      cur->bval = lval->nval <= rval->nval;
-      break;
+bool ruleset::is_expression(const string& e) {
+  return(e.find_first_of("-+*/") != string::npos);
+}
+
+bool ruleset::is_ternary(const string& t) {
+  return t[0] == '$' && std::count(t.begin(), t.end(), '$') == 3;
+}
+
+bool ruleset::is_rule(const string& r) {
+  if(r.find(" AND ") != string::npos) { return true; }
+  if(r.find(" XOR ") != string::npos) { return true; }
+  if(r.find(" OR ") != string::npos) { return true; }
+  if(r.find(" >= ") != string::npos) { return true; }
+  if(r.find(" <= ") != string::npos) { return true; }
+  if(r.find(" < ") != string::npos) { return true; }
+  if(r.find(" > ") != string::npos) { return true; }
+  if(r.find(" = ") != string::npos) { return true; }
+  return false;
+}
+
+bool ruleset::is_shift(const string& s) {
+  return(s.find("DAYS_AGO") == 0);
+}
+
+void ruleset::sort_ruleset() {
+  vector<pair<int, rule*> > periods;
+
+  for(int i = 0; i < rules.size(); i++) {
+    int period = rules[i]->lookback();
+    pair<int, rule*> p = make_pair(period, rules[i]);
+    periods.push_back(p);
+  }
+
+  std::sort(periods.begin(), periods.end(), sort_pred());
+  rules.clear();
+
+  for(int i = 0; i < periods.size(); i++) {
+    rules.push_back(periods[i].second);
   }
 }
 
-void ruleset::eval_ternary(int symidx) {
-  ruleset::symbol sym = table[symidx];
-  ruleset::svalue* cur = scratch[symidx];
-
-  if(cur->evaled) {
-    return;
-  }
-
-  eval_symbol(sym.tbranch);
-
-  if(scratch[sym.tbranch]->bval) 
-    eval_symbol(sym.lval);
-  else
-    eval_symbol(sym.rval);
-
-  cur->evaled = true;
+int expression::index(string t) { 
+  t.erase(0, 1);
+  return atoi(t.c_str());
 }
 
-void ruleset::eval_fn(int symidx) {
-  ruleset::symbol sym = table[symidx];
-  ruleset::svalue* cur = scratch[symidx];
-  vector<float> args;
+vector<string> expression::split(string e, char sep) {
+  vector<string> rval;
+  stringstream ss(e);
+  string t;
 
-  for(int i = 0; i < sym.arglist.size(); i++) {
-    int argidx = sym.arglist[i];
-    eval_symbol(argidx);
-    ruleset::svalue* arg = scratch[argidx];
-    args.push_back(arg->nval);
-  }
-
-  cur->nval = current_stock->eval_indicator(sym.indicator, args, data_offset);
-  scratch[symidx]->evaled = true;
-}
-
-void ruleset::shift_timeframe(int symidx) {
-  ruleset::symbol sym = table[symidx];
-  ruleset::svalue* cur = scratch[symidx];
-
-  int shiftidx = sym.arglist[0];
-  eval_symbol(shiftidx);
-
-  reset_scratchpad();
-  data_offset += scratch[shiftidx]->nval;
-  eval_symbol(sym.arglist[1]);
-  data_offset -= scratch[shiftidx]->nval;
-  reset_scratchpad();
-
-  cur->nval = scratch[sym.arglist[1]]->nval;
-  scratch[symidx]->evaled = true;
-}
-
-ruleset::symbol ruleset::parse_rule(string rule) {
-  stringstream ss(rule);
-  symbol current;
-  string temp;
-
-  svalue* val = new svalue; 
-
-  ss >> temp;
-
-  //lvalue first...
-  if(temp.at(0) == '$') {
-    temp.erase(0, 1);
-    current.lval = atoi(temp.c_str());
-  } else {
-
-    if(is_number(temp)) {
-      val->nval = (float) atof(temp.c_str());
-      current.value = val->nval;
-      current.op = VAL; 
-    } else if(temp == "DAYS_AGO") {
-      current.op = SHIFT;
-      current.arglist = parse_arglist(rule);
-    } else {
-      current.indicator = temp;
-      current.arglist = parse_arglist(rule);
-      current.op = FN;
-    }
-    
-    scratch.push_back(val);
-    return current;
-  }
-
-  ss >> temp;
-
-  //now let's see if op is a variable
-  //or not...
-  if(temp.at(0) == '$') {
-    temp.erase(0, 1);
-    current.op = TERNARY;
-    current.tbranch = current.lval;
-    current.lval = atoi(temp.c_str());
-  } else {
-    current.op = opmap[temp];
-  }
-
-  ss >> temp;
-  temp.erase(0, 1);
-  current.rval = atoi(temp.c_str());
-
-  scratch.push_back(val);
-  return current;
-}
-
-vector<int> ruleset::parse_arglist(string list) {
-
-  string::size_type lastPos = list.find_first_not_of(",", 0);
-  string::size_type pos = list.find_first_of(",", lastPos);
-  vector<int> rval;
-
-  while (string::npos != pos || string::npos != lastPos) {
-    string arg = list.substr(lastPos, pos - lastPos);
-    lastPos = list.find_first_not_of(",", pos);
-    pos = list.find_first_of(",", lastPos);
-
-    arg.erase(0, arg.find_first_of("$")+1);
-    if(arg.size() > 0 && is_number(arg)) {
-      int argindex = atoi(arg.c_str());
-      rval.push_back(argindex);
-    }
+  while(getline(ss, t, sep)) {
+    rval.push_back(t);
   }
 
   return rval;
 }
 
-void ruleset::init_opmap() {
-  opmap["+"] = ADD;
-  opmap["-"] = SUB;
-  opmap["*"] = MUL;
-  opmap["/"] = DIV;
-  opmap["OR"] = OR;
-  opmap["AND"] = AND;
-  opmap["XOR"] = XOR;
-  opmap["<="] = LTE;
-  opmap[">="] = GTE;
-  opmap["="] = EQU;
-  opmap["<"] = LT;
-  opmap[">"] = GT;
+rule::rule(string t, vector<expression*> table) {
+  vector<string> parts = split(t);
+  int lindex = index(parts[0]);
+  int rindex = index(parts[2]);  
+
+  lvalue = table[lindex];
+  rvalue = table[rindex];
+
+  if(parts[1] == "=") { op = EQU; }
+  if(parts[1] == "AND") { op = AND; }  
+  if(parts[1] == "OR") { op = OR; }
+  if(parts[1] == "XOR") { op = XOR; }
+  if(parts[1] == ">") { op = GT; }
+  if(parts[1] == "<") { op = LT; }
+  if(parts[1] == ">=") { op = GTE; }
+  if(parts[1] == "<=") { op = LTE; }
 }
 
-bool ruleset::is_number(const string& s) {
-  return(s.find_first_not_of("-.0123456789") == string::npos);
+float rule::eval(stock s, int sh) {
+  try {
+
+    switch(op) {
+      case EQU:
+        return (fabs(lvalue->eval(s, sh) - rvalue->eval(s, sh)) < EPSILON);
+      case GT:
+        return lvalue->eval(s, sh) > rvalue->eval(s, sh);
+      case LT:
+        return lvalue->eval(s, sh) < rvalue->eval(s, sh);
+      case GTE:
+        return lvalue->eval(s, sh) >= rvalue->eval(s, sh);
+      case LTE:
+        return lvalue->eval(s, sh) <= rvalue->eval(s, sh);
+      case AND:
+        return lvalue->eval(s, sh) && rvalue->eval(s, sh);
+      case XOR:
+        return (lvalue->eval(s, sh) ? !rvalue->eval(s, sh) : rvalue->eval(s, sh));
+      case OR:
+        return lvalue->eval(s, sh) || rvalue->eval(s, sh);
+    }
+
+  } catch(exception &e) {
+    return false;
+  }
+}
+
+int rule::lookback() {
+  int left = lvalue->lookback();
+  int right = lvalue->lookback();
+  return (left > right ? left : right);
+}
+
+shift::shift(string raw, vector<expression*> table) {
+  vector<string> parts = split(raw);
+  vector<string> args = split(parts[1], ',');  
+
+  int cindex = index(args[1]);
+  context = table[cindex];
+
+  int sindex = index(args[0]);
+  constant *v = (constant*) table[sindex];
+  shiftval = v->value();
+}
+
+int shift::lookback() {
+  return shiftval + context->lookback();
+}
+
+float shift::eval(stock s, int shiftval) {
+  int totalshift = this->shiftval + shiftval;
+  return context->eval(s, totalshift);
+}
+
+term::term(string t, vector<expression*> table) {
+  vector<string> parts = split(t);
+  int lindex = index(parts[0]);
+  int rindex = index(parts[2]);  
+
+  lvalue = table[lindex];
+  rvalue = table[rindex];
+
+  if(parts[1] == "+") { op = ADD; }
+  if(parts[1] == "-") { op = SUB; }  
+  if(parts[1] == "/") { op = DIV; }
+  if(parts[1] == "*") { op = MUL; }
+}
+
+int term::lookback() {
+  int left = lvalue->lookback();
+  int right = lvalue->lookback();
+  return (left > right ? left : right);
+}
+
+float term::eval(stock s, int sh = 0) {
+  switch(op) {
+    case ADD:
+      return lvalue->eval(s, sh) + rvalue->eval(s, sh);
+    case SUB:
+      return lvalue->eval(s, sh) - rvalue->eval(s, sh);
+    case MUL:
+      return lvalue->eval(s, sh) * rvalue->eval(s, sh);
+    case DIV:
+      return lvalue->eval(s, sh) / rvalue->eval(s, sh);
+  }
+}
+
+ternary::ternary(string t, vector<expression*> table) {
+  vector<string> parts = split(t);
+  decision = table[index(parts[0])];
+  truebranch = table[index(parts[1])];
+  falsebranch = table[index(parts[2])];
+}
+
+int ternary::lookback() {
+  int ruleval = decision->lookback();
+  int tvalue = truebranch->lookback();
+  int fvalue = falsebranch->lookback();
+
+  if(ruleval >= tvalue && ruleval >= fvalue) {
+    return ruleval;
+  }
+
+  if(tvalue >= ruleval && tvalue >= fvalue) {
+    return tvalue;
+  }
+
+  if(fvalue >= ruleval && fvalue >= tvalue) {
+    return fvalue;
+  }
+}
+
+float ternary::eval(stock s, int shift = 0) {
+  return (decision->eval(s, shift) ? truebranch->eval(s, shift) : falsebranch->eval(s, shift));
+}
+
+function::function(string t, vector<expression*> table) {
+  vector<string> parts = split(t);
+  indicator = parts[0];
+
+  if(parts.size() > 1) {
+    vector<string> args = split(parts[1], ',');
+    for(int i = 0; i < args.size(); i++) {
+      int argindex = index(args[i]);
+      arglist.push_back(table[argindex]); 
+    }
+  }
+}
+
+int function::lookback() {
+  vector<float> argvals; 
+  int maxval = 0;
+
+  for(int i = 0; i < arglist.size(); i++) {
+    expression *cur = arglist[i];
+    int lb = cur->lookback();
+    maxval = (lb > maxval ? lb : maxval);
+    argvals.push_back(cur->value());
+  }
+
+  indicators i;
+  int ilook = i.eval_lookback(indicator, argvals);
+  return (ilook > maxval ? ilook : maxval);
+}
+
+float function::eval(stock s, int shift = 0) {
+  vector<float> args;
+
+  for(int i = 0; i < arglist.size(); i++) {
+    args.push_back(arglist[i]->eval(s, shift));
+  }
+
+  return s.eval_indicator(indicator, args, shift);
 }

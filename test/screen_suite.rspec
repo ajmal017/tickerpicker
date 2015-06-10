@@ -414,7 +414,7 @@ RSpec.describe "Logical Operations" do
     hits = run_screen("ROUND(1.5) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
 
-    hits = run_screen("ROUND(1.4, 2,5) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    hits = run_screen("ROUND(1.4, 2.5) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
 
     hits = run_screen("ROUND(1.6, 3.7) = 2;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
@@ -475,5 +475,11 @@ RSpec.describe "Defect Tests" do
   it "should evaluate the rvalue of an AND statement as well" do
     hits = run_screen("C > 0 AND C > 100;", %w(XOM,AAPL,FLEX), "2015-03-02")
     expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "should cleanly differentiate ternaries from argument lists" do
+     hits = run_screen("ROUND(1.4, 2, 5) = 1;", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+     expect($?).to eq(0)
   end
 end

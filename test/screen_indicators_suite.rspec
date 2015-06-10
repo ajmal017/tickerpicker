@@ -812,4 +812,30 @@ RSpec.describe "Timeframe shifting" do
     hits = run_screen("ACCELERATION_LOWER30 = 107.407; DAYS_AGO(12, ACCELERATION_LOWER80) = 100.7;", %w(AAPL), "2015-01-02")
     expect(hits).to match_array(%w(AAPL))
   end
+
+  it "Shifts transitively" do
+    hits = run_screen("DAYS_AGO(10, C + 1) = DAYS_AGO(10, C) + 1", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C + 1) = DAYS_AGO(10, C) + DAYS_AGO(10, 1)", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C - 1) = DAYS_AGO(10, C) - 1", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C - 1) = DAYS_AGO(10, C) - DAYS_AGO(10, 1)", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C * 1) = DAYS_AGO(10, C) * 1", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C * 1) = DAYS_AGO(10, C) * DAYS_AGO(10, 1)", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C / 2) = DAYS_AGO(10, C) / 2", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, C / 2) = DAYS_AGO(10, C) / DAYS_AGO(10, 2)", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+  end
 end

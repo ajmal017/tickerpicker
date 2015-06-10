@@ -1,85 +1,112 @@
 #ifndef EVALUATOR
 #define EVALUATOR
+#include <cstdlib>
 #include <vector>
 #include <string>
 #include "stock.h"
 #include <map>
 
+#include <iostream>
+
 #define EPSILON 0.001
 
 using namespace std;
 
-class symbol_table {
-
+class expression {
   public:
-
-  enum operation {SHIFT, FN, VAL, EQU, ADD, SUB, MUL, DIV, AND, OR, XOR, GT, LT, GTE, LTE, TERNARY};
-
-  struct symbol {
-    int rval;
-    int lval;
-    int tbranch;
-    float value;
-    string indicator;
-    vector<int> arglist;
-    symbol_table::operation op;
-  };
-
+    virtual float eval(stock, int x = 0) = 0;
+    virtual int lookback() = 0;
+    float value() { return 0; }
   protected:
-
-  vector<symbol> rules;
-  vector<symbol> table;
-  int data_offset;
+    vector<string> split(string, char s=' ');
+    int index(string);
 };
 
-class ruleset : symbol_table {
+class rule : public expression {
   public:
-
-  ruleset(vector<string>, vector<string>);
-  bool eval(stock);
-
+    enum operation {EQU, AND, OR, XOR, GT, LT, GTE, LTE};
+    rule(string, vector<expression*>);
+    float eval(stock, int sh = 0);
+    int lookback();
   private:
-
-  struct svalue {
-    bool bval;
-    float nval;
-    bool evaled;
-  };
-
-  bool is_number(const string&); 
-  symbol parse_rule(string);
-  void reset_scratchpad();
-  void init_opmap();
-  void eval_fn(int);
-  void eval_symbol(int);
-  void eval_ternary(int);
-  void shift_timeframe(int);
-  vector<int> parse_arglist(string);
-  void eval_op(operation, svalue*, svalue*, svalue*);
-
-  stock* current_stock;
-  vector<svalue*> scratch; 
-  map<string, ruleset::operation> opmap;
+    expression *rvalue;
+    expression *lvalue;
+    operation op;
 };
 
-class ruleset_sort : symbol_table {
+class constant : public expression {
   public:
-  ruleset_sort(vector<symbol>, vector<symbol>, vector<string>);
-  vector<symbol_table::symbol> sorted_rules();
-
+    constant(string v) {val = (float) std::atof(v.c_str());}
+    float eval(stock, int) {return val;}
+    float value() { return val; }
+    int lookback() {return 0;}
   private:
+    float val;
+};
+
+class shift : public expression {
+  public:
+    shift(string, vector<expression*>);
+    int lookback();
+    float eval(stock, int);
+  private:
+    int shiftval;
+    expression *context;
+};
+
+class term : public expression {
+  public:
+    enum operation {ADD, SUB, MUL, DIV};
+    term(string, vector<expression*>);
+    int lookback();
+    float eval(stock, int);
+  private:
+    expression *rvalue;
+    expression *lvalue;
+    operation op;
+};
+
+class ternary : public expression {
+  public:
+    ternary(string, vector<expression*>);
+    int lookback();
+    float eval(stock, int);
+  private:
+    expression* decision;
+    expression* truebranch;
+    expression* falsebranch;  
+};
+
+class function : public expression {
+  public:
+    function(string, vector<expression*>);
+    int lookback();
+    float eval(stock, int);
+  private:
+    vector<expression*> arglist;
+    stock *current;
+    string indicator;
+};
+
+class ruleset {
+  public:
+    ruleset(vector<string>, vector<string>);
+    bool eval(stock);
+  private:
+    bool is_rule(const string&); 
+    bool is_shift(const string&);
+    bool is_number(const string&); 
+    bool is_ternary(const string&); 
+    bool is_expression(const string&); 
+    void sort_ruleset();
+
+    vector<rule*> rules;
 
   struct sort_pred {
-    bool operator()(const std::pair<int, symbol> &left, const std::pair<int, symbol> &right) {
+    bool operator()(const std::pair<int, rule*> &left, const std::pair<int, rule*> &right) {
       return left.first < right.first;
     }
   };
-
-  int lookback_for(symbol);
-  int greater_value(symbol);
-  int function_value(symbol);
-
-  vector<string> rawsymbols;
 };
 
 #endif

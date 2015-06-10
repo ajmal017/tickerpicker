@@ -10,7 +10,7 @@ indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o in
 
 data: data/date.o data/pdata.o data/ptable.o
 
-core: core/ruleset.o core/rulesorter.o core/screen.o core/stock.o
+core: core/ruleset.o core/screen.o core/stock.o
 
 backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o backtest/config.o
 
@@ -55,9 +55,6 @@ data/ptable.o: data/ptable.cpp data/ptable.h
 
 core/ruleset.o: core/ruleset.cpp core/ruleset.h
 	$(CC) $(CFLAGS) -c -o ./core/ruleset.o core/ruleset.cpp
-
-core/rulesorter.o: core/rulesorter.cpp
-	$(CC) $(CFLAGS) -c -o ./core/rulesorter.o core/rulesorter.cpp
 
 core/screen.o: core/screen.cpp core/screen.h
 	$(CC) $(CFLAGS) -c -o ./core/screen.o core/screen.cpp

@@ -297,7 +297,7 @@ float indicators::obv(indicators* thisptr) {
 }
 
 float indicators::roc(indicators* thisptr) {
-    int period = thisptr->arglist[0];
+    int period = (thisptr->arglist.size() > 0 ? thisptr->arglist[0] : 12);
     float close = thisptr->current_prices->close[thisptr->offset];
     float prev = thisptr->current_prices->close[thisptr->offset + period];
     return ((close - prev) / prev) * 100;
