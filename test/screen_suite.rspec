@@ -321,6 +321,7 @@ RSpec.describe "Dates and data handling" do
 end
 
 RSpec.describe "Logical Operations" do
+
   it "AND" do
     hits = run_screen("1 > 0 AND 2 > 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX ABD))
@@ -364,6 +365,35 @@ RSpec.describe "Logical Operations" do
 
     hits = run_screen("1 < 0 XOR 2 < 1;", %w(AAPL XOM IKAN FLEX ABD), "2015-03-02")
     expect(hits).to be_empty 
+  end
+
+  it "Ternary operator" do
+    hits = run_screen("{1 > 2 ? 3 : 4} = 4", %w(AAPL XOM FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM FLEX))
+
+    hits = run_screen("{1 > 2 ? 3 : 4} = 3", %w(AAPL XOM FLEX), "2015-03-02")
+    expect(hits).to be_empty
+
+    hits = run_screen("{C > C1 ? C2 : C3} = C2", %w(AAPL), "2015-03-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("{C > C1 ? C2 : C3} = C3", %w(AAPL), "2015-02-24")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("{C > C1 ? C2 : C3} = 112.52", %w(AAPL), "2015-01-05")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("{C > C1 ? C2 : C3} = 111.78", %w(AAPL), "2014-12-24")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("{BOLLINGER_UPPER > BOLLINGER_LOWER ? 1 : 2} = 1", %w(AAPL IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL IKAN FLEX))
+
+    hits = run_screen("{BOLLINGER_UPPER < BOLLINGER_LOWER ? 1 : 2} = 2", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
+
+    hits = run_screen("{BOLLINGER_UPPER < BOLLINGER_LOWER ? 1 : 2} = 1", %w(AAPL XOM IKAN FLEX), "2015-03-02")
+    expect(hits).to be_empty
   end
 
   it "MIN and MAX" do

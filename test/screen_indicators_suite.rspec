@@ -838,4 +838,21 @@ RSpec.describe "Timeframe shifting" do
     hits = run_screen("DAYS_AGO(10, C / 2) = DAYS_AGO(10, C) / DAYS_AGO(10, 2)", %w(AAPL), "2012-01-03")
     expect(hits).to match_array(%w(AAPL))
   end
+
+  it "Shifts ternary operators" do
+    hits = run_screen("DAYS_AGO(5, {C > C1 ? C2 : C3}) = C7;", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(20, {C > C1 ? C2 : C3}) = C22;", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(50, {C > C1 ? C2 : C3}) = C53;", %w(AAPL), "2012-01-03")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(50, {C > C1 ? C2 : C3}) = C52;", %w(XOM), "2013-01-03")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("DAYS_AGO(100, {C > C1 ? C2 : C3}) = C102", %w(XOM), "2013-01-03")
+    expect(hits).to match_array(%w(XOM))
+  end
 end
