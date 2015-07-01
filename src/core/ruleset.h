@@ -88,18 +88,24 @@ class function : public expression {
     string indicator;
 };
 
+class expression_parser {
+  public:
+    static void parse(vector<string>, vector<expression*>*);
+    static expression* parse(vector<string>);
+  private:
+    static bool is_rule(const string&); 
+    static bool is_shift(const string&);
+    static bool is_number(const string&); 
+    static bool is_ternary(const string&); 
+    static bool is_expression(const string&); 
+};
+
 class ruleset {
   public:
     ruleset(vector<string>, vector<string>);
     bool eval(stock);
   private:
-    bool is_rule(const string&); 
-    bool is_shift(const string&);
-    bool is_number(const string&); 
-    bool is_ternary(const string&); 
-    bool is_expression(const string&); 
     void sort_ruleset();
-
     vector<rule*> rules;
 
   struct sort_pred {

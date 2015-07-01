@@ -21,39 +21,76 @@
 #include <string>
 #include <math.h>
 
-ruleset::ruleset(vector<string> rules, vector<string> symbols) {
+expression* expression_parser::parse(vector<string> symbols) {
   vector<expression*> table;
+  parse(symbols, &table);
+  return table.back();
+}
 
+void expression_parser::parse(vector<string> symbols, vector<expression*>* table) {
   for(int i = 0; i < symbols.size(); i++) {
     string cur = symbols[i];
 
     if(is_number(cur)) {
-      table.push_back(new constant(cur));
+      table->push_back(new constant(cur));
       continue;
     }
 
     if(is_expression(cur)) {
-      table.push_back(new term(cur, table));
+      table->push_back(new term(cur, *table));
       continue; 
     }   
 
     if(is_ternary(cur)) {
-      table.push_back(new ternary(cur, table));
+      table->push_back(new ternary(cur, *table));
       continue;
     }
 
     if(is_shift(cur)) {
-      table.push_back(new shift(cur, table));
+      table->push_back(new shift(cur, *table));
       continue;
     }
 
     if(is_rule(cur)) {
-      table.push_back(new rule(cur, table));
+      table->push_back(new rule(cur, *table));
       continue;
     }
 
-    table.push_back(new function(cur, table));
+    table->push_back(new function(cur, *table));
   }
+}
+
+bool expression_parser::is_number(const string& s) {
+  return(s.find_first_not_of("-.0123456789") == string::npos);
+}
+
+bool expression_parser::is_expression(const string& e) {
+  return(e.find_first_of("-+*/") != string::npos);
+}
+
+bool expression_parser::is_ternary(const string& t) {
+  return t[0] == '$' && std::count(t.begin(), t.end(), '$') == 3;
+}
+
+bool expression_parser::is_rule(const string& r) {
+  if(r.find(" AND ") != string::npos) { return true; }
+  if(r.find(" XOR ") != string::npos) { return true; }
+  if(r.find(" OR ") != string::npos) { return true; }
+  if(r.find(" >= ") != string::npos) { return true; }
+  if(r.find(" <= ") != string::npos) { return true; }
+  if(r.find(" < ") != string::npos) { return true; }
+  if(r.find(" > ") != string::npos) { return true; }
+  if(r.find(" = ") != string::npos) { return true; }
+  return false;
+}
+
+bool expression_parser::is_shift(const string& s) {
+  return(s.find("DAYS_AGO") == 0);
+}
+
+ruleset::ruleset(vector<string> rules, vector<string> symbols) {
+  vector<expression*> table;
+  expression_parser::parse(symbols, &table);
 
   for(int i = 0; i < rules.size(); i++) {
     string raw = rules[i];
@@ -71,34 +108,6 @@ bool ruleset::eval(stock s) {
   }
 
   return true;
-}
-
-bool ruleset::is_number(const string& s) {
-  return(s.find_first_not_of("-.0123456789") == string::npos);
-}
-
-bool ruleset::is_expression(const string& e) {
-  return(e.find_first_of("-+*/") != string::npos);
-}
-
-bool ruleset::is_ternary(const string& t) {
-  return t[0] == '$' && std::count(t.begin(), t.end(), '$') == 3;
-}
-
-bool ruleset::is_rule(const string& r) {
-  if(r.find(" AND ") != string::npos) { return true; }
-  if(r.find(" XOR ") != string::npos) { return true; }
-  if(r.find(" OR ") != string::npos) { return true; }
-  if(r.find(" >= ") != string::npos) { return true; }
-  if(r.find(" <= ") != string::npos) { return true; }
-  if(r.find(" < ") != string::npos) { return true; }
-  if(r.find(" > ") != string::npos) { return true; }
-  if(r.find(" = ") != string::npos) { return true; }
-  return false;
-}
-
-bool ruleset::is_shift(const string& s) {
-  return(s.find("DAYS_AGO") == 0);
 }
 
 void ruleset::sort_ruleset() {

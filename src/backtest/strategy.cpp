@@ -1,5 +1,6 @@
 #include "strategy.h"
 #include <iostream>
+#include <math.h>
 
 strategy::strategy() {
 
@@ -26,10 +27,21 @@ void strategy::exit_signal(screen* s) {
   xit_signal = s;
 }
 
+void strategy::stop_loss(vector<std::string> stop) {
+  init_stop = expression_parser::parse(stop);
+}
+
 vector<string> strategy::entry_signal(date strat_date, restrictor* filter) {
   return enter_signal->eval(strat_date, filter);
 }
 
-vector<string> strategy::exit_signal(date strat_date) {
+vector<string> strategy::exit_signal(date strat_date, restrictor* filter) {
   return xit_signal->eval(strat_date);
+}
+
+float strategy::stop_loss(date strat_date, string ticker) {
+  stock cur(ticker);
+  cur.onday(strat_date);
+  float rval = init_stop->eval(cur);
+  return floor(rval * 100) / 100;
 }

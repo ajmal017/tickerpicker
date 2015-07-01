@@ -61,6 +61,19 @@ void position::close(date cdate) {
   open = false;
 }
 
+void position::close(date cdate, float price) {
+  close_date = new date(cdate);
+  ptable* thispos = open_equities[ticker];
+  pdata t = thispos->pull_history_by_limit(cdate, 1);
+
+  if(t.volume[0] < count) {
+    throw exception();
+  } 
+
+  close_cost = price;
+  open = false;
+}
+
 void position::update(date d) {
   split_adjust(d);
 }
@@ -84,6 +97,15 @@ void position::split_adjust(date d) {
   }
 }
 
+string position::symbol() {
+  return ticker;
+}
+
+float position::percent_diff() {
+  float diff = ((close_cost - open_cost) / open_cost) * 100;
+  return floor(diff * 100) / 100;
+}
+
 void position::print_state() {
   cout << "[";
   cout << '"' << open_date->to_s() << "\",";
@@ -93,7 +115,8 @@ void position::print_state() {
   if(!open) {
     cout << ',';
     cout << '"' << close_date->to_s() << "\",";
-    cout << '"' << close_cost << "\"";
+    cout << '"' << close_cost << "\",";
+    cout << '"' << percent_diff() << "\"";
   }
 
   cout << "]";

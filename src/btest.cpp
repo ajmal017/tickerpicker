@@ -33,6 +33,16 @@ strategy process_strategy(rapidjson::Document& doc, string dir) {
     sys.exit_signal(xs);
   }
 
+  if(side.HasMember("stop")) {
+    vector<std::string> stopsyms;
+    rapidjson::Value& stop = side["stop"];
+    for(rapidjson::SizeType i = 0; i < stop.Size(); i++) {
+      std::string t = stop[i].GetString();
+      stopsyms.push_back(t);
+    }
+    sys.stop_loss(stopsyms);
+  }
+
 //  if(side["exit"].HasMember("trigger")) {
 //    pair<vector<string>, vector<string> > e = process_screen(side["exit"]["trigger"]);
 //    screen xt(e.first, e.second);

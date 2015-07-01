@@ -35,34 +35,62 @@ void portfolio::run() {
 
   date today = *firstdate;
   vector<string> hits, exits;
+  vector<strategy> hitstrats;
   cur_cash = 10000;
 
   while(today <= *lastdate) {
     close_positions(&exits, today);
-    open_positions(&hits, today);
-    entry_signals(today, &hits);
+    open_positions(&hits, &hitstrats, today);
+    entry_signals(today, &hits, &hitstrats);
     exit_signals(today, &exits);
+    process_stops(today, &exits);
+
     update_equity_curve(today);
     update_positions(today);
     today.next_business_day();
   } 
 }
 
-void portfolio::entry_signals(date today, vector<string>* longhits) {
+void portfolio::entry_signals(date today, vector<string>* longhits, vector<strategy>* hitstrats) {
 
   for(int i = 0; i < long_strategies.size(); i++) {
     strategy cur = long_strategies[i];
     vector<string> curhits = cur.entry_signal(today, this);
     longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
+
+    for(int x = 0; x < curhits.size(); x++) {
+      hitstrats->push_back(cur);      
+    }
   }
 }
 
+//So the quickest way to do this would be to just set the universe
+//of the exit screen to the set of positions, and run the screen. Of
+//course that's why it won't work, so because of the stupid 
+//KERN_INVALID_ADDRESS on touching the universe that just won't go away,
+//no matter what I do, I have to use this stupid jury rigged bullshit 
+//with a restrictor instead.  Note that this is intensely annoying.
+
 void portfolio::exit_signals(date today, vector<string>* longhits) {
 
-  for(int i = 0; i < long_strategies.size(); i++) {
-    strategy cur = long_strategies[i];
-    vector<string> curhits = cur.exit_signal(today);
+  target_list skip = get_current_restrictor();
+
+  for(int i = 0; i < cur_positions.size(); i++) {
+    strategy cur = cur_strategies[i];
+    vector<string> curhits = cur.exit_signal(today, &skip);    
     longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
+  } 
+}
+
+void portfolio::process_stops(date today, vector<string>* exithits) {
+
+  for(int i = 0; i < cur_positions.size(); i++) {
+    strategy cur = cur_strategies[i];
+    float price = cur.stop_loss(today, cur_positions[i].symbol()); 
+  
+    if(price > 0) {
+      close_position(today, i, exithits, price); 
+    }
   }
 }
 
@@ -70,11 +98,15 @@ void portfolio::exit_signals(date today, vector<string>* longhits) {
 //an exception if there is not enough volume
 //on the given day to open a position of the given
 //size.  In that case the signal is pushed back on
-//the list, defering in to the next day.
+//the list, defering it to the next day.
 
-void portfolio::open_positions(vector<string>* pos, date sday) {
+void portfolio::open_positions(vector<string>* pos, vector<strategy>* slist, date sday) {
+
   vector<string> list = *pos;
+  vector<strategy> strats = *slist; 
+
   pos->clear();
+  slist->clear();
 
   for(int i = 0; i < list.size(); i++) {
     try {
@@ -83,11 +115,13 @@ void portfolio::open_positions(vector<string>* pos, date sday) {
 
       if(cost < cur_cash) {
         cur_positions.push_back(newpos);    
+        cur_strategies.push_back(strats[i]);
         cur_cash -= cost;
       }
 
     } catch(exception e) {
       pos->push_back(list[i]);
+      slist->push_back(strats[i]);
     }
   }
 }
@@ -121,20 +155,31 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
       int closeindex = closelist[i];
-      position p = cur_positions[closeindex]; 
-
-      try {
-        p.close(sday);
-      } catch(exception e) {
-        pos->push_back(closeticks[i]); 
-        continue;
-      }
-
-      cur_positions.erase(cur_positions.begin() + closeindex);
-      cur_cash += p.position_value(sday);      
-      old_positions.push_back(p);    
+      close_position(sday, closeindex, pos, 0);
     }
   }
+}
+
+void portfolio::close_position(date sday, int index, vector<string>* pos, float price) {
+
+   position p = cur_positions[index]; 
+
+   try {
+
+     if(price == 0) {
+       p.close(sday);
+     } else {
+       p.close(sday, price);
+     }
+
+     cur_positions.erase(cur_positions.begin() + index);
+     cur_strategies.erase(cur_strategies.begin() + index);
+     cur_cash += p.position_value(sday);      
+     old_positions.push_back(p);    
+
+   } catch(exception e) {
+     pos->push_back(p.symbol()); 
+   }
 }
 
 void portfolio::update_equity_curve(date d) {
@@ -165,6 +210,17 @@ bool portfolio::skip_ticker(string target) {
   return false;
 }
 
+target_list portfolio::get_current_restrictor() {
+  vector<string> t;
+  for(int i = 0; i < cur_positions.size(); i++) {
+    position p = cur_positions[i];
+    t.push_back(p.symbol());  
+  }
+
+  target_list skip(t);
+  return skip;
+}
+
 void portfolio::print_state() {
   cout << "{\"trades\":";
   cout << "[";
@@ -181,4 +237,18 @@ void portfolio::print_state() {
 
   cout << "]}";
   cout << endl;
+}
+
+target_list::target_list(string s) {
+  targets.insert(s);
+}
+
+target_list::target_list(vector<string> s) {
+  for(int i = 0; i < s.size(); i++) {
+    targets.insert(s[i]);
+  }
+}
+
+bool target_list::skip_ticker(string t) {
+  return (targets.count(t) > 0);
 }
