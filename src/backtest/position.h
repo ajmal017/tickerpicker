@@ -1,5 +1,6 @@
 #ifndef POSITION
 #define POSITION
+#include "strategy.h"
 #include "ruleset.h"
 #include "ptable.h"
 #include "date.h"
@@ -7,8 +8,8 @@
 class position {
 
   public:
-    position(date, string, int, float);
-    position(date, string, int);
+    position(date, string, int, strategy, float);
+    position(date, string, int, strategy);
     float position_value(date);
     bool matches(string);
     void print_state();
@@ -17,7 +18,7 @@ class position {
     string symbol();
     float cost();
 
-    void close(date, float);
+    bool stopped_out(date);
     void close(date);
 
   private:
@@ -28,6 +29,7 @@ class position {
     date* close_date;
     expression* initial_stop;
     expression* trailing_stop;
+    strategy this_strat;
 
     vector<float> stop_history;
     float split_fraction;

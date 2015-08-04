@@ -5,31 +5,34 @@ require 'trollop'
 require 'open3'
 require 'date'
 require 'json'
+require 'pry'
 
 def dehash(key, raw)
    raw.gsub(/#{key}\s*:\s*\{(.+)\}/, key + ': [\1]')
 end
 
-def merge_opts(strat, target, opt)
-  unless(strat.nil?)
-    if(opt)
-      strat[target] << opt
+def add_to_hash(value, base, *keys)
+  unless(value.nil?)
+    current = base
+    keys[0..-2].each do |k|
+      unless(current[k])
+        current[k] = {}
+      end
+ 
+      current = current[k]
     end
-  
-    strat[target].map! {|x| x += ';' unless x[-1] == ';'} 
-    strat[target] = strat[target].join(' ') 
-  end
-end
 
-def merge_entry(entry, key, opt)
-  unless(entry[key].nil?)
-    rules = entry[key]
-    entry[key] += ';' unless rules[-1] == ';'
-    entry[key] += opt unless opt.nil?
+    k = keys[-1]
+    unless(current[k])
+      current[k] = ""
+    end
+
+    current[k] += value.chomp(';') + ';'
   end
 end
 
 def process_expression(exp)
+ exp = exp.join(' ') if exp.is_a? Array
  p = CodeGenerator::Parser.new(exp)
  p.parse_exp
  p.table.symboltable 
@@ -77,20 +80,21 @@ if(opts[:strategy])
   raw = File.read(opts[:strategy])
   raw = dehash('filter', raw)
   raw = dehash('reject', raw)
+  raw = dehash('trail', raw)
   raw = dehash('stop', raw)
   raw = dehash('size', raw)
   strategy = eval("{#{raw}}")
 end
 
-merge_opts(strategy[:long], :stop, opts[:lstop])
-merge_opts(strategy[:long], :size, opts[:lsize])
-merge_opts(strategy[:long], :filter, opts[:lfilter])
-merge_opts(strategy[:long], :reject, opts[:lreject])
+add_to_hash(opts[:lesig], strategy, :long, :enter, :signal)
+add_to_hash(opts[:letrig], strategy, :long, :enter, :trigger)
+add_to_hash(opts[:lxsig], strategy, :long, :exit, :signal)
+add_to_hash(opts[:lxtrig], strategy, :long, :exit, :trigger)
 
-merge_entry(strategy[:long][:enter], :trigger, opts[:letrig])
-merge_entry(strategy[:long][:enter], :signal, opts[:lesig])
-merge_entry(strategy[:long][:exit], :trigger, opts[:lxtrig])
-merge_entry(strategy[:long][:exit], :signal, opts[:lxsig])
+add_to_hash(opts[:lstop], strategy, :long, :stop)
+add_to_hash(opts[:lsize], strategy, :long, :size)
+add_to_hash(opts[:lfilter], strategy, :long, :filter)
+add_to_hash(opts[:lreject], strategy, :long, :reject)
 
 processed = {}
 
@@ -112,6 +116,7 @@ if(strategy[:long])
 
   processed[:long][:stop] = process_expression(raw[:stop]) if raw[:stop]
   processed[:long][:size] = process_expression(raw[:size]) if raw[:size]
+  processed[:long][:trail] = process_expression(raw[:trail]) if raw[:trail]
   processed[:long][:filter] = process_expression(raw[:filter]) if raw[:filter]
   processed[:long][:reject] = process_expression(raw[:reject]) if raw[:reject]
 end
@@ -119,7 +124,6 @@ end
 processed[:config] = {}
 processed[:config][:multipos] = opts[:multi]
 processed[:config][:slippage] = opts[:slippage]
-
 
 if(opts[:dump])
   puts processed.to_json

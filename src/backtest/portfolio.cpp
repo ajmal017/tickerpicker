@@ -41,6 +41,8 @@ void portfolio::run() {
   while(today <= *lastdate) {
     close_positions(&exits, today);
     open_positions(&hits, &hitstrats, today);
+    hits.clear();
+
     entry_signals(today, &hits, &hitstrats);
     exit_signals(today, &exits);
     process_stops(today, &exits);
@@ -85,12 +87,14 @@ void portfolio::exit_signals(date today, vector<string>* longhits) {
 void portfolio::process_stops(date today, vector<string>* exithits) {
 
   for(int i = 0; i < cur_positions.size(); i++) {
-    strategy cur = cur_strategies[i];
-    float price = cur.stop_loss(today, cur_positions[i].symbol()); 
-  
-    if(price > 0) {
-      close_position(today, i, exithits, price); 
-    }
+    position p = cur_positions[i];
+
+    if(p.stopped_out(today)) {
+      cur_positions.erase(cur_positions.begin() + i);
+      cur_strategies.erase(cur_strategies.begin() + i);
+      cur_cash += p.position_value(today);      
+      old_positions.push_back(p);    
+    } 
   }
 }
 
@@ -110,7 +114,7 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy>* slist, dat
 
   for(int i = 0; i < list.size(); i++) {
     try {
-      position newpos(sday, list[i], 1);   
+      position newpos(sday, list[i], 1, strats[i]);   
       float cost = newpos.cost();
 
       if(cost < cur_cash) {
@@ -169,7 +173,7 @@ void portfolio::close_position(date sday, int index, vector<string>* pos, float 
      if(price == 0) {
        p.close(sday);
      } else {
-       p.close(sday, price);
+      // p.close(sday, price);
      }
 
      cur_positions.erase(cur_positions.begin() + index);

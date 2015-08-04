@@ -27,6 +27,10 @@ void strategy::exit_signal(screen* s) {
   xit_signal = s;
 }
 
+void strategy::trailing_stop(vector<std::string> trail) {
+  trail_stop = expression_parser::parse(trail);
+}
+
 void strategy::stop_loss(vector<std::string> stop) {
   init_stop = expression_parser::parse(stop);
 }

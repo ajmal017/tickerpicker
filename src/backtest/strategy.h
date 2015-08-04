@@ -8,6 +8,7 @@ class strategy {
 
     strategy();
     void set_universe(std::vector<std::string>);
+    void trailing_stop(std::vector<std::string>);
     void stop_loss(std::vector<std::string>);
     void entry_trigger(screen*);
     void entry_signal(screen*);
@@ -21,6 +22,7 @@ class strategy {
 
   private:
 
+    expression* trail_stop;
     expression* init_stop;
     screen* enter_signal;
     screen* enter_trigger;

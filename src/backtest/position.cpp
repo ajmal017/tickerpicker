@@ -5,9 +5,10 @@
 
 std::map<string, ptable*> position::open_equities;
 
-position::position(date start, string ticker, int shares) {
+position::position(date start, string ticker, int shares, strategy strat) {
   this->ticker = ticker;
   open_date = new date(start);
+  this_strat = strat;
   count = shares;  
 
   if(open_equities.count(ticker) == 0) {
@@ -27,7 +28,7 @@ position::position(date start, string ticker, int shares) {
   open = true;
 }
 
-position::position(date start, string ticker, int shares, float ocost) {
+position::position(date start, string ticker, int shares, strategy strat, float ocost) {
 
 }
 
@@ -61,17 +62,21 @@ void position::close(date cdate) {
   open = false;
 }
 
-void position::close(date cdate, float price) {
-  close_date = new date(cdate);
+bool position::stopped_out(date cdate) {
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(cdate, 1);
 
-  if(t.volume[0] < count) {
-    throw exception();
+  if(t.volume[0] >= count) {
+    close_date = new date(cdate);
+    float stop = this_strat.stop_loss(cdate, ticker); 
+
+    if(stop >= t.low[0]) {
+      close_cost = stop;
+      open = false;
+    }
   } 
 
-  close_cost = price;
-  open = false;
+  return ! open;
 }
 
 void position::update(date d) {
