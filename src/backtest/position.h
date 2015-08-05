@@ -21,6 +21,10 @@ class position {
     bool stopped_out(date);
     void close(date);
 
+    bool operator ==(const position& p) {
+      return p.ticker == ticker; 
+    }
+
   private:
     void split_adjust(date);
     float percent_diff();

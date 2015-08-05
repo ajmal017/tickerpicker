@@ -20,6 +20,10 @@ class strategy {
     std::vector<std::string> exit_signal(date, restrictor*);
     float stop_loss(date, std::string);
 
+    bool operator ==(const strategy& p) {
+      return p.enter_signal == enter_signal && p.xit_signal == xit_signal;
+    }
+
   private:
 
     expression* trail_stop;

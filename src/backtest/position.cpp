@@ -29,7 +29,6 @@ position::position(date start, string ticker, int shares, strategy strat) {
 }
 
 position::position(date start, string ticker, int shares, strategy strat, float ocost) {
-
 }
 
 float position::cost() {

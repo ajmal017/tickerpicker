@@ -41,7 +41,6 @@ void portfolio::run() {
   while(today <= *lastdate) {
     close_positions(&exits, today);
     open_positions(&hits, &hitstrats, today);
-    hits.clear();
 
     entry_signals(today, &hits, &hitstrats);
     exit_signals(today, &exits);
@@ -155,6 +154,10 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
         }       
       }
     }
+
+    std::vector<int>::iterator last;
+    last = std::unique(closelist.begin(), closelist.end());
+    closelist.erase(last, closelist.end());
   
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
@@ -167,6 +170,7 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
 void portfolio::close_position(date sday, int index, vector<string>* pos, float price) {
 
    position p = cur_positions[index]; 
+   strategy s = cur_strategies[index];
 
    try {
 
@@ -176,10 +180,12 @@ void portfolio::close_position(date sday, int index, vector<string>* pos, float 
       // p.close(sday, price);
      }
 
-     cur_positions.erase(cur_positions.begin() + index);
-     cur_strategies.erase(cur_strategies.begin() + index);
-     cur_cash += p.position_value(sday);      
      old_positions.push_back(p);    
+     cur_cash += p.position_value(sday);      
+     cur_positions.erase(std::remove(cur_positions.begin(), cur_positions.end(), p), cur_positions.end());
+
+//this and it's operator can go away when cur_strategies does
+     cur_strategies.erase(std::remove(cur_strategies.begin(), cur_strategies.end(), s), cur_strategies.end());
 
    } catch(exception e) {
      pos->push_back(p.symbol()); 
