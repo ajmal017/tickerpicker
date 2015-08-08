@@ -17,6 +17,7 @@ class target_list : public restrictor {
 class portfolio : public restrictor {
 
   public:
+    ~portfolio();
     void run();
     void print_state();
     void set_date_range(date, date);
@@ -28,24 +29,23 @@ class portfolio : public restrictor {
 
     void close_positions(std::vector<std::string>*, date);
     void close_position(date, int, std::vector<std::string>*, float p=0);
-    void open_positions(std::vector<std::string>*, std::vector<strategy>*, date);
-    void entry_signals(date, std::vector<std::string>*, std::vector<strategy>*);
+    void open_positions(std::vector<std::string>*, std::vector<strategy*>*, date);
+    void entry_signals(date, std::vector<std::string>*, std::vector<strategy*>*);
     void process_stops(date, std::vector<std::string>*);
     void exit_signals(date, std::vector<std::string>*);
     target_list get_current_restrictor();
     void update_equity_curve(date);
     void update_positions(date);
 
-    std::vector<strategy> long_strategies;
-    std::vector<strategy> cur_strategies;
+    std::vector<strategy*> long_strategies;
     std::vector<string> stock_universe;
 
-    std::vector<position> cur_positions;
-    std::vector<position> old_positions;
+    std::vector<position*> cur_positions;
+    std::vector<position*> old_positions;
     std::vector<float> equity_curve;
 
-    date* firstdate;
-    date* lastdate;
+    date firstdate;
+    date lastdate;
     float cur_cash;
 };
 

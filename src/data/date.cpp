@@ -6,6 +6,10 @@
 const short date::MONTH_LENGTHS[] = {-1, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 const short date::MONTH_CODES[] = {-1, 0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4};
 
+date::date() {
+
+}
+
 date::date(string s) {
   int y, m, d;
   sscanf(s.c_str(), "%4d-%2d-%2d", &y, &m, &d);

@@ -5,11 +5,11 @@
 #include "ptable.h"
 #include "date.h"
 
-class position {
+class position : public restrictor {
 
   public:
-    position(date, string, int, strategy, float);
-    position(date, string, int, strategy);
+    position(date, string, int, strategy*, float);
+    position(date, string, int, strategy*);
     float position_value(date);
     bool matches(string);
     void print_state();
@@ -18,6 +18,8 @@ class position {
     string symbol();
     float cost();
 
+    bool skip_ticker(string);
+    bool exit(date);
     bool stopped_out(date);
     void close(date);
 
@@ -25,7 +27,7 @@ class position {
       return p.ticker == ticker; 
     }
 
-  private:
+  private:     
     void split_adjust(date);
     float percent_diff();
 
@@ -33,7 +35,7 @@ class position {
     date* close_date;
     expression* initial_stop;
     expression* trailing_stop;
-    strategy this_strat;
+    strategy* this_strat;
 
     vector<float> stop_history;
     float split_fraction;

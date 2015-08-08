@@ -6,6 +6,7 @@ using namespace std;
 class date {
 
   public:
+    date();
     date(string);
     date(const date&);
     date(unsigned int);

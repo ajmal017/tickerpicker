@@ -13,19 +13,41 @@
 
 using namespace std;
 
+//since portfolio only runs once, I'm not
+//really sure this is strictly necessary, but
+//good practice and all of that....
+
+portfolio::~portfolio() {
+  for(int i = 0; i < long_strategies.size(); i++) {
+    delete long_strategies[i];
+  }
+
+  for(int i = 0; i < cur_positions.size(); i++) {
+    delete cur_positions[i];
+  }
+
+  for(int i = 0; i < old_positions.size(); i++) {
+    delete old_positions[i];
+  }
+}
+
 void portfolio::set_date_range(date start, date end) {
-  firstdate = &start;
-  lastdate = &end;
+  firstdate = start;
+  lastdate = end;
 }
 
 void portfolio::set_long_strategies(vector<strategy> longstrats) {
-  long_strategies = longstrats;
+  for(int i = 0; i < longstrats.size(); i++) {
+    strategy* s = new strategy();
+    *s = longstrats[i];
+    long_strategies.push_back(s);
+  }
 }
 
 void portfolio::set_universe(vector<std::string> u) {
   for(int i = 0; i < long_strategies.size(); i++) {
-    strategy cur = long_strategies[i];
-    cur.set_universe(u);
+    strategy* cur = long_strategies[i];
+    cur->set_universe(u);
   }
 }
 
@@ -33,12 +55,12 @@ void portfolio::set_universe(vector<std::string> u) {
 //that drives each tick of the test
 void portfolio::run() {
 
-  date today = *firstdate;
+  date today = firstdate;
   vector<string> hits, exits;
-  vector<strategy> hitstrats;
+  vector<strategy*> hitstrats;
   cur_cash = 10000;
 
-  while(today <= *lastdate) {
+  while(today <= lastdate) {
     close_positions(&exits, today);
     open_positions(&hits, &hitstrats, today);
 
@@ -52,11 +74,11 @@ void portfolio::run() {
   } 
 }
 
-void portfolio::entry_signals(date today, vector<string>* longhits, vector<strategy>* hitstrats) {
+void portfolio::entry_signals(date today, vector<string>* longhits, vector<strategy*>* hitstrats) {
 
   for(int i = 0; i < long_strategies.size(); i++) {
-    strategy cur = long_strategies[i];
-    vector<string> curhits = cur.entry_signal(today, this);
+    strategy* cur = long_strategies[i];
+    vector<string> curhits = cur->entry_signal(today, this);
     longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
 
     for(int x = 0; x < curhits.size(); x++) {
@@ -73,25 +95,23 @@ void portfolio::entry_signals(date today, vector<string>* longhits, vector<strat
 //with a restrictor instead.  Note that this is intensely annoying.
 
 void portfolio::exit_signals(date today, vector<string>* longhits) {
-
-  target_list skip = get_current_restrictor();
-
   for(int i = 0; i < cur_positions.size(); i++) {
-    strategy cur = cur_strategies[i];
-    vector<string> curhits = cur.exit_signal(today, &skip);    
-    longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
-  } 
+    position* p = cur_positions[i];
+
+    if(p->exit(today)) {
+      longhits->push_back(p->symbol());
+    } 
+  }
 }
 
 void portfolio::process_stops(date today, vector<string>* exithits) {
 
   for(int i = 0; i < cur_positions.size(); i++) {
-    position p = cur_positions[i];
+    position* p = cur_positions[i];
 
-    if(p.stopped_out(today)) {
+    if(p->stopped_out(today)) {
       cur_positions.erase(cur_positions.begin() + i);
-      cur_strategies.erase(cur_strategies.begin() + i);
-      cur_cash += p.position_value(today);      
+      cur_cash += p->position_value(today);      
       old_positions.push_back(p);    
     } 
   }
@@ -103,22 +123,21 @@ void portfolio::process_stops(date today, vector<string>* exithits) {
 //size.  In that case the signal is pushed back on
 //the list, defering it to the next day.
 
-void portfolio::open_positions(vector<string>* pos, vector<strategy>* slist, date sday) {
+void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, date sday) {
 
   vector<string> list = *pos;
-  vector<strategy> strats = *slist; 
+  vector<strategy*> strats = *slist; 
 
   pos->clear();
   slist->clear();
 
   for(int i = 0; i < list.size(); i++) {
     try {
-      position newpos(sday, list[i], 1, strats[i]);   
-      float cost = newpos.cost();
+      position* newpos = new position(sday, list[i], 1, strats[i]);   
+      float cost = newpos->cost();
 
       if(cost < cur_cash) {
-        cur_positions.push_back(newpos);    
-        cur_strategies.push_back(strats[i]);
+        cur_positions.push_back(newpos);
         cur_cash -= cost;
       }
 
@@ -147,8 +166,8 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
     //first, sweep through all open positions and mark
     for(int i = 0; i < targets.size(); i++) {
       for(int x = 0; x < cur_positions.size(); x++) {
-        position p = cur_positions[x];
-        if(p.matches(targets[i])) {
+        position* p = cur_positions[x];
+        if(p->matches(targets[i])) {
           closelist.push_back(x);
           closeticks.push_back(targets[i]);
         }       
@@ -169,26 +188,22 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
 
 void portfolio::close_position(date sday, int index, vector<string>* pos, float price) {
 
-   position p = cur_positions[index]; 
-   strategy s = cur_strategies[index];
+   position* p = cur_positions[index]; 
 
    try {
 
      if(price == 0) {
-       p.close(sday);
+       p->close(sday);
      } else {
       // p.close(sday, price);
      }
 
      old_positions.push_back(p);    
-     cur_cash += p.position_value(sday);      
+     cur_cash += p->position_value(sday);      
      cur_positions.erase(std::remove(cur_positions.begin(), cur_positions.end(), p), cur_positions.end());
 
-//this and it's operator can go away when cur_strategies does
-     cur_strategies.erase(std::remove(cur_strategies.begin(), cur_strategies.end(), s), cur_strategies.end());
-
    } catch(exception e) {
-     pos->push_back(p.symbol()); 
+     pos->push_back(p->symbol()); 
    }
 }
 
@@ -196,7 +211,7 @@ void portfolio::update_equity_curve(date d) {
   float posvalues = 0;
 
   for(int i = 0; i < cur_positions.size(); i++) {
-    posvalues += cur_positions[i].position_value(d);
+    posvalues += cur_positions[i]->position_value(d);
   }
 
   equity_curve.push_back(posvalues + cur_cash);
@@ -204,14 +219,14 @@ void portfolio::update_equity_curve(date d) {
 
 void portfolio::update_positions(date d) {
   for(int i = 0; i < cur_positions.size(); i++) {
-    cur_positions[i].update(d);
+    cur_positions[i]->update(d);
   }
 }
 
 bool portfolio::skip_ticker(string target) {
   if(config::single_pos()) {
     for(int i = 0; i < cur_positions.size(); i++) {
-      if(cur_positions[i].matches(target)) {
+      if(cur_positions[i]->matches(target)) {
         return true;
       }
     }
@@ -223,8 +238,8 @@ bool portfolio::skip_ticker(string target) {
 target_list portfolio::get_current_restrictor() {
   vector<string> t;
   for(int i = 0; i < cur_positions.size(); i++) {
-    position p = cur_positions[i];
-    t.push_back(p.symbol());  
+    position* p = cur_positions[i];
+    t.push_back(p->symbol());  
   }
 
   target_list skip(t);
@@ -235,11 +250,11 @@ void portfolio::print_state() {
   cout << "{\"trades\":";
   cout << "[";
 
-  vector<position> all = old_positions;
+  vector<position*> all = old_positions;
   all.insert(all.end(), cur_positions.begin(), cur_positions.end());
 
   for(int i = 0; i < all.size(); i++) {
-    all[i].print_state();
+    all[i]->print_state();
     if(i < all.size() - 1) {
       cout << ',';
     }
