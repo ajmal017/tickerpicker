@@ -76,10 +76,15 @@ void portfolio::run() {
 
 void portfolio::entry_signals(date today, vector<string>* longhits, vector<strategy*>* hitstrats) {
 
+  std::vector<string>::iterator last;
+
   for(int i = 0; i < long_strategies.size(); i++) {
     strategy* cur = long_strategies[i];
     vector<string> curhits = cur->entry_signal(today, this);
     longhits->insert(longhits->begin(), curhits.begin(), curhits.end());
+
+    last = std::unique(longhits->begin(), longhits->end());
+    longhits->erase(last, longhits->end());
 
     for(int x = 0; x < curhits.size(); x++) {
       hitstrats->push_back(cur);      

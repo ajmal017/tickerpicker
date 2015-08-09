@@ -80,13 +80,13 @@ void date::prev_day() {
 void date::next_business_day() {
   do {
     next_day();
-  } while(! is_weekday());
+  } while(is_static_holiday() || ! is_weekday());
 }
 
 void date::prev_business_day() {
   do {
     prev_day();
-  } while(! is_weekday());
+  } while(is_static_holiday() || ! is_weekday());
 }
 
 //TÃ¸ndering's algorithm via Tomohiko Sakamoto
@@ -118,6 +118,11 @@ bool date::is_leap_year() {
   }
 
   return false;
+}
+
+bool date::is_static_holiday() {
+  return (month == 7 && day == 4) || (month == 12 && day == 25) ||
+	(month == 1 && day == 1);
 }
 
 int date::diff_days(date other) {
@@ -184,6 +189,10 @@ int date::diff_bdays(date other) {
 
 bool date::operator==(date d) const {
   return (year == d.year) && (month == d.month) && (day == d.day);
+}
+
+bool date::operator!=(date d) const {
+  return (year != d.year) || (month != d.month) || (day != d.day);
 }
 
 bool date::operator<(date d) const {

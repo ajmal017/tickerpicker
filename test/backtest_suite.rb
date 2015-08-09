@@ -86,32 +86,57 @@ RSpec.describe "Long trades" do
       expect(results['trades']).to match_array([["2010-04-05", "1", "67.84"]])
     end
 
-    xit "should not sell if the date becomes desynchronized" do
+    it "should not sell if the date becomes desynchronized" do
       results = run_test(%w(AAPL), '2014-11-10', '2014-12-01', {:longsig => "O = 114.91", :longxsig => "C = 119", :longstop => "0" })
-      expect(results['trades']).to match_array([["2014-11-21", "1", "117.51", "2014-11-27", "117.94", "0.36"]])
+      expect(results['trades']).to match_array([["2014-11-21", "1", "117.51", "2014-11-28", "119.27", "1.49"]])
+
+      results = run_test(%w(AAPL), '2013-11-10', '2013-12-01', {:longsig => "O = 518", :longxsig => "H = 546", :longstop => "0" })
+      expect(results['trades']).to match_array([["2013-11-14", "1", "522.8", "2013-11-29", "549.48", "5.1"]])
+
+      results = run_test(%w(AAPL), '2012-11-10', '2012-12-01', {:longsig => "O = 545.5", :longxsig => "O = 564.25", :longstop => "0" })
+      expect(results['trades']).to match_array([["2012-11-15", "1", "537.53", "2012-11-23", "567.16", "5.51"]])
+
+      results = run_test(%w(AAPL), '2014-05-10', '2014-06-10', {:longsig => "O = 592", :longxsig => "O = 607.25", :longstop => "0" })
+      expect(results['trades']).to match_array([["2014-05-14", "1", "592.42", "2014-05-27", "615.88", "3.96"]])
+
+      results = run_test(%w(AAPL), '2009-05-10', '2009-06-10', {:longsig => "O = 123.21", :longxsig => "O = 124.05", :longstop => "0" })
+      expect(results['trades']).to match_array([["2009-05-14", "1", "119.78", "2009-05-26", "124.76", "4.15"]])
     end
 
-    xit "should not buy on static holidays" do
+    it "should not buy if the date becomes desynchronized" do
+      results = run_test(%w(AAPL), '2014-11-10', '2014-12-15', {:longsig => "O = 117.94", :longxsig => "C = 110.19", :longstop => "0" })
+      expect(results['trades']).to match_array([["2014-11-28", "1", "119.27"]])
+
+      results = run_test(%w(AAPL), '2013-11-10', '2013-12-10', {:longsig => "H = 546", :longxsig => "O = 565.5", :longstop => "0" })
+      expect(results['trades']).to match_array([["2013-11-29", "1", "549.48", "2013-12-05", "572.65", "4.21"]])
+
+      results = run_test(%w(AAPL), '2012-11-10', '2012-12-10', {:longsig => "O = 564.25", :longxsig => "O = 590.22", :longstop => "0" })
+      expect(results['trades']).to match_array([["2012-11-23", "1", "567.16", "2012-11-30", "586.79", "3.46"]])
+
+      results = run_test(%w(AAPL), '2014-05-10', '2014-06-10', {:longsig => "O = 607.25", :longxsig => "O = 633.96", :longstop => "0" })
+      expect(results['trades']).to match_array([["2014-05-27", "1", "615.88", "2014-06-03", "628.46", "2.04"]])
+
+      results = run_test(%w(AAPL), '2009-05-10', '2009-06-10', {:longsig => "O = 124.05", :longxsig => "O = 140", :longstop => "0" })
+      expect(results['trades']).to match_array([["2009-05-26", "1", "124.76", "2009-06-04", "140.13", "12.31"]])
+    end
+
+    it "should not buy on static holidays" do
       results = run_test(%w(XOM), '2010-06-01', '2010-07-28', {:longsig => "O = 56.85", :longxsig => "C = 0", :longstop => "0" })
       expect(results['trades']).to match_array([["2010-07-06", "1", "57.17"]])
     end
 
-    xit "should not sell on static holidays" do
-#can't sell on july 4th
-#      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 91.19", :longxsig => "O = 52.13", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2000-06-14", "2", "47.34", "2000-07-05", "52.13", "10.11"]])
+    it "should not sell on static holidays" do
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 91.19", :longxsig => "O = 52.13", :longstop => "0" })
+      expect(results['trades']).to match_array([["2000-06-14", "2", "47.34", "2000-07-05", "53.25", "12.48"]])
 
-#can't sell on december 25th
-#      results = run_test(%w(AAPL), '2014-12-10', '2015-01-10', {:longsig => "L = 106.26", :longxsig => "C = 112.01", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2014-12-17", "1", "107.12", "2014-12-25", "112.58", "5.09"]])
+      results = run_test(%w(AAPL), '2014-12-10', '2015-01-10', {:longsig => "L = 106.26", :longxsig => "C = 112.01", :longstop => "0" })
+      expect(results['trades']).to match_array([["2014-12-17", "1", "107.12", "2014-12-26", "112.1", "4.64"]])
 
-#can't sell on january 1st
-#      results = run_test(%w(AAPL), '2014-12-10', '2015-01-10', {:longsig => "O = 112.10", :longxsig => "O = 112.82", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2014-12-29", "1", "113.79", "2015-01-01", "112.82", "-0.86"]])
+      results = run_test(%w(AAPL), '2014-12-10', '2015-01-10', {:longsig => "O = 112.10", :longxsig => "O = 112.82", :longstop => "0" })
+      expect(results['trades']).to match_array([["2014-12-29", "1", "113.79", "2015-01-02", "111.39", "-2.11"]])
 
-
-#      results = run_test(%w(ABD), '2009-12-20', '2010-01-10', {:longsig => "O = 7.4", :longxsig => "O = 7.65", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2009-12-23", "1", "7.47", "2009-12-28", "7.66", "2.54"]])
+      results = run_test(%w(ABD), '2009-12-20', '2010-01-10', {:longsig => "O = 7.4", :longxsig => "O = 7.65", :longstop => "0" })
+      expect(results['trades']).to match_array([["2009-12-23", "1", "7.47", "2009-12-28", "7.66", "2.54"]])
     end
   end
 

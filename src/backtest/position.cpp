@@ -18,8 +18,9 @@ position::position(date start, string ticker, int shares, strategy* strat) {
 
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(*open_date, 1);
+  date pulled = date(t.date[0]);
 
-  if(t.volume[0] < shares) {
+  if(t.volume[0] < shares || start != pulled) {
     throw exception();
   }
 
@@ -52,8 +53,9 @@ void position::close(date cdate) {
   close_date = new date(cdate);
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(cdate, 1);
+  date pulled = date(t.date[0]);
 
-  if(t.volume[0] < count) {
+  if(t.volume[0] < count || cdate != pulled) {
     throw exception();
   } 
 

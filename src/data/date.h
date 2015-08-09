@@ -26,6 +26,7 @@ class date {
     int getday();
 
     bool operator==(const date) const;
+    bool operator!=(const date) const;
     bool operator<=(const date) const;
     bool operator>=(const date) const;
     bool operator<(const date) const;
@@ -34,6 +35,7 @@ class date {
   
     int day_of_week();
     bool is_leap_year();
+    bool is_static_holiday();
     time_t time_to_epoch(const struct tm*);
 
     static const short LEAP_DAY = 28;
