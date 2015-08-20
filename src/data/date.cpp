@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 #include <iomanip>
 #include <time.h>
 #include "date.h"
@@ -92,11 +93,12 @@ void date::prev_business_day() {
 //TÃ¸ndering's algorithm via Tomohiko Sakamoto
 //0 is a sunday, 6 is a saturday.  Works for year > 1752
 //see: http://en.wikipedia.org/wiki/Determination_of_the_day_of_the_week
+//return (y + y/4 - y/100 + y/400 + MONTH_CODES[month] + day) % 7;
 
 int date::day_of_week() {
   int y = year; //year isn't always preserved
   y -= month < 3;
-  return (y + ((97*y)/400) + MONTH_CODES[month] + day) % 7;
+  return ((501*y / 400) - (4 * y / 400) + MONTH_CODES[month] + day) % 7;
 }
 
 bool date::is_weekday() {

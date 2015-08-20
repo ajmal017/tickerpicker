@@ -161,11 +161,11 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2014-06-01', '2014-07-20', {:longsig => "V = 92337700", :longxsig => "O = 90.21", :longstop => "0" })
       expect(results['trades']).to match_array([["2014-06-03", "7", "89.78", "2014-06-26", "90.37", "0.65"]])
 
-#      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 41.53", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2014-06-03", "7", "89.78", "2014-06-26", "90.37", "0.65"]])
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 41.53", :longstop => "0" })
+      expect(results['trades']).to match_array([["2005-02-24", "2", "44.24", "2005-03-18", "43.33", "-2.06"]])
 
-#      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 91.19", :longxsig => "O = 52.13", :longstop => "0" })
-#      expect(results['trades']).to match_array([["2000-06-14", "2", "47.34", "2000-07-04", "52.13", "10.11"]])
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 91.19", :longxsig => "O = 52.13", :longstop => "0" })
+      expect(results['trades']).to match_array([["2000-06-14", "2", "47.34", "2000-07-05", "53.25", "12.48"]])
 
       results = run_test(%w(AAPL), '1987-06-10', '1987-07-10', {:longsig => "O = 79", :longxsig => "O = 40.5", :longstop => "0" })
       expect(results['trades']).to match_array([["1987-06-15", "2", "39.5", "1987-06-30", "40.5", "2.53"]])
