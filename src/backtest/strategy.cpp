@@ -3,7 +3,7 @@
 #include <math.h>
 
 strategy::strategy() {
-
+  trail_stop = NULL;
 }
 
 void strategy::set_universe(vector<std::string> u) {
@@ -43,9 +43,20 @@ vector<string> strategy::exit_signal(date strat_date, restrictor* filter) {
   return xit_signal->eval(strat_date);
 }
 
-float strategy::stop_loss(date strat_date, string ticker) {
+float strategy::stop_loss(date strat_date, string ticker, bool trail) {
   stock cur(ticker);
   cur.onday(strat_date);
-  float rval = init_stop->eval(cur);
+  float rval;
+
+  if(trail && trail_stop) {
+    rval = trail_stop->eval(cur);
+  } else {
+    rval = init_stop->eval(cur);
+  }
+
   return floor(rval * 100) / 100;
+}
+
+bool strategy::has_trail() {
+  return trail_stop != NULL;
 }

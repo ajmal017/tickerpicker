@@ -24,6 +24,9 @@ position::position(date start, string ticker, int shares, strategy* strat) {
     throw exception();
   }
 
+  float stop = this_strat->stop_loss(start, ticker, false); 
+  stop_history.push_back(stop);
+
   open_cost = t.open[0];
   split_fraction = 0.0;
   open = true;
@@ -69,24 +72,27 @@ bool position::exit(date edate) {
 }
 
 bool position::stopped_out(date cdate) {
-  ptable* thispos = open_equities[ticker];
-  pdata t = thispos->pull_history_by_limit(cdate, 1);
-
-  if(t.volume[0] >= count) {
-    close_date = new date(cdate);
-    float stop = this_strat->stop_loss(cdate, ticker); 
-
-    if(stop >= t.low[0]) {
-      close_cost = stop;
-      open = false;
-    }
-  } 
+  if(open) {
+    ptable* thispos = open_equities[ticker];
+    pdata t = thispos->pull_history_by_limit(cdate, 1);
+  
+    if(t.volume[0] >= count) {
+      close_date = new date(cdate);
+      float stop = stop_history.back();
+  
+      if(stop >= t.low[0]) {
+        close_cost = (t.open[0] < stop ? t.open[0] : stop);
+        open = false;
+      }
+    } 
+  }
 
   return ! open;
 }
 
 void position::update(date d) {
   split_adjust(d);
+  update_stop(d);
 }
 
 void position::split_adjust(date d) {
@@ -103,8 +109,26 @@ void position::split_adjust(date d) {
       split_fraction += (t.open[0] * remainder);
     }
 
+    for(int i = 0; i < stop_history.size(); i++) {
+      stop_history[i] = stop_history[i] * ratio; 
+    }
+
     open_cost = floorf(open_cost * ratio * 100) / 100; 
     count = number; 
+  }
+}
+
+void position::update_stop(date d) {
+
+  if(open_date->to_s() != d.to_s()) {
+    float old = stop_history.back();
+
+    if(this_strat->has_trail()) {
+      float stop = this_strat->stop_loss(d, ticker, true);
+      stop_history.push_back((stop > old ? stop : old));
+    } else {
+      stop_history.push_back(old);
+    }
   }
 }
 
@@ -128,6 +152,19 @@ void position::print_state() {
     cout << '"' << close_date->to_s() << "\",";
     cout << '"' << close_cost << "\",";
     cout << '"' << percent_diff() << "\"";
+  }
+
+  cout << "]";
+}
+
+void position::print_stop_curve() {
+  cout << "[";
+  
+  for(int i = 0; i < stop_history.size(); i++) {
+    cout << stop_history[i];
+    if(i < stop_history.size() - 1) {
+      cout << ",";
+    }
   }
 
   cout << "]";

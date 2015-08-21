@@ -31,11 +31,11 @@ class portfolio : public restrictor {
     void close_position(date, int, std::vector<std::string>*, float p=0);
     void open_positions(std::vector<std::string>*, std::vector<strategy*>*, date);
     void entry_signals(date, std::vector<std::string>*, std::vector<strategy*>*);
-    void process_stops(date, std::vector<std::string>*);
     void exit_signals(date, std::vector<std::string>*);
     target_list get_current_restrictor();
     void update_equity_curve(date);
     void update_positions(date);
+    void process_stops(date);
 
     std::vector<strategy*> long_strategies;
     std::vector<string> stock_universe;

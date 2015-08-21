@@ -154,6 +154,44 @@ RSpec.describe "Long trades" do
       results = run_test(%w(XOM), '2014-07-20', '2014-08-20', {:longsig => "H = 104.76", :longxsig => "H = 0", :longstop => "98" })
       expect(results['trades']).to match_array([["2014-07-30", "1", "103.73", "2014-08-05", "98", "-5.53"]])
     end
+
+    it "should split adjust stop losses" do
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longstop => "L3" })
+      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.125","-2.53"]])
+      expect(results['stops']).to match_array([[43.125,43.125,43.125,43.125,43.125,43.125]])
+
+      results = run_test(%w(AAPL), '2014-05-28', '2014-06-28', {:longsig => "O = 626.02", :longxsig => "O = 0", :longstop => "606" })
+      expect(results['trades']).to match_array([["2014-05-29","7","89.69"]])
+      expect(results['stops']).to match_array([[86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714,86.5714]])     
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longstop => "89" })
+      expect(results['trades']).to match_array([["2000-06-19","2","45.28"]])
+      expect(results['stops']).to match_array([[44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5]])     
+    end 
+
+    it "should sell at the opening price of a gap if the gap is below the stop loss" do
+      results = run_test(%w(AAPL), '2014-01-02', '2014-02-03', {:longsig => "O = 544.32", :longxsig => "O = 0", :longstop => "525" })
+      expect(results['trades']).to match_array([["2014-01-08","1","538.8","2014-01-28","508.76","-5.58"]])
+      expect(results['stops']).to match_array([[525,525,525,525,525,525,525,525,525,525,525,525,525,525,525]])
+
+      results = run_test(%w(AAPL), '2013-09-01', '2013-10-01', {:longsig => "O = 493.1", :longxsig => "O = 0", :longstop => "480" })
+      expect(results['trades']).to match_array([["2013-09-04","1","499.56","2013-09-11","467.01","-6.52"]])
+      expect(results['stops']).to match_array([[480,480,480,480,480,480]])
+
+      results = run_test(%w(AAPL), '2003-10-01', '2003-10-31', {:longsig => "O = 23.73", :longxsig => "O = 0", :longstop => "24" })
+      expect(results['trades']).to match_array([["2003-10-14","1","24.32","2003-10-16","23.8","-2.14"]])
+      expect(results['stops']).to match_array([[24,24,24]])
+    end 
+
+    it "should not change the stop loss if no trailing stop loss is specified" do
+      results = run_test(%w(AAPL), '2000-01-10', '2000-01-20', {:longsig => "O > 0", :longxsig => "O = 0", :longstop => "80" })
+      expect(results['trades']).to match_array([["2000-01-11","1","95.94"]])
+      expect(results['stops']).to match_array([[80,80,80,80,80,80,80,80]])     
+
+      results = run_test(%w(AAPL), '2015-01-02', '2015-01-22', {:longsig => "O > 0", :longxsig => "O = 0", :longstop => "100" })
+      expect(results['trades']).to match_array([["2015-01-05","1","108.29"]])
+      expect(results['stops']).to match_array([[100,100,100,100,100,100,100,100,100,100,100,100,100,100]])     
+    end
   end
 
   describe "Stock splits" do

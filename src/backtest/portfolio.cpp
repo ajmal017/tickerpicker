@@ -66,10 +66,10 @@ void portfolio::run() {
 
     entry_signals(today, &hits, &hitstrats);
     exit_signals(today, &exits);
-    process_stops(today, &exits);
 
-    update_equity_curve(today);
     update_positions(today);
+    process_stops(today);
+    update_equity_curve(today);
     today.next_business_day();
   } 
 }
@@ -109,7 +109,7 @@ void portfolio::exit_signals(date today, vector<string>* longhits) {
   }
 }
 
-void portfolio::process_stops(date today, vector<string>* exithits) {
+void portfolio::process_stops(date today) {
 
   for(int i = 0; i < cur_positions.size(); i++) {
     position* p = cur_positions[i];
@@ -265,6 +265,16 @@ void portfolio::print_state() {
     }
   }
 
+  cout << "],\"stops\":";
+  cout << "[";
+
+  for(int i = 0; i < all.size(); i++) {
+    all[i]->print_stop_curve();
+    if(i < all.size() - 1) {
+      cout << ',';
+    }
+  }
+  
   cout << "]}";
   cout << endl;
 }

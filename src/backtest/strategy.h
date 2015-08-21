@@ -18,7 +18,8 @@ class strategy {
 
     std::vector<std::string> entry_signal(date, restrictor*);
     std::vector<std::string> exit_signal(date, restrictor*);
-    float stop_loss(date, std::string);
+    float stop_loss(date, std::string, bool);
+    bool has_trail();
 
   private:
 
