@@ -4,6 +4,7 @@
 
 strategy::strategy() {
   trail_stop = NULL;
+  init_stop = NULL;
 }
 
 void strategy::set_universe(vector<std::string> u) {
@@ -29,6 +30,10 @@ void strategy::exit_signal(screen* s) {
 
 void strategy::trailing_stop(vector<std::string> trail) {
   trail_stop = expression_parser::parse(trail);
+ 
+  if(init_stop == NULL) {
+    init_stop = expression_parser::parse(trail);
+  }
 }
 
 void strategy::stop_loss(vector<std::string> stop) {

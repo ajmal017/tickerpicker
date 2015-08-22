@@ -18,6 +18,10 @@ def run_test(tickers, start, done, sys)
     cmdline += " --lstop '#{sys[:longstop]}'"
   end
 
+  if(sys[:longtrail])
+    cmdline += " --ltrail '#{sys[:longtrail]}'"
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -191,6 +195,50 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2015-01-02', '2015-01-22', {:longsig => "O > 0", :longxsig => "O = 0", :longstop => "100" })
       expect(results['trades']).to match_array([["2015-01-05","1","108.29"]])
       expect(results['stops']).to match_array([[100,100,100,100,100,100,100,100,100,100,100,100,100,100]])     
+    end
+  end
+
+  describe "Trailing Stops" do
+    it "should allow trailing stop losses" do
+      results = run_test(%w(AAPL), '2003-09-01', '2003-10-20', {:longsig => "O = 23.73", :longxsig => "O = 0", :longtrail => "AVGC20" })
+      expect(results['trades']).to match_array([["2003-10-14","1","24.32","2003-10-20","22.42","-7.82"]])
+      expect(results['stops']).to match_array([[22.21,22.34,22.36,22.37,22.42]]) 
+
+      results = run_test(%w(AAPL), '2011-01-01', '2011-02-01', {:longsig => "O = 333.99", :longxsig => "O = 0", :longtrail => "AVGC50" })
+      expect(results['trades']).to match_array([["2011-01-10","1","338.83"]])
+      expect(results['stops']).to match_array([[318.48,319.29,320.09,320.82,321.53,321.53,321.98,322.42,322.7,322.91,323.3,323.79,324.51,325.23,325.92,326.7,327.43]]) 
+    end
+
+    it "should split adjust trailing stop losses" do
+      results = run_test(%w(AAPL), '2014-05-01', '2014-06-31', {:longsig => "O = 592.34", :longxsig => "O = 0", :longtrail => "AVGC20" })
+      expect(results['trades']).to match_array([["2014-05-05","7","84.3","2014-06-20","91.48","8.51"]])
+      expect(results['stops']).to match_array([[78.5186,79.0257,79.5171,79.93,80.3729,80.8957,81.4114,81.9529,82.4514,82.97,83.4943,84.0157,84.5986,84.8814,85.1814,85.1814,85.4071,85.6343,85.9571,86.2543,86.5114,86.7729,87.1329,87.5257,87.9371,88.44,88.91,89.37,89.74,90.1,90.44,90.72,91.01,91.28,91.48]]) 
+
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longtrail => "L5" })
+      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.86","-0.86"]])
+      expect(results['stops']).to match_array([[43.675,43.725,43.725,43.725,43.725,43.86]])
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
+      expect(results['trades']).to match_array([["2000-06-19", "2", "45.28"]])
+      expect(results['stops']).to match_array([[41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.94, 42.49, 42.79, 43.21, 43.63, 43.82, 44.07, 44.09]])     
+    end
+
+    it "should sell at the opening price of a gap if the gap is below the stop loss" do
+      results = run_test(%w(AAPL), '2014-01-01', '2014-02-01', {:longsig => "O = 529.91", :longxsig => "O = 0", :longtrail => "MINL5" })
+      expect(results['trades']).to match_array([["2014-01-14","1","538.22","2014-01-28","508.76","-5.48"]])
+      expect(results['stops']).to match_array([[529.88,529.88,529.88,529.88,529.88,529.88,537.65,539.9,539.9,539.9,539.9]]) 
+
+      results = run_test(%w(AAPL), '2014-01-01', '2014-02-01', {:longsig => "O = 529.91", :longxsig => "O = 0", :longtrail => "AVGC100" })
+      expect(results['trades']).to match_array([["2014-01-14","1","538.22","2014-01-28","508.76","-5.48"]])
+      expect(results['stops']).to match_array([[517.96,518.5,519.03,519.41,519.41,520.02,520.62,521.27,521.86,522.47,522.55]]) 
+
+      results = run_test(%w(AAPL), '2013-09-01', '2013-10-01', {:longsig => "O = 493.1", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
+      expect(results['trades']).to match_array([["2013-09-04","1","499.56","2013-09-11","467.01","-6.52"]])
+      expect(results['stops']).to match_array([[459.43, 463.13, 468.59, 478.14, 485.21, 485.21]])
+
+      results = run_test(%w(AAPL), '2003-10-01', '2003-10-31', {:longsig => "O = 23.73", :longxsig => "O = 0", :longtrail => "AVGC5" })
+      expect(results['trades']).to match_array([["2003-10-14","1","24.32","2003-10-16","23.8","-2.14"]])
+      expect(results['stops']).to match_array([[23.81, 24.17, 24.17]])
     end
   end
 

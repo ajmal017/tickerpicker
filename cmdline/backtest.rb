@@ -52,6 +52,7 @@ opts = Trollop::options do
   opt :list, "Stock universe to run backtest on", :type => :string
   opt :strategy, "Strategy file", :type => :string
   opt :lstop, "Long stop loss rule", :type => :string
+  opt :ltrail, "Long trailing stop loss rule", :type => :string
   opt :lsize, "Long position sizing rule", :type => :string
   opt :letrig, "Long entry trigger file", :type => :string
   opt :lesig, "Long entry signal file", :type => :string
@@ -93,6 +94,7 @@ add_to_hash(opts[:lxtrig], strategy, :long, :exit, :trigger)
 
 add_to_hash(opts[:lstop], strategy, :long, :stop)
 add_to_hash(opts[:lsize], strategy, :long, :size)
+add_to_hash(opts[:ltrail], strategy, :long, :trail)
 add_to_hash(opts[:lfilter], strategy, :long, :filter)
 add_to_hash(opts[:lreject], strategy, :long, :reject)
 
