@@ -10,6 +10,7 @@ CHECKSUMS = {
 	'IKAN' => 'cd6305889f082302c865fbe01be716df',
 	'FLEX' => 'c647090608d10ce02fd379cddc031768',
 	'CGNT' => '687d643eeb4ac4bc7982e9be27843a2b',
+	'SPEX' => 'e8a7c3b2ebfbff8c5424ff7e64f51ad1',
 	'ABV-C' => '8dd6bb7329a71449b0a1b292b5999164',
 	} 
 
@@ -187,24 +188,48 @@ RSpec.describe "Dates and data handling" do
   describe "split adjustments" do 
 
     it "processes adjustments" do
-      hits = run_screen("O20 = 3.5;", %w(IKAN), "2015-02-28")
-      expect(hits).to match_array(%w(IKAN))
-
       hits = run_screen("O10 = 39; H10 = 39.56;", %w(FLEX), "2000-10-19")
       expect(hits).to match_array(%w(FLEX)) 
 
       hits = run_screen("O10 = 78; H10 = 79.12;", %w(FLEX), "2000-10-19")
       expect(hits).to be_empty
+
+      hits = run_screen("O21 = 6.5", %w(SPEX), "1996-06-07")
+      expect(hits).to match_array(%w(SPEX))
+
+      hits = run_screen("O21 = 13", %w(SPEX), "1996-06-07")
+      expect(hits).to be_empty
+    end
+
+    it "processes reverse adjustments" do
+      hits = run_screen("O20 = 3.5;", %w(IKAN), "2015-02-28")
+      expect(hits).to match_array(%w(IKAN))
+  
+      hits = run_screen("O20 = 9;", %w(SPEX), "2012-10-09")
+      expect(hits).to match_array(%w(SPEX))
+
+      hits = run_screen("O19 = 3;", %w(SPEX), "2011-05-19")
+      expect(hits).to match_array(%w(SPEX))
     end
   
     it "processes multiple adjustments for a single pull" do
       hits = run_screen("O210 = 20.875; H210 = 20.9375;", %w(FLEX), "2000-10-19")
       expect(hits).to match_array(%w(FLEX))
     end
+
+    it "processes multiple reverse adjustments for a single pull" do
+      hits = run_screen("O400 = 102", %w(SPEX), "2012-09-27")
+      expect(hits).to match_array(%w(SPEX))
+    end 
   
     it "processes multiple adjustments across multiple pulls" do
       hits = run_screen("C5 > 0; O210 = 20.875; H210 = 20.9375;", %w(FLEX), "2000-10-19")
       expect(hits).to match_array(%w(FLEX))
+    end
+
+    it "processes multiple reverse adjustments across multiple pulls" do
+      hits = run_screen("O2 = 11.8; O10 = 8.6; O400 = 102", %w(SPEX), "2012-09-27")
+      expect(hits).to match_array(%w(SPEX))
     end
   
     it "applies splits starting on the right day" do

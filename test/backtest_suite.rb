@@ -173,6 +173,16 @@ RSpec.describe "Long trades" do
       expect(results['stops']).to match_array([[44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5]])     
     end 
 
+    it "should reverse split adjust stop losses" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longstop => "0.3" })
+      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59"]])
+      expect(results['stops']).to match_array([[6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]])     
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longstop => "0.25" })
+      expect(results['trades']).to match_array([["2011-04-25", "0", "3"]])
+      expect(results['stops']).to match_array([[2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5]])     
+    end
+
     it "should sell at the opening price of a gap if the gap is below the stop loss" do
       results = run_test(%w(AAPL), '2014-01-02', '2014-02-03', {:longsig => "O = 544.32", :longxsig => "O = 0", :longstop => "525" })
       expect(results['trades']).to match_array([["2014-01-08","1","538.8","2014-01-28","508.76","-5.58"]])
@@ -221,6 +231,16 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
       expect(results['trades']).to match_array([["2000-06-19", "2", "45.28"]])
       expect(results['stops']).to match_array([[41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.94, 42.49, 42.79, 43.21, 43.63, 43.82, 44.07, 44.09]])     
+    end
+
+    it "should reverse split adjust stop losses" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59", "2012-09-27", "10.27", "7.09"]])
+      expect(results['stops']).to match_array([[5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.8, 5.8, 5.8, 10.02, 10.11, 11.13, 11.13]])     
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2011-04-25", "0", "3", "2011-05-18", "3.08", "2.66"]])
+      expect(results['stops']).to match_array([[0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 2.9, 2.9, 3.2, 3.59, 3.59, 3.69, 3.7, 3.7]])     
     end
 
     it "should sell at the opening price of a gap if the gap is below the stop loss" do
