@@ -16,6 +16,7 @@ class date {
     void prev_day();
     void next_business_day();
     void prev_business_day();
+    bool is_business_day();
     bool is_weekday();
 
     int diff_days(date);

@@ -81,13 +81,13 @@ void date::prev_day() {
 void date::next_business_day() {
   do {
     next_day();
-  } while(is_static_holiday() || ! is_weekday());
+  } while(!is_business_day());
 }
 
 void date::prev_business_day() {
   do {
     prev_day();
-  } while(is_static_holiday() || ! is_weekday());
+  } while(!is_business_day());
 }
 
 //TÃ¸ndering's algorithm via Tomohiko Sakamoto
@@ -99,6 +99,10 @@ int date::day_of_week() {
   int y = year; //year isn't always preserved
   y -= month < 3;
   return ((501*y / 400) - (4 * y / 400) + MONTH_CODES[month] + day) % 7;
+}
+
+bool date::is_business_day() {
+  return is_weekday() && ! is_static_holiday(); 
 }
 
 bool date::is_weekday() {

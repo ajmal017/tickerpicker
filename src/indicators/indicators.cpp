@@ -15,11 +15,17 @@
 #include <algorithm>
 #include <iostream>
 
+portfolio_metric* indicators::fn_portfolio;
+
 indicators::indicators() {
   if(lookback_table.size() == 0 && fn_table.size() == 0) {
     init_fntable();
     init_lookback_table();
   }
+}
+
+void indicators::set_portfolio(portfolio_metric* p) {
+  fn_portfolio = p;
 }
 
 float indicators::eval_indicator(std::string indicator, std::vector<float> args, pdata* data, int offset) {

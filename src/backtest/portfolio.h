@@ -14,9 +14,10 @@ class target_list : public restrictor {
     set<string> targets;
 };
 
-class portfolio : public restrictor {
+class portfolio : public restrictor, portfolio_metric {
 
   public:
+    portfolio();
     ~portfolio();
     void run();
     void print_state();
@@ -24,6 +25,11 @@ class portfolio : public restrictor {
     void set_universe(vector<std::string>);
     void set_long_strategies(std::vector<strategy>);
     bool skip_ticker(string);
+
+    int position_count();
+    float total_return();
+    float equity();
+    float cash();
 
   private:
 

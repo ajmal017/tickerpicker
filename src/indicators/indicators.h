@@ -5,6 +5,14 @@
 #include <string>
 #include <map>
 
+class portfolio_metric {
+public:
+  virtual int position_count() = 0;
+  virtual float total_return() = 0;
+  virtual float equity() = 0;
+  virtual float cash() = 0;
+};
+
 //output buffer large enough to look back
 //five years on functions that require 
 //large pulls due to unstable periods
@@ -16,10 +24,13 @@ class indicators {
   public:
 
   indicators();
+  static void set_portfolio(portfolio_metric*);
   int eval_lookback(std::string, std::vector<float>);
   float eval_indicator(std::string, std::vector<float>, pdata*, int offset=0);
 
   private:
+
+  static portfolio_metric* fn_portfolio;
 
   int offset;
   pdata *current_prices;
@@ -103,6 +114,12 @@ class indicators {
   static float round(indicators*);
   static float floor(indicators*);
   static float ceil(indicators*);
+
+  //metrics
+  static float portfolio_equity(indicators*);
+  static float portfolio_return(indicators*);
+  static float portfolio_count(indicators*);
+  static float portfolio_cash(indicators*);
 };
 
 #endif

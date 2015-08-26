@@ -10,8 +10,13 @@
 #include "portfolio.h"
 #include "position.h"
 #include <iostream>
+#include <cmath>
 
 using namespace std;
+
+portfolio::portfolio() {
+  indicators::set_portfolio(this);
+}
 
 //since portfolio only runs once, I'm not
 //really sure this is strictly necessary, but
@@ -60,7 +65,12 @@ void portfolio::run() {
   vector<strategy*> hitstrats;
   cur_cash = 10000;
 
+  if(!today.is_business_day()) {
+    today.next_business_day();
+  }
+
   while(today <= lastdate) {
+
     close_positions(&exits, today);
     open_positions(&hits, &hitstrats, today);
 
@@ -70,6 +80,7 @@ void portfolio::run() {
     update_positions(today);
     process_stops(today);
     update_equity_curve(today);
+
     today.next_business_day();
   } 
 }
@@ -214,11 +225,11 @@ void portfolio::close_position(date sday, int index, vector<string>* pos, float 
 
 void portfolio::update_equity_curve(date d) {
   float posvalues = 0;
-
+ 
   for(int i = 0; i < cur_positions.size(); i++) {
     posvalues += cur_positions[i]->position_value(d);
   }
-
+ 
   equity_curve.push_back(posvalues + cur_cash);
 }
 
@@ -265,6 +276,9 @@ void portfolio::print_state() {
     }
   }
 
+  cout.setf(std::ios::fixed,std::ios::floatfield);
+  cout.precision(2);
+ 
   cout << "],\"stops\":";
   cout << "[";
 
@@ -275,8 +289,36 @@ void portfolio::print_state() {
     }
   }
   
+ cout << "],\"equity\":[";
+
+  for(int i = 0; i < equity_curve.size(); i++) {
+    cout << equity_curve[i];
+    if(i < equity_curve.size() - 1) {
+      cout << ',';
+    }
+  }
+
   cout << "]}";
   cout << endl;
+}
+
+int portfolio::position_count() {
+  return cur_positions.size();
+}
+
+float portfolio::total_return() {
+  float start = equity_curve.front();
+  float end = equity_curve.back();
+  float diff = ((end - start) / start) * 100;
+  return floor(diff * 100) / 100;
+}
+
+float portfolio::equity() {
+  return equity_curve.back();
+}
+
+float portfolio::cash() {
+  return cur_cash;
 }
 
 target_list::target_list(string s) {

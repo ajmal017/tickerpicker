@@ -6,7 +6,7 @@ app: screen.o btest.o indicator data core backtest
 	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o screen.o -o screen.bin 
 	$(CC) $(TAFLAGS) ./data/*.o ./indicators/*.o ./core/*.o ./backtest/*.o btest.o -o btest.bin 
 
-indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o indicators/math.o
+indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o indicators/math.o indicators/metrics.o
 
 data: data/date.o data/pdata.o data/ptable.o
 
@@ -43,6 +43,9 @@ indicators/tables.o: indicators/tables.cpp
 
 indicators/math.o: indicators/math.cpp
 	$(CC) $(CFLAGS) -c -o ./indicators/math.o indicators/math.cpp
+
+indicators/metrics.o: indicators/metrics.cpp
+	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/metrics.o indicators/metrics.cpp
 
 data/date.o: data/date.cpp data/date.h
 	$(CC) $(CFLAGS) -c -o ./data/date.o data/date.cpp
