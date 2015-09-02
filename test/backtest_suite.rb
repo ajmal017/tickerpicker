@@ -22,6 +22,10 @@ def run_test(tickers, start, done, sys)
     cmdline += " --ltrail '#{sys[:longtrail]}'"
   end
 
+  if(sys[:longsize])
+    cmdline += " --lsize '#{sys[:longsize]}'"
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -159,30 +163,6 @@ RSpec.describe "Long trades" do
       expect(results['trades']).to match_array([["2014-07-30", "1", "103.73", "2014-08-05", "98", "-5.53"]])
     end
 
-    it "should split adjust stop losses" do
-      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longstop => "L3" })
-      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.125","-2.53"]])
-      expect(results['stops']).to match_array([[43.12, 43.12, 43.12, 43.12, 43.12, 43.12]])
-
-      results = run_test(%w(AAPL), '2014-05-28', '2014-06-28', {:longsig => "O = 626.02", :longxsig => "O = 0", :longstop => "606" })
-      expect(results['trades']).to match_array([["2014-05-29","7","89.69"]])
-      expect(results['stops']).to match_array([[86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57]])     
-
-      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longstop => "89" })
-      expect(results['trades']).to match_array([["2000-06-19","2","45.28"]])
-      expect(results['stops']).to match_array([[44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5]])     
-    end 
-
-    it "should reverse split adjust stop losses" do
-      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longstop => "0.3" })
-      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59"]])
-      expect(results['stops']).to match_array([[6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]])     
-
-      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longstop => "0.25" })
-      expect(results['trades']).to match_array([["2011-04-25", "0", "3"]])
-      expect(results['stops']).to match_array([[2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5]])     
-    end
-
     it "should sell at the opening price of a gap if the gap is below the stop loss" do
       results = run_test(%w(AAPL), '2014-01-02', '2014-02-03', {:longsig => "O = 544.32", :longxsig => "O = 0", :longstop => "525" })
       expect(results['trades']).to match_array([["2014-01-08","1","538.8","2014-01-28","508.76","-5.58"]])
@@ -217,30 +197,6 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2011-01-01', '2011-02-01', {:longsig => "O = 333.99", :longxsig => "O = 0", :longtrail => "AVGC50" })
       expect(results['trades']).to match_array([["2011-01-10","1","338.83"]])
       expect(results['stops']).to match_array([[318.48,319.29,320.09,320.82,321.53,321.53,321.98,322.42,322.7,322.91,323.3,323.79,324.51,325.23,325.92,326.7,327.43]]) 
-    end
-
-    it "should split adjust trailing stop losses" do
-      results = run_test(%w(AAPL), '2014-05-01', '2014-06-31', {:longsig => "O = 592.34", :longxsig => "O = 0", :longtrail => "AVGC20" })
-      expect(results['trades']).to match_array([["2014-05-05","7","84.3","2014-06-20","91.48","8.51"]])
-      expect(results['stops']).to match_array([[78.52, 79.03, 79.52, 79.93, 80.37, 80.9, 81.41, 81.95, 82.45, 82.97, 83.49, 84.02, 84.6, 84.88, 85.18, 85.18, 85.41, 85.63, 85.96, 86.25, 86.51, 86.77, 87.13, 87.53, 87.94, 88.44, 88.91, 89.37, 89.74, 90.1, 90.44, 90.72, 91.01, 91.28, 91.48]]) 
-
-      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longtrail => "L5" })
-      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.86","-0.86"]])
-      expect(results['stops']).to match_array([[43.67, 43.72, 43.72, 43.72, 43.72, 43.86]])
-
-      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
-      expect(results['trades']).to match_array([["2000-06-19", "2", "45.28"]])
-      expect(results['stops']).to match_array([[41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.94, 42.49, 42.79, 43.21, 43.63, 43.82, 44.07, 44.09]])     
-    end
-
-    it "should reverse split adjust stop losses" do
-      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longtrail => "L - 0.2" })
-      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59", "2012-09-27", "10.27", "7.09"]])
-      expect(results['stops']).to match_array([[5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.8, 5.8, 5.8, 10.02, 10.11, 11.13, 11.13]])     
-
-      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2" })
-      expect(results['trades']).to match_array([["2011-04-25", "0", "3", "2011-05-18", "3.08", "2.66"]])
-      expect(results['stops']).to match_array([[0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 2.9, 2.9, 3.2, 3.59, 3.59, 3.69, 3.7, 3.7]])     
     end
 
     it "should sell at the opening price of a gap if the gap is below the stop loss" do
@@ -295,27 +251,6 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2015-03-01', '2015-03-20', {:longsig => "O = 128.96", :longxsig => "O = 128.4", :longstop => "0" })
       expect(results['equity']).to match_array([10000,10000,9999.44,9997.31,9997.5,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04]) 
     end
-
-    it "should behave sanely during stock splits" do
-      results = run_test(%w(AAPL), '2014-05-01', '2014-06-31', {:longsig => "O = 592.34", :longxsig => "O = 0", :longtrail => "AVGC20" })
-      expect(results['equity']).to match_array([9995.4, 9997.85, 9998.68, 10000.0, 10000.0, 10002.19, 10002.69, 10003.62, 10003.73, 10004.27, 10007.37, 10010.82, 10014.45, 10014.57, 10016.16, 10017.13, 10023.99, 10023.99, 10033.87, 10035.49, 10038.51, 10042.86, 10045.24, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10047.4, 10048.82, 10052.88, 10054.42, 10054.68, 10055.12, 10055.26, 10055.43, 10055.89, 10057.21, 10065.76, 10066.88, 10069.61]) 
-
-      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longtrail => "L5" })
-      expect(results['equity']).to match_array([9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9999.76, 10000.0, 10000.0, 10000.0, 10000.45, 10000.51, 10000.52, 10001.24])
-
-      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
-      expect(results['equity']).to match_array([10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10006.06, 10010.69, 10011.94, 10012.7, 10012.82, 10012.94, 10013.06, 10014.2, 10016.06, 10016.94, 10017.7, 10018.32, 10018.32, 10020.7, 10023.7])
-    end
-
-    it "should behave sanely during reverse stock splits" do
-      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longtrail => "L - 0.2" })
-      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59", "2012-09-27", "10.27", "7.09"]])
-      expect(results['equity']).to match_array([9999.92, 9999.94, 9999.95, 9999.95, 9999.96, 9999.97, 9999.97, 9999.98, 9999.98, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.01, 10000.01, 10000.02, 10000.02, 10000.03, 10000.03, 10000.03, 10000.03, 10000.05, 10000.06])     
-
-      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2" })
-      expect(results['trades']).to match_array([["2011-04-25", "0", "3", "2011-05-18", "3.08", "2.66"]])
-      expect(results['equity']).to match_array([9999.98, 9999.98, 9999.98, 9999.98, 9999.98, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01])
-    end
   end
 
   describe "Portfolio metrics" do
@@ -356,6 +291,49 @@ RSpec.describe "Long trades" do
     end
   end
 
+  describe "Position sizing" do
+    it "should default to one share" do
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0" })
+      expect(results['trades']).to match_array([["2015-02-24", "1", "132.94"]])
+    end
+
+    it "should set the number of shares purchased" do
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "2" })
+      expect(results['trades']).to match_array([["2015-02-24", "2", "132.94"]])
+
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "4" })
+      expect(results['trades']).to match_array([["2015-02-24", "4", "132.94"]])
+ 
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "8" })
+      expect(results['trades']).to match_array([["2015-02-24", "8", "132.94"]])
+    end
+
+    it "should use floor on the number of shares purchased" do
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "2.2" })
+      expect(results['trades']).to match_array([["2015-02-24", "2", "132.94"]])
+
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "4.5" })
+      expect(results['trades']).to match_array([["2015-02-24", "4", "132.94"]])
+ 
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "8.8" })
+      expect(results['trades']).to match_array([["2015-02-24", "8", "132.94"]])
+    end
+
+    it "should evaluate expressions" do
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "1 + 1" })
+      expect(results['trades']).to match_array([["2015-02-24", "2", "132.94"]])
+
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "3 - 1" })
+      expect(results['trades']).to match_array([["2015-02-24", "2", "132.94"]])
+
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "2 * 2" })
+      expect(results['trades']).to match_array([["2015-02-24", "4", "132.94"]])
+ 
+      results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "16 / 2" })
+      expect(results['trades']).to match_array([["2015-02-24", "8", "132.94"]])
+    end
+  end
+
   describe "Stock splits" do
     it "should split adjust positions" do
       results = run_test(%w(AAPL), '2014-06-01', '2014-07-20', {:longsig => "V = 92337700", :longxsig => "O = 90.21", :longstop => "0" })
@@ -369,6 +347,97 @@ RSpec.describe "Long trades" do
 
       results = run_test(%w(AAPL), '1987-06-10', '1987-07-10', {:longsig => "O = 79", :longxsig => "O = 40.5", :longstop => "0" })
       expect(results['trades']).to match_array([["1987-06-15", "2", "39.5", "1987-06-30", "40.5", "2.53"]])
+    end
+
+    it "should split adjust stop losses" do
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longstop => "L3" })
+      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.125","-2.53"]])
+      expect(results['stops']).to match_array([[43.12, 43.12, 43.12, 43.12, 43.12, 43.12]])
+
+      results = run_test(%w(AAPL), '2014-05-28', '2014-06-28', {:longsig => "O = 626.02", :longxsig => "O = 0", :longstop => "606" })
+      expect(results['trades']).to match_array([["2014-05-29","7","89.69"]])
+      expect(results['stops']).to match_array([[86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57, 86.57]])     
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longstop => "89" })
+      expect(results['trades']).to match_array([["2000-06-19","2","45.28"]])
+      expect(results['stops']).to match_array([[44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5,44.5]])     
+    end 
+
+    it "should split adjust trailing stop losses" do
+      results = run_test(%w(AAPL), '2014-05-01', '2014-06-31', {:longsig => "O = 592.34", :longxsig => "O = 0", :longtrail => "AVGC20" })
+      expect(results['trades']).to match_array([["2014-05-05","7","84.3","2014-06-20","91.48","8.51"]])
+      expect(results['stops']).to match_array([[78.52, 79.03, 79.52, 79.93, 80.37, 80.9, 81.41, 81.95, 82.45, 82.97, 83.49, 84.02, 84.6, 84.88, 85.18, 85.18, 85.41, 85.63, 85.96, 86.25, 86.51, 86.77, 87.13, 87.53, 87.94, 88.44, 88.91, 89.37, 89.74, 90.1, 90.44, 90.72, 91.01, 91.28, 91.48]]) 
+
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longtrail => "L5" })
+      expect(results['trades']).to match_array([["2005-02-24","2","44.24","2005-03-03","43.86","-0.86"]])
+      expect(results['stops']).to match_array([[43.67, 43.72, 43.72, 43.72, 43.72, 43.86]])
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
+      expect(results['trades']).to match_array([["2000-06-19", "2", "45.28"]])
+      expect(results['stops']).to match_array([[41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.85, 41.94, 42.49, 42.79, 43.21, 43.63, 43.82, 44.07, 44.09]])     
+    end
+
+    it "should not alter the equity curve" do
+      results = run_test(%w(AAPL), '2014-05-01', '2014-06-31', {:longsig => "O = 592.34", :longxsig => "O = 0", :longtrail => "AVGC20" })
+      expect(results['equity']).to match_array([9995.4, 9997.85, 9998.68, 10000.0, 10000.0, 10002.19, 10002.69, 10003.62, 10003.73, 10004.27, 10007.37, 10010.82, 10014.45, 10014.57, 10016.16, 10017.13, 10023.99, 10023.99, 10033.87, 10035.49, 10038.51, 10042.86, 10045.24, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10046.23, 10047.4, 10048.82, 10052.88, 10054.42, 10054.68, 10055.12, 10055.26, 10055.43, 10055.89, 10057.21, 10065.76, 10066.88, 10069.61]) 
+
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 0", :longtrail => "L5" })
+      expect(results['equity']).to match_array([9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9995.1, 9999.76, 10000.0, 10000.0, 10000.0, 10000.45, 10000.51, 10000.52, 10001.24])
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 93.5", :longxsig => "O = 0", :longtrail => "BOLLINGER_LOWER" })
+      expect(results['equity']).to match_array([10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10006.06, 10010.69, 10011.94, 10012.7, 10012.82, 10012.94, 10013.06, 10014.2, 10016.06, 10016.94, 10017.7, 10018.32, 10018.32, 10020.7, 10023.7])
+    end
+
+    it "should split adjust positions that have been sized" do
+      results = run_test(%w(AAPL), '2014-06-01', '2014-07-20', {:longsig => "V = 92337700", :longxsig => "O = 90.21", :longstop => "0", :longsize => "10" })
+      expect(results['trades']).to match_array([["2014-06-03", "70", "89.78", "2014-06-26", "90.37", "0.65"]])
+
+      results = run_test(%w(AAPL), '2005-02-20', '2005-03-20', {:longsig => "O = 86.72", :longxsig => "O = 41.53", :longstop => "0", :longsize => "100" })
+      expect(results['trades']).to match_array([["2005-02-24", "200", "44.24", "2005-03-18", "43.33", "-2.06"]])
+
+      results = run_test(%w(AAPL), '2000-06-10', '2000-07-10', {:longsig => "O = 91.19", :longxsig => "O = 52.13", :longstop => "0", :longsize => "100" })
+      expect(results['trades']).to match_array([["2000-06-14", "200", "47.34", "2000-07-05", "53.25", "12.48"]])
+
+      results = run_test(%w(AAPL), '1987-06-10', '1987-07-10', {:longsig => "O = 79", :longxsig => "O = 40.5", :longstop => "0", :longsize => "100" })
+      expect(results['trades']).to match_array([["1987-06-15", "200", "39.5", "1987-06-30", "40.5", "2.53"]])
+    end
+  end
+
+  describe "Reverse stock splits" do
+    it "should reverse split adjust positions" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longstop => "0.3", :longsize => "100" })
+      expect(results['trades']).to match_array([["2012-08-31", "5", "9.59"]])
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longstop => "0.25", :longsize => "100" })
+      expect(results['trades']).to match_array([["2011-04-25", "10", "3"]])
+    end
+
+    it "should reverse split adjust stop losses" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longstop => "0.3" })
+      expect(results['stops']).to match_array([[6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6]])     
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longstop => "0.25" })
+      expect(results['stops']).to match_array([[2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5]])     
+    end
+
+    it "should reverse split adjust trailing stop losses" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59", "2012-09-27", "10.27", "7.09"]])
+      expect(results['stops']).to match_array([[5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.4, 5.8, 5.8, 5.8, 10.02, 10.11, 11.13, 11.13]])     
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2011-04-25", "0", "3", "2011-05-18", "3.08", "2.66"]])
+      expect(results['stops']).to match_array([[0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 2.9, 2.9, 3.2, 3.59, 3.59, 3.69, 3.7, 3.7]])     
+    end
+
+    it "should not alter the equity curve" do
+      results = run_test(%w(SPEX), '2012-08-27', '2012-09-27', {:longsig => "O = 0.5", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2012-08-31", "0", "9.59", "2012-09-27", "10.27", "7.09"]])
+      expect(results['equity']).to match_array([9999.92, 9999.94, 9999.95, 9999.95, 9999.96, 9999.97, 9999.97, 9999.98, 9999.98, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.01, 10000.01, 10000.02, 10000.02, 10000.03, 10000.03, 10000.03, 10000.03, 10000.05, 10000.06])     
+
+      results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2" })
+      expect(results['trades']).to match_array([["2011-04-25", "0", "3", "2011-05-18", "3.08", "2.66"]])
+      expect(results['equity']).to match_array([9999.98, 9999.98, 9999.98, 9999.98, 9999.98, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01, 10000.01])
     end
   end
 end

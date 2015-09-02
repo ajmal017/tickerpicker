@@ -149,7 +149,8 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
 
   for(int i = 0; i < list.size(); i++) {
     try {
-      position* newpos = new position(sday, list[i], 1, strats[i]);   
+      int count = strats[i]->position_size(sday, list[i]);
+      position* newpos = new position(sday, list[i], count, strats[i]);   
       float cost = newpos->cost();
 
       if(cost < cur_cash) {

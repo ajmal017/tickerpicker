@@ -9,6 +9,7 @@ class strategy {
     strategy();
     void set_universe(std::vector<std::string>);
     void trailing_stop(std::vector<std::string>);
+    void sizing_rule(std::vector<std::string>);
     void stop_loss(std::vector<std::string>);
     void entry_trigger(screen*);
     void entry_signal(screen*);
@@ -19,12 +20,14 @@ class strategy {
     std::vector<std::string> entry_signal(date, restrictor*);
     std::vector<std::string> exit_signal(date, restrictor*);
     float stop_loss(date, std::string, bool);
+    int position_size(date, std::string);
     bool has_trail();
 
   private:
 
     expression* trail_stop;
     expression* init_stop;
+    expression* size_rule;
     screen* enter_signal;
     screen* enter_trigger;
     screen* xit_signal;

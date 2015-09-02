@@ -5,6 +5,7 @@
 strategy::strategy() {
   trail_stop = NULL;
   init_stop = NULL;
+  size_rule = NULL;
 }
 
 void strategy::set_universe(vector<std::string> u) {
@@ -40,6 +41,10 @@ void strategy::stop_loss(vector<std::string> stop) {
   init_stop = expression_parser::parse(stop);
 }
 
+void strategy::sizing_rule(std::vector<std::string> sizerule) {
+  size_rule = expression_parser::parse(sizerule);
+}
+
 vector<string> strategy::entry_signal(date strat_date, restrictor* filter) {
   return enter_signal->eval(strat_date, filter);
 }
@@ -60,6 +65,16 @@ float strategy::stop_loss(date strat_date, string ticker, bool trail) {
   }
 
   return floor(rval * 100) / 100;
+}
+
+int strategy::position_size(date strat_date, string ticker) {
+  if(size_rule == NULL) {
+    return 1;
+  } else {
+    stock cur(ticker);
+    cur.onday(strat_date);
+    return floor(size_rule->eval(cur));
+  }
 }
 
 bool strategy::has_trail() {
