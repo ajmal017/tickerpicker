@@ -28,7 +28,6 @@ position::position(date start, string ticker, int shares, strategy* strat) {
   stop_history.push_back(stop);
 
   open_cost = t.open[0];
-  split_fraction = 0.0;
   open = true;
 }
 
@@ -41,7 +40,7 @@ float position::cost() {
 
 float position::position_value(date cur) {
   ptable* thispos = open_equities[ticker];
-  return (thispos->pull_close_on_date(cur) * count) + split_fraction;
+  return (thispos->pull_close_on_date(cur) * count);
 }
 
 int position::share_count() {
@@ -90,23 +89,28 @@ bool position::stopped_out(date cdate) {
   return ! open;
 }
 
-void position::update(date d) {
-  split_adjust(d);
+float position::update(date d) {
+  float rval = split_adjust(d);
   update_stop(d);
+  return rval;
 }
 
-void position::split_adjust(date d) {
+float position::split_adjust(date d) {
   ptable* thispos = open_equities[ticker];
   pair<uint16_t, uint16_t> split = thispos->is_split_day(d);
+  float cash_in_lieu = 0.0;
 
   if(*open_date < d && !(split.first == 1 && split.second == 1)) {
     float ratio = ((float) split.first / split.second); 
-    float number = count * ((float) split.second / split.first);
-    float remainder = number - floorf(number);
+    float iratio = ((float) split.second / split.first); 
+
+    float number = floorf(count * iratio);
+    int remainder = count - (number * ratio);
 
     if(remainder > 0) {
+      d.prev_business_day();
       pdata t = thispos->pull_history_by_limit(d, 1);
-      split_fraction += (t.open[0] * remainder);
+      cash_in_lieu = (t.close[0] * remainder);
     }
 
     for(int i = 0; i < stop_history.size(); i++) {
@@ -116,6 +120,8 @@ void position::split_adjust(date d) {
     open_cost = floorf(open_cost * ratio * 100) / 100; 
     count = number; 
   }
+
+  return cash_in_lieu;
 }
 
 void position::update_stop(date d) {

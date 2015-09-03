@@ -236,7 +236,7 @@ void portfolio::update_equity_curve(date d) {
 
 void portfolio::update_positions(date d) {
   for(int i = 0; i < cur_positions.size(); i++) {
-    cur_positions[i]->update(d);
+    cur_cash += cur_positions[i]->update(d);
   }
 }
 

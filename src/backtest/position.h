@@ -14,7 +14,7 @@ class position : public restrictor {
     bool matches(string);
     void print_state();
     int share_count();
-    void update(date);
+    float update(date);
     string symbol();
     float cost();
 
@@ -29,7 +29,7 @@ class position : public restrictor {
     }
 
   private:     
-    void split_adjust(date);
+    float split_adjust(date);
     void update_stop(date);
     float percent_diff();
 
@@ -38,7 +38,6 @@ class position : public restrictor {
     strategy* this_strat;
 
     vector<float> stop_history;
-    float split_fraction;
     float close_cost;
     float open_cost;
     string ticker;
