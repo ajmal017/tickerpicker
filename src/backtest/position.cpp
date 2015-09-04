@@ -103,14 +103,13 @@ float position::split_adjust(date d) {
   if(*open_date < d && !(split.first == 1 && split.second == 1)) {
     float ratio = ((float) split.first / split.second); 
     float iratio = ((float) split.second / split.first); 
-
     float number = floorf(count * iratio);
-    int remainder = count - (number * ratio);
+    float remainder = (count * iratio) - number;
 
     if(remainder > 0) {
-      d.prev_business_day();
       pdata t = thispos->pull_history_by_limit(d, 1);
-      cash_in_lieu = (t.close[0] * remainder);
+      cash_in_lieu = (t.open[0] * remainder);
+      cash_in_lieu = floorf(cash_in_lieu * 100) / 100;
     }
 
     for(int i = 0; i < stop_history.size(); i++) {
