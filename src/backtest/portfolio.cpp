@@ -153,6 +153,12 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
       position* newpos = new position(sday, list[i], count, strats[i]);   
       float cost = newpos->cost();
 
+      if(config::slippage != NULL) {
+        stock cur(list[i]);
+        cur.onday(sday);
+        cost += config::slippage->eval(cur);
+      }
+
       if(cost < cur_cash) {
         cur_positions.push_back(newpos);
         cur_cash -= cost;

@@ -125,7 +125,12 @@ end
 
 processed[:config] = {}
 processed[:config][:multipos] = opts[:multi]
-processed[:config][:slippage] = opts[:slippage]
+
+if(opts[:slippage])
+  processed[:config][:slippage] = process_expression(opts[:slippage])
+else
+  processed[:config][:slippage] = []
+end
 
 if(opts[:dump])
   puts processed.to_json

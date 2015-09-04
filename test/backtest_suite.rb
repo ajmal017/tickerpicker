@@ -26,6 +26,10 @@ def run_test(tickers, start, done, sys)
     cmdline += " --lsize '#{sys[:longsize]}'"
   end
 
+  if(sys[:slip])
+    cmdline += " --slippage '#{sys[:slip]}'"
+  end 
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -250,6 +254,31 @@ RSpec.describe "Long trades" do
 
       results = run_test(%w(AAPL), '2015-03-01', '2015-03-20', {:longsig => "O = 128.96", :longxsig => "O = 128.4", :longstop => "0" })
       expect(results['equity']).to match_array([10000,10000,9999.44,9997.31,9997.5,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04,9998.04]) 
+    end
+
+    it "should account for slippage" do
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "0" })
+      expect(results['equity']).to match_array([9994.28, 9995.63, 9996.49, 9996.55, 9999.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "5" })
+      expect(results['equity']).to match_array([9989.28, 9990.63, 9991.49, 9991.55, 9994.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "10" })
+      expect(results['equity']).to match_array([9984.28, 9985.63, 9986.49, 9986.55, 9989.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+    end
+
+    it "should evaluate slippage as an expression" do
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "1+1+1+1+1" })
+      expect(results['equity']).to match_array([9989.28, 9990.63, 9991.49, 9991.55, 9994.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "10 - 5" })
+      expect(results['equity']).to match_array([9989.28, 9990.63, 9991.49, 9991.55, 9994.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "2*5" })
+      expect(results['equity']).to match_array([9984.28, 9985.63, 9986.49, 9986.55, 9989.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
+
+      results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "20 / 2" })
+      expect(results['equity']).to match_array([9984.28, 9985.63, 9986.49, 9986.55, 9989.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
     end
   end
 
