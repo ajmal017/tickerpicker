@@ -9,6 +9,7 @@
 
 #include "portfolio.h"
 #include "position.h"
+#include <stdexcept>
 #include <iostream>
 #include <cmath>
 
@@ -164,9 +165,12 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
         cur_cash -= cost;
       }
 
-    } catch(exception e) {
-      pos->push_back(list[i]);
-      slist->push_back(strats[i]);
+    } catch(runtime_error e) {
+
+      if(e.what() == position::DEFER_OK) {
+        pos->push_back(list[i]);
+        slist->push_back(strats[i]);
+      }
     }
   }
 }

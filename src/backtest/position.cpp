@@ -2,12 +2,14 @@
 #include "pdata.h"
 #include <iostream>
 #include <math.h>
+#include <stdexcept>
 
 std::map<string, ptable*> position::open_equities;
+const std::string position::DEFER_OK = "defer";
 
 position::position(date start, string ticker, int shares, strategy* strat) {
-  this->ticker = ticker;
   open_date = new date(start);
+  this->ticker = ticker;
   this_strat = strat;
   count = shares;  
 
@@ -20,12 +22,18 @@ position::position(date start, string ticker, int shares, strategy* strat) {
   pdata t = thispos->pull_history_by_limit(*open_date, 1);
   date pulled = date(t.date[0]);
 
-  if(t.volume[0] < shares || start != pulled) {
-    throw exception();
-  }
-
   float stop = this_strat->stop_loss(start, ticker, false); 
   stop_history.push_back(stop);
+
+  //if we have insufficient volume or a date miss
+  if(t.volume[0] < shares || start != pulled) {
+    throw runtime_error(DEFER_OK);
+  }
+
+  //if we'd be stopped out right away
+  if(t.open[0] <= stop) {
+    throw runtime_error("");
+  }
 
   open_cost = t.open[0];
   open = true;

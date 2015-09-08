@@ -150,6 +150,34 @@ RSpec.describe "Long trades" do
       results = run_test(%w(ABD), '2009-12-20', '2010-01-10', {:longsig => "O = 7.4", :longxsig => "O = 7.65", :longstop => "0" })
       expect(results['trades']).to match_array([["2009-12-23", "1", "7.47", "2009-12-28", "7.66", "2.54"]])
     end
+
+    it "should not buy if the initial stop would immediately stop out" do
+      results = run_test(%w(AAPL), '2012-10-01', '2012-10-31', {:longsig => "O = 646.50", :longxsig => "O = 0", :longstop => "640" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2013-10-01', '2013-10-31', {:longsig => "O = 486.99", :longxsig => "O = 0", :longstop => "490" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2014-10-01', '2014-10-31', {:longsig => "O = 101.33", :longxsig => "O = 0", :longstop => "100.39" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2010-10-01', '2010-10-31', {:longsig => "O = 300.2", :longxsig => "O = 0", :longstop => "301.69" })
+      expect(results['trades']).to match_array([])
+    end
+
+    it "should not buy if the trailing stop would immediately stop out" do
+      results = run_test(%w(AAPL), '2012-10-01', '2012-10-31', {:longsig => "O = 646.50", :longxsig => "O = 0", :longtrail => "640" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2013-10-01', '2013-10-31', {:longsig => "O = 486.99", :longxsig => "O = 0", :longtrail => "490" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2014-10-01', '2014-10-31', {:longsig => "O = 101.33", :longxsig => "O = 0", :longtrail => "100.39" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2010-10-01', '2010-10-31', {:longsig => "O = 300.2", :longxsig => "O = 0", :longtrail => "301.69" })
+      expect(results['trades']).to match_array([])
+    end
   end
 
   describe "Stop losses" do

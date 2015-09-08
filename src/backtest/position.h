@@ -8,6 +8,8 @@
 class position : public restrictor {
 
   public:
+    static const std::string DEFER_OK;
+
     position(date, string, int, strategy*, float);
     position(date, string, int, strategy*);
     float position_value(date);
