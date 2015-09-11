@@ -44,3 +44,17 @@ vector<string> screen::eval(date curdate, restrictor* filter) {
 
   return results;
 }
+
+bool screen::eval(date curdate, string ticker) {
+    if(all.count(ticker) == 0) {
+
+      try {
+        stock cur(ticker);
+        all.insert(std::pair<string, stock>(ticker, cur));
+      } catch(exception e) {}
+    }
+
+    stock cur = all.find(ticker)->second; 
+    cur.onday(curdate);
+    return srules->eval(cur);
+}

@@ -46,11 +46,23 @@ void strategy::sizing_rule(std::vector<std::string> sizerule) {
 }
 
 vector<string> strategy::entry_signal(date strat_date, restrictor* filter) {
-  return enter_signal->eval(strat_date, filter);
+  vector<string> rval, hits = enter_signal->eval(strat_date, filter);
+
+  for(int i = 0; i < hits.size(); i++) {
+    if(! exit_signal(strat_date, hits[i])) {
+      rval.push_back(hits[i]);
+    }
+  }
+
+  return rval;
 }
 
 vector<string> strategy::exit_signal(date strat_date, restrictor* filter) {
   return xit_signal->eval(strat_date);
+}
+
+bool strategy::exit_signal(date strat_date, std::string ticker) {
+  return xit_signal->eval(strat_date, ticker);
 }
 
 float strategy::stop_loss(date strat_date, string ticker, bool trail) {

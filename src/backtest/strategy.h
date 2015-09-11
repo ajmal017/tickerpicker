@@ -25,6 +25,8 @@ class strategy {
 
   private:
 
+    bool exit_signal(date, std::string);
+
     expression* trail_stop;
     expression* init_stop;
     expression* size_rule;

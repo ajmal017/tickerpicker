@@ -178,6 +178,17 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2010-10-01', '2010-10-31', {:longsig => "O = 300.2", :longxsig => "O = 0", :longtrail => "301.69" })
       expect(results['trades']).to match_array([])
     end
+
+    it "should not buy if an exit signal happens on the same day" do
+      results = run_test(%w(AAPL), '2012-10-01', '2012-10-31', {:longsig => "O > 0", :longxsig => "O > 0", :longtrail => "0" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2013-10-01', '2013-10-31', {:longsig => "O > 0", :longxsig => "O > 0", :longtrail => "0" })
+      expect(results['trades']).to match_array([])
+
+      results = run_test(%w(AAPL), '2014-10-01', '2014-10-31', {:longsig => "O > 0", :longxsig => "O > 0", :longtrail => "0" })
+      expect(results['trades']).to match_array([])
+    end
   end
 
   describe "Stop losses" do

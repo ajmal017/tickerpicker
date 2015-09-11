@@ -18,6 +18,7 @@ class screen {
   screen(vector<string>, vector<string>);
   void set_universe(vector<string>);
   vector<string> eval(date d, restrictor* r=NULL);
+  bool eval(date, string);
 
   private:
 
