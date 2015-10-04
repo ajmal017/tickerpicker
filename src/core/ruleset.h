@@ -16,7 +16,7 @@ class expression {
   public:
     virtual float eval(stock, int x = 0) = 0;
     virtual int lookback() = 0;
-    float value() { return 0; }
+    virtual float value() { return 0; }
   protected:
     vector<string> split(string, char s=' ');
     int index(string);
