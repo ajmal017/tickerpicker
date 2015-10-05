@@ -47,6 +47,7 @@ void strategy::sizing_rule(std::vector<std::string> sizerule) {
 
 vector<string> strategy::entry_signal(date strat_date, restrictor* filter) {
   vector<string> rval, hits = enter_signal->eval(strat_date, filter);
+  indicators::set_position(NULL);
 
   for(int i = 0; i < hits.size(); i++) {
     if(! exit_signal(strat_date, hits[i])) {
@@ -72,8 +73,10 @@ float strategy::stop_loss(date strat_date, string ticker, bool trail) {
 
   if(trail && trail_stop) {
     rval = trail_stop->eval(cur);
-  } else {
+  } else if(init_stop) {
     rval = init_stop->eval(cur);
+  } else {
+    rval = 0;
   }
 
   return floor(rval * 100) / 100;

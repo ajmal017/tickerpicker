@@ -9,6 +9,7 @@ const std::string position::DEFER_OK = "defer";
 
 position::position(date start, string ticker, int shares, strategy* strat) {
   open_date = new date(start);
+  cur_date = new date(start);
   this->ticker = ticker;
   this_strat = strat;
   count = shares;  
@@ -21,7 +22,9 @@ position::position(date start, string ticker, int shares, strategy* strat) {
   ptable* thispos = open_equities[ticker];
   pdata t = thispos->pull_history_by_limit(*open_date, 1);
   date pulled = date(t.date[0]);
+  open_cost = t.open[0];
 
+  indicators::set_position(this);
   float stop = this_strat->stop_loss(start, ticker, false); 
   stop_history.push_back(stop);
 
@@ -35,7 +38,6 @@ position::position(date start, string ticker, int shares, strategy* strat) {
     throw runtime_error("");
   }
 
-  open_cost = t.open[0];
   open = true;
 }
 
@@ -74,6 +76,7 @@ void position::close(date cdate) {
 }
 
 bool position::exit(date edate) {
+  indicators::set_position(this);
   vector<string> t = this_strat->exit_signal(edate, this);
   return t.size() > 0;
 }
@@ -100,6 +103,7 @@ bool position::stopped_out(date cdate) {
 float position::update(date d) {
   float rval = split_adjust(d);
   update_stop(d);
+  *cur_date = d;
   return rval;
 }
 
@@ -185,4 +189,27 @@ void position::print_stop_curve() {
 
 bool position::skip_ticker(string t) {
   return t != ticker;
+}
+
+float position::purchase_price() {
+  return open_cost;
+}
+
+float position::percent_return() {
+  ptable* thispos = open_equities[ticker];
+  pdata t = thispos->pull_history_by_limit(*cur_date, 1);
+  float cur_cost = t.close[0];
+
+  float diff = ((cur_cost - open_cost) / open_cost) * 100;
+  return floor(diff * 100) / 100;
+}
+
+float position::risk_return() {
+  float risk = ((open_cost - stop_history[0]) / stop_history[0]) * 100;
+  float percent = percent_return();
+  return floor((percent / risk) * 100) / 100;
+}
+
+float position::days_held() {
+  return stop_history.size();
 }

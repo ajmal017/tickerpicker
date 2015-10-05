@@ -70,6 +70,7 @@ opts = Trollop::options do
   opt :multi, "Allow multiple positions for the same ticker", :type => :boolean
   opt :slippage, "Per-transaction slippage expression", :type => :string
   opt :raw, "Dump raw trade results", :type => :boolean
+  opt :dumpcmd, "Dump engine command line", :type => :boolean
 end
 
 Trollop::die "You must specify a list of stocks" unless opts[:list] || opts[:tickers]
@@ -139,6 +140,10 @@ end
 Dir.chdir(opts[:engine])
 cmdline = "./#{opts[:exename]} #{opts[:start]} #{opts[:finish]} "
 cmdline += (opts[:list].nil? ? "-l #{opts[:tickers]}" : "-f #{opts[:list]}")
+
+if (opts[:dumpcmd])
+  puts cmdline
+end
 
 stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
 stdin.puts(processed.to_json + "\n")

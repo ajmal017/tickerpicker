@@ -5,7 +5,7 @@
 #include "ptable.h"
 #include "date.h"
 
-class position : public restrictor {
+class position : public restrictor, position_metric {
 
   public:
     static const std::string DEFER_OK;
@@ -15,10 +15,15 @@ class position : public restrictor {
     float position_value(date);
     bool matches(string);
     void print_state();
-    int share_count();
     float update(date);
     string symbol();
     float cost();
+
+    int share_count();
+    float purchase_price();
+    float percent_return();  
+    float risk_return();
+    float days_held();
 
     void print_stop_curve();
     bool skip_ticker(string);
@@ -35,6 +40,7 @@ class position : public restrictor {
     void update_stop(date);
     float percent_diff();
 
+    date* cur_date;
     date* open_date;
     date* close_date;
     strategy* this_strat;

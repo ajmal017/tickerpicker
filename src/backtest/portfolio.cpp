@@ -75,10 +75,10 @@ void portfolio::run() {
     close_positions(&exits, today);
     open_positions(&hits, &hitstrats, today);
 
+    update_positions(today);
     entry_signals(today, &hits, &hitstrats);
     exit_signals(today, &exits);
 
-    update_positions(today);
     process_stops(today);
     update_equity_curve(today);
 

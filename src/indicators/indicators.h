@@ -13,6 +13,15 @@ public:
   virtual float cash() = 0;
 };
 
+class position_metric {
+public:
+  virtual float days_held() = 0;
+  virtual int share_count() = 0;
+  virtual float risk_return() = 0;
+  virtual float percent_return() = 0;
+  virtual float purchase_price() = 0;
+};
+
 //output buffer large enough to look back
 //five years on functions that require 
 //large pulls due to unstable periods
@@ -24,6 +33,7 @@ class indicators {
   public:
 
   indicators();
+  static void set_position(position_metric*);
   static void set_portfolio(portfolio_metric*);
   int eval_lookback(std::string, std::vector<float>);
   float eval_indicator(std::string, std::vector<float>, pdata*, int offset=0);
@@ -31,6 +41,7 @@ class indicators {
   private:
 
   static portfolio_metric* fn_portfolio;
+  static position_metric* fn_position;
 
   int offset;
   pdata *current_prices;
@@ -120,6 +131,12 @@ class indicators {
   static float portfolio_return(indicators*);
   static float portfolio_count(indicators*);
   static float portfolio_cash(indicators*);
+  
+  static float position_return_percent(indicators*);
+  static float position_share_count(indicators*);
+  static float position_buy_price(indicators*);
+  static float position_days_held(indicators*);
+  static float position_return_r(indicators*);
 };
 
 #endif

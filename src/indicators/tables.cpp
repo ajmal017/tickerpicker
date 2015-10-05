@@ -65,6 +65,12 @@ void indicators::init_fntable() {
   indicators::fn_table["PORTFOLIO_EQUITY"] = &indicators::portfolio_equity;
   indicators::fn_table["PORTFOLIO_RETURN"] = &indicators::portfolio_return;
   indicators::fn_table["PORTFOLIO_CASH"] = &indicators::portfolio_cash;
+
+  indicators::fn_table["POSITION_RETURN_PERCENT"] = &indicators::position_return_percent;
+  indicators::fn_table["POSITION_SHARE_COUNT"] = &indicators::position_share_count;
+  indicators::fn_table["POSITION_BUY_PRICE"] = &indicators::position_buy_price;
+  indicators::fn_table["POSITION_DAYS_HELD"] = &indicators::position_days_held;
+  indicators::fn_table["POSITION_RETURN_R"] = &indicators::position_return_r;
 }
 
 void indicators::init_lookback_table() {
@@ -129,5 +135,10 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["PORTFOLIO_EQUITY"] = &indicators::null_lookback;
   indicators::lookback_table["PORTFOLIO_RETURN"] = &indicators::null_lookback;
   indicators::lookback_table["PORTFOLIO_CASH"] = &indicators::null_lookback;
-}
 
+  indicators::lookback_table["POSITION_RETURN_PERCENT"] = &indicators::null_lookback;
+  indicators::lookback_table["POSITION_SHARE_COUNT"] = &indicators::null_lookback;
+  indicators::lookback_table["POSITION_BUY_PRICE"] = &indicators::null_lookback;
+  indicators::lookback_table["POSITION_DAYS_HELD"] = &indicators::null_lookback;
+  indicators::lookback_table["POSITION_RETURN_R"] = &indicators::null_lookback;
+}
