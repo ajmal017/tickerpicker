@@ -163,7 +163,7 @@ else
   results = JSON.parse(buf)
   results['trades'].each do |trade|
     print trade.join("\t")
-    print "\t[OPEN]" if trade.size == 3
+    print "\t[OPEN]" if trade.size == 4
     puts
   end
 end

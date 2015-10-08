@@ -160,6 +160,7 @@ float position::percent_diff() {
 
 void position::print_state() {
   cout << "[";
+  cout << '"' << ticker << "\",";
   cout << '"' << open_date->to_s() << "\",";
   cout << '"' << count << "\",";
   cout << '"' << open_cost << "\"";
