@@ -12,13 +12,16 @@ data: data/date.o data/pdata.o data/ptable.o
 
 core: core/ruleset.o core/screen.o core/stock.o
 
-backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o backtest/config.o
+backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o backtest/config.o backtest/archive.o
 
 btest.o : btest.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o btest.o btest.cpp
 
 screen.o : screen.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o screen.o screen.cpp
+
+backtest/archive.o : backtest/archive.cpp
+	$(CC) $(CFLAGS) -c -o ./backtest/archive.o backtest/archive.cpp
 
 backtest/position.o : backtest/position.cpp
 	$(CC) $(CFLAGS) -c -o ./backtest/position.o backtest/position.cpp

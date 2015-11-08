@@ -14,6 +14,31 @@ class target_list : public restrictor {
     set<string> targets;
 };
 
+class archive {
+  public:
+    void push(position*);
+    void update_equity(float);
+    void push_benchmark(float);
+    void print_state(vector<position*>);
+    float total_return();
+    float current_equity();
+  private:
+    float cagr();
+    float max_drawdown();
+    float system_quality();
+    float benchmark_return();
+    void compute_basic_stats();
+    float std_deviation(float*, int);
+
+    std::vector<position*> old_positions;
+    std::vector<float> benchmark_curve;
+    std::vector<float> equity_curve;
+
+    float avgwin, avgloss, expectancy;
+    float winpercent, losepercent;
+    int winners, losers;
+};
+
 class portfolio : public restrictor, portfolio_metric {
 
   public:
@@ -41,15 +66,14 @@ class portfolio : public restrictor, portfolio_metric {
     target_list get_current_restrictor();
     void update_equity_curve(date);
     void update_positions(date);
+    void update_benchmark(date);
     void process_stops(date);
 
     std::vector<strategy*> long_strategies;
     std::vector<string> stock_universe;
-
     std::vector<position*> cur_positions;
-    std::vector<position*> old_positions;
-    std::vector<float> equity_curve;
 
+    archive past_performance;
     date firstdate;
     date lastdate;
     float cur_cash;

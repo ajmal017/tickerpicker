@@ -206,7 +206,7 @@ float position::percent_return() {
 }
 
 float position::risk_return() {
-  float risk = ((open_cost - stop_history[0]) / stop_history[0]) * 100;
+  float risk = ((open_cost - stop_history[0]) / open_cost) * 100;
   float percent = percent_return();
   return floor((percent / risk) * 100) / 100;
 }

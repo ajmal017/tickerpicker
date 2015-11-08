@@ -44,6 +44,31 @@ def process_screen(s)
  {rules: p.table.rules, symbols: p.table.symboltable} 
 end
 
+def print_results(buf)
+  results = JSON.parse(buf)
+  puts ''
+
+  results['trades'].each do |trade|
+    print trade.join("\t")
+    print "\t[OPEN]" if trade.size == 4
+    puts
+  end
+
+  puts ''
+  puts 'Equity: ' + results['stats']['equity'].to_s
+  puts 'Return: ' + results['stats']['return'].to_s
+  puts 'Winners: ' + results['stats']['winners'].to_s
+  puts 'Losers: ' + results['stats']['losers'].to_s
+  puts 'Win %: ' + results['stats']['winpercent'].to_s
+  puts 'Lose %: ' + results['stats']['losepercent'].to_s
+  puts 'Avg Win: ' + results['stats']['avgwin'].to_s 
+  puts 'Avg Loss: ' + results['stats']['avgloss'].to_s
+  puts 'Max Drawdown: ' + results['stats']['drawdown'].to_s
+  puts 'Profit / Drawdown: ' + '%.2f' % (results['stats']['return'] / results['stats']['drawdown']).to_s
+  puts 'Expectancy: ' + results['stats']['expect'].to_s
+  puts ''
+end
+
 opts = Trollop::options do
   opt :start, "Starting date", :type => :string, :required => true
   opt :finish, "Ending date", :type => :string, :default => DateTime.now.strftime("%Y-%m-%d")
@@ -65,7 +90,7 @@ opts = Trollop::options do
   opt :dump, "Dump resulting three address code", :type => :boolean
   opt :all, "Perform an all-trades backtest", :type => :boolean, :default => false
   opt :random, "Randomize candidate selection", :type => :boolean, :default => false
-  opt :benchmark, "Benchmark ticker", :type => :string, :default => "^IXIC" 
+  opt :benchmark, "Benchmark ticker", :type => :string
   opt :exclude, "Comma separated list of tickers to skip", :type => :string
   opt :multi, "Allow multiple positions for the same ticker", :type => :boolean
   opt :slippage, "Per-transaction slippage expression", :type => :string
@@ -133,6 +158,10 @@ else
   processed[:config][:slippage] = []
 end
 
+if(opts[:benchmark]) 
+  processed[:config][:benchmark] = opts[:benchmark]
+end
+
 if(opts[:dump])
   puts processed.to_json
 end
@@ -160,10 +189,5 @@ stdout.each_line {|line| buf += line }
 if(opts[:raw])
   puts buf
 else
-  results = JSON.parse(buf)
-  results['trades'].each do |trade|
-    print trade.join("\t")
-    print "\t[OPEN]" if trade.size == 4
-    puts
-  end
+  print_results(buf)
 end

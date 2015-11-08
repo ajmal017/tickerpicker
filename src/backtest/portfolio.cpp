@@ -32,9 +32,9 @@ portfolio::~portfolio() {
     delete cur_positions[i];
   }
 
-  for(int i = 0; i < old_positions.size(); i++) {
-    delete old_positions[i];
-  }
+//  for(int i = 0; i < old_positions.size(); i++) {
+//    delete old_positions[i];
+//  }
 }
 
 void portfolio::set_date_range(date start, date end) {
@@ -62,6 +62,7 @@ void portfolio::set_universe(vector<std::string> u) {
 void portfolio::run() {
 
   date today = firstdate;
+  update_benchmark(today);
   vector<string> hits, exits;
   vector<strategy*> hitstrats;
   cur_cash = 10000;
@@ -84,6 +85,8 @@ void portfolio::run() {
 
     today.next_business_day();
   } 
+
+  update_benchmark(today);
 }
 
 void portfolio::entry_signals(date today, vector<string>* longhits, vector<strategy*>* hitstrats) {
@@ -129,7 +132,7 @@ void portfolio::process_stops(date today) {
     if(p->stopped_out(today)) {
       cur_positions.erase(cur_positions.begin() + i);
       cur_cash += p->position_value(today);      
-      old_positions.push_back(p);    
+      past_performance.push(p);
     } 
   }
 }
@@ -225,7 +228,7 @@ void portfolio::close_position(date sday, int index, vector<string>* pos, float 
       // p.close(sday, price);
      }
 
-     old_positions.push_back(p);    
+     past_performance.push(p);
      cur_cash += p->position_value(sday);      
      cur_positions.erase(std::remove(cur_positions.begin(), cur_positions.end(), p), cur_positions.end());
 
@@ -241,7 +244,7 @@ void portfolio::update_equity_curve(date d) {
     posvalues += cur_positions[i]->position_value(d);
   }
  
-  equity_curve.push_back(posvalues + cur_cash);
+  past_performance.update_equity(posvalues + cur_cash);
 }
 
 void portfolio::update_positions(date d) {
@@ -262,6 +265,14 @@ bool portfolio::skip_ticker(string target) {
   return false;
 }
 
+void portfolio::update_benchmark(date d) {
+  if(config::benchmark() != "") {
+    ptable* foo = new ptable(config::benchmark());
+    pdata t = foo->pull_history_by_limit(d, 1);
+    past_performance.push_benchmark(t.close[0]);
+  }
+}
+
 target_list portfolio::get_current_restrictor() {
   vector<string> t;
   for(int i = 0; i < cur_positions.size(); i++) {
@@ -274,43 +285,7 @@ target_list portfolio::get_current_restrictor() {
 }
 
 void portfolio::print_state() {
-  cout << "{\"trades\":";
-  cout << "[";
-
-  vector<position*> all = old_positions;
-  all.insert(all.end(), cur_positions.begin(), cur_positions.end());
-
-  for(int i = 0; i < all.size(); i++) {
-    all[i]->print_state();
-    if(i < all.size() - 1) {
-      cout << ',';
-    }
-  }
-
-  cout.setf(std::ios::fixed,std::ios::floatfield);
-  cout.precision(2);
- 
-  cout << "],\"stops\":";
-  cout << "[";
-
-  for(int i = 0; i < all.size(); i++) {
-    all[i]->print_stop_curve();
-    if(i < all.size() - 1) {
-      cout << ',';
-    }
-  }
-  
- cout << "],\"equity\":[";
-
-  for(int i = 0; i < equity_curve.size(); i++) {
-    cout << equity_curve[i];
-    if(i < equity_curve.size() - 1) {
-      cout << ',';
-    }
-  }
-
-  cout << "]}";
-  cout << endl;
+  past_performance.print_state(cur_positions);
 }
 
 int portfolio::position_count() {
@@ -318,14 +293,11 @@ int portfolio::position_count() {
 }
 
 float portfolio::total_return() {
-  float start = equity_curve.front();
-  float end = equity_curve.back();
-  float diff = ((end - start) / start) * 100;
-  return floor(diff * 100) / 100;
+  return past_performance.total_return();
 }
 
 float portfolio::equity() {
-  return equity_curve.back();
+  return past_performance.current_equity();
 }
 
 float portfolio::cash() {

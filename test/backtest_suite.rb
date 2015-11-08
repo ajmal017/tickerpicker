@@ -30,6 +30,10 @@ def run_test(tickers, start, done, sys)
     cmdline += " --slippage '#{sys[:slip]}'"
   end 
 
+  if(sys[:benchmark])
+    cmdline += " --benchmark '#{sys[:benchmark]}'"
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -359,6 +363,36 @@ RSpec.describe "Long trades" do
       expect(results['trades']).to match_array([["AAPL","2005-02-22","1","86.3","2005-02-23","86.72","0.48"],["XOM","2005-02-22","1","59.5","2005-02-23","58.5","-1.69"],["AAPL","2005-02-24","1","88.48","2005-02-25","89.62","1.28"],["XOM","2005-02-24","1","59.6","2005-02-25","61.5","3.18"],["AAPL","2005-02-28","1","44.68","2005-03-01","44.99","0.69"],["XOM","2005-02-28","1","63.26","2005-03-01","62.97","-0.46"],["AAPL","2005-03-02","1","44.25","2005-03-03","44.37","0.27"],["XOM","2005-03-02","1","62.05","2005-03-03","62.7","1.04"],["AAPL","2005-03-04","1","42.76","2005-03-07","42.8","0.09"],["XOM","2005-03-04","1","63.12","2005-03-07","63.58","0.72"],["AAPL","2005-03-08","1","41.9","2005-03-09","39.64","-5.4"],["XOM","2005-03-08","1","63.15","2005-03-09","63.1","-0.08"],["AAPL","2005-03-10","1","39.53","2005-03-11","40.21","1.72"],["XOM","2005-03-10","1","60.9","2005-03-11","60.37","-0.88"],["AAPL","2005-03-14","1","40.52","2005-03-15","40.64","0.29"],["XOM","2005-03-14","1","61.06","2005-03-15","61.29","0.37"],["AAPL","2005-03-16","1","41.21","2005-03-17","41.53","0.77"],["XOM","2005-03-16","1","60","2005-03-17","60.88","1.46"],["AAPL","2005-03-18","1","43.33"],["XOM","2005-03-18","1","61.59"]])
       expect(results['equity']).to match_array([10000.00,9997.74,10001.85,10003.83,10006.02,10006.25,10004.68,10005.18,10003.22,10003.72,10003.09,10001.67,9998.18,9997.95,9999.07,9999.09,9998.80,9999.06,10001.33,10002.02])
     end
+
+    it "should be able to track a benchmark" do
+     results = run_test(%w(AAPL), '2009-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_PERCENT < -5", :benchmark => "AAPL"})
+      expect(results['stats']['benchmark']).to eq(-3.10) 
+
+      results = run_test(%w(AAPL), '2008-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_PERCENT < -15", :benchmark => "AAPL"})
+      expect(results['stats']['benchmark']).to eq(-54.89) 
+
+     results = run_test(%w(AAPL), '2009-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_PERCENT < -5", :benchmark => "XOM"})
+      expect(results['stats']['benchmark']).to eq(-20.5) 
+
+      results = run_test(%w(AAPL), '2008-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_PERCENT < -15", :benchmark => "XOM"})
+      expect(results['stats']['benchmark']).to eq(-30.83) 
+    end
+
+    it "should compute system quality number" do
+      results = run_test(%w(AAPL), '2007-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD = 10"})
+      expect(results['stats']['sqn']).to eq(0.23) 
+
+      results = run_test(%w(AAPL), '2008-01-03', '2009-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_PERCENT < -15"})
+      expect(results['stats']['sqn']).to eq(-25.98) 
+    end
+
+    it "should computer compound annual growth rate" do
+      results = run_test(%w(AAPL), '2013-02-20', '2015-03-20', {:longsig => "H > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      expect(results['stats']['cagr']).to eq(35.21) 
+
+      results = run_test(%w(XOM), '2013-02-20', '2015-03-20', {:longsig => "H > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      expect(results['stats']['cagr']).to eq(-3.3) 
+    end
   end
 
   describe "Position metrics" do
@@ -378,13 +412,13 @@ RSpec.describe "Long trades" do
 
     it "should have position return R" do 
       results = run_test(%w(AAPL), '2012-01-03', '2012-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_R > 1", :longstop => "POSITION_BUY_PRICE * 0.9" })
-      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-01","458.41","11.8"],["AAPL","2012-02-02","1","455.9","2012-02-15","514.26","12.8"],["AAPL", "2012-02-16","1","491.5"]])
+      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-01-31","455.59","11.11"],["AAPL","2012-02-01","1","458.41","2012-02-15","514.26","12.18"],["AAPL","2012-02-16","1","491.5"]])
 
       results = run_test(%w(AAPL), '2012-01-03', '2012-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_R > 1.5", :longstop => "POSITION_BUY_PRICE * 0.9" })
-      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-10","490.96","19.74"],["AAPL","2012-02-13","1","499.53"]])
+      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-09","480.76","17.25"],["AAPL","2012-02-10","1","490.96"]])
 
       results = run_test(%w(AAPL), '2012-01-03', '2012-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_R > 1", :longstop => "POSITION_BUY_PRICE * 0.85" })
-      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-10","490.96","19.74"],["AAPL","2012-02-13","1","499.53"]])
+      expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-09","480.76","17.25"],["AAPL","2012-02-10","1","490.96"]])
 
       results = run_test(%w(AAPL), '2012-01-03', '2012-02-30', {:longsig => "O > 0", :longxsig => "POSITION_RETURN_R > 3", :longstop => "POSITION_BUY_PRICE * 0.95" })
       expect(results['trades']).to match_array([["AAPL","2012-01-04","1","410","2012-02-09","480.76","17.25"],["AAPL","2012-02-10","1","490.96"]])

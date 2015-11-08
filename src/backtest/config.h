@@ -14,8 +14,10 @@ class config {
     bool bvalue(rapidjson::Value&, std::string);
 
     static bool single_pos();
+    static string benchmark();
     static bool multiple_positions;
     static expression* slippage;
+    static string benchticker;
 };
 
 #endif

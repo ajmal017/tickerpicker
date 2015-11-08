@@ -3,11 +3,13 @@
 #include <vector>
 
 using namespace std;
+string config::benchticker;
 expression* config::slippage;
 bool config::multiple_positions;
 
 config::config(rapidjson::Value& cblock) {
   config::slippage = NULL;
+  config::benchticker = "";
 
   config::multiple_positions = bvalue(cblock, "multipos");
   rapidjson::Value& slippage = cblock["slippage"];
@@ -21,6 +23,10 @@ config::config(rapidjson::Value& cblock) {
   
     config::slippage = expression_parser::parse(slipsymbols); 
   }
+
+  if(cblock.HasMember("benchmark")) {
+    config::benchticker = cblock["benchmark"].GetString();
+  }
 }
 
 bool config::single_pos() {
@@ -31,4 +37,8 @@ bool config::bvalue(rapidjson::Value& cblock, string key) {
   if(cblock.HasMember(key.c_str())) {
     return cblock[key.c_str()].GetBool(); 
   }
+}
+
+string config::benchmark() {
+  return config::benchticker;
 }
