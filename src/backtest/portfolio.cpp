@@ -9,6 +9,7 @@
 
 #include "portfolio.h"
 #include "position.h"
+#include <algorithm>
 #include <stdexcept>
 #include <iostream>
 #include <cmath>
