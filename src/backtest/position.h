@@ -23,6 +23,7 @@ class position : public restrictor, position_metric {
     float purchase_price();
     float percent_return();  
     float risk_return();
+    float div_payout();
     float days_held();
 
     void print_stop_curve();
@@ -39,13 +40,16 @@ class position : public restrictor, position_metric {
     float split_adjust(date);
     void update_stop(date);
     float percent_diff();
+    float dividend(date);
 
     date* cur_date;
     date* open_date;
     date* close_date;
+    dividends* divdata;
     strategy* this_strat;
 
     vector<float> stop_history;
+    float total_payout;
     float close_cost;
     float open_cost;
     string ticker;

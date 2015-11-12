@@ -1,6 +1,7 @@
 #ifndef STOCK
 #define STOCK
 #include "indicators.h"
+#include "dividends.h"
 #include "ptable.h"
 #include "date.h"
 

@@ -126,6 +126,20 @@ float archive::system_quality() {
   }
 }
 
+float archive::total_div_payout(vector<position*> cur_positions) {
+  float total = 0; 
+
+  for(int i = 0; i < old_positions.size(); i++) {
+    total += old_positions[i]->div_payout();
+  }
+
+  for(int i = 0; i < cur_positions.size(); i++) {
+    total += cur_positions[i]->div_payout();
+  }
+
+  return total;
+}
+
 float archive::benchmark_return() {
   float diff = ((benchmark_curve.back() - benchmark_curve.front()) / benchmark_curve.front()) * 100;
   return floor(diff * 100) / 100;
@@ -179,6 +193,7 @@ void archive::print_state(vector<position*> cur_positions) {
   cout << "\"avgwin\": " << avgwin << ", ";
   cout << "\"avgloss\": " << avgloss << ", ";
   cout << "\"drawdown\": " << max_drawdown() << ", ";
+  cout << "\"dividends\": " << total_div_payout(cur_positions) << ", ";
   
   if(old_positions.size() > 1) {
     cout << "\"sqn\": " << system_quality() << ", ";

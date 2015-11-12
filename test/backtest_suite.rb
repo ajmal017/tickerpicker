@@ -329,6 +329,28 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2015-03-01', '2015-03-15', {:longsig => "O = 128.4", :longxsig => "O = 125.9", :longstop => "0", :slip => "20 / 2" })
       expect(results['equity']).to match_array([9984.28, 9985.63, 9986.49, 9986.55, 9989.18, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]) 
     end
+
+    it "should add dividends from closed positions to the equity curve" do
+      results = run_test(%w(AAPL), '2013-08-01', '2015-09-28', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD > 200", :longstop => "0", :longsize => "PORTFOLIO_CASH / O"})
+      expect(results['stats']['equity']).to eq(19414.71)
+      expect(results['stats']['dividends']).to eq(557.50)
+
+      results = run_test(%w(AAPL), '2013-08-01', '2015-09-28', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD > 200", :longstop => "0"})
+      expect(results['stats']['equity']).to eq(10459.86)
+      expect(results['stats']['dividends']).to eq(20.06)
+    end
+
+    it "should add dividends from open positions to the equity curve" do
+      results = run_test(%w(AAPL), '2015-02-01', '2015-09-28', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD > 200", :longstop => "0", :longsize => "PORTFOLIO_CASH / O"})
+      expect(results['trades']).to match_array([["AAPL","2015-02-03","84","118.5"]])
+      expect(results['stats']['equity']).to eq(10748.44)
+      expect(results['stats']['dividends']).to eq(126.84)
+
+      results = run_test(%w(AAPL), '2015-02-01', '2015-09-28', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD > 200", :longstop => "0"})
+      expect(results['trades']).to match_array([["AAPL","2015-02-03","1","118.5"]])
+      expect(results['stats']['equity']).to eq(10008.91)
+      expect(results['stats']['dividends']).to eq(1.51)
+    end
   end
 
   describe "Portfolio metrics" do
@@ -386,9 +408,9 @@ RSpec.describe "Long trades" do
       expect(results['stats']['sqn']).to eq(-25.98) 
     end
 
-    it "should computer compound annual growth rate" do
+    it "should compute compound annual growth rate" do
       results = run_test(%w(AAPL), '2013-02-20', '2015-03-20', {:longsig => "H > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
-      expect(results['stats']['cagr']).to eq(35.21) 
+      expect(results['stats']['cagr']).to eq(37.85) 
 
       results = run_test(%w(XOM), '2013-02-20', '2015-03-20', {:longsig => "H > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
       expect(results['stats']['cagr']).to eq(-3.3) 

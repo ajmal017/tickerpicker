@@ -12,6 +12,7 @@ position::position(date start, string ticker, int shares, strategy* strat) {
   cur_date = new date(start);
   this->ticker = ticker;
   this_strat = strat;
+  total_payout = 0;
   count = shares;  
 
   if(open_equities.count(ticker) == 0) {
@@ -36,6 +37,12 @@ position::position(date start, string ticker, int shares, strategy* strat) {
   //if we'd be stopped out right away
   if(t.open[0] <= stop) {
     throw runtime_error("");
+  }
+
+  if(dividends::exists(ticker)) {
+    divdata = new dividends(ticker);
+  } else {
+    divdata = NULL;
   }
 
   open = true;
@@ -71,6 +78,10 @@ void position::close(date cdate) {
     throw exception();
   } 
 
+  if(divdata != NULL) {
+    delete divdata;
+  }
+
   close_cost = t.open[0];
   open = false;
 }
@@ -102,6 +113,7 @@ bool position::stopped_out(date cdate) {
 
 float position::update(date d) {
   float rval = split_adjust(d);
+  rval += dividend(d);
   update_stop(d);
   *cur_date = d;
   return rval;
@@ -133,6 +145,16 @@ float position::split_adjust(date d) {
   }
 
   return cash_in_lieu;
+}
+
+float position::dividend(date d) {
+  if(divdata != NULL) {
+    float rval = divdata->on_date(d) * count;
+    total_payout += rval;
+    return rval;
+  }
+
+  return 0;
 }
 
 void position::update_stop(date d) {
@@ -209,6 +231,10 @@ float position::risk_return() {
   float risk = ((open_cost - stop_history[0]) / open_cost) * 100;
   float percent = percent_return();
   return floor((percent / risk) * 100) / 100;
+}
+
+float position::div_payout() {
+  return total_payout;
 }
 
 float position::days_held() {

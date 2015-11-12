@@ -29,6 +29,7 @@ class archive {
     float benchmark_return();
     void compute_basic_stats();
     float std_deviation(float*, int);
+    float total_div_payout(vector<position*>);
 
     std::vector<position*> old_positions;
     std::vector<float> benchmark_curve;

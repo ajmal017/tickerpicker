@@ -8,7 +8,7 @@ app: screen.o btest.o indicator data core backtest
 
 indicator: indicators/indicators.o indicators/lookbacks.o indicators/tables.o indicators/math.o indicators/metrics.o
 
-data: data/date.o data/pdata.o data/ptable.o
+data: data/date.o data/pdata.o data/ptable.o data/dividends.o
 
 core: core/ruleset.o core/screen.o core/stock.o
 
@@ -58,6 +58,9 @@ data/pdata.o: data/pdata.cpp data/pdata.h
 
 data/ptable.o: data/ptable.cpp data/ptable.h
 	$(CC) $(CFLAGS) -c -o ./data/ptable.o data/ptable.cpp
+	
+data/dividends.o: data/dividends.cpp data/dividends.h
+	$(CC) $(CFLAGS) -c -o ./data/dividends.o data/dividends.cpp
 
 core/ruleset.o: core/ruleset.cpp core/ruleset.h
 	$(CC) $(CFLAGS) -c -o ./core/ruleset.o core/ruleset.cpp
@@ -68,13 +71,7 @@ core/screen.o: core/screen.cpp core/screen.h
 core/stock.o: core/stock.cpp core/stock.h
 	$(CC) $(CFLAGS) -c -o ./core/stock.o core/stock.cpp
 
-clean:
-	rm indicators/*.o
-	rm backtest/*.o
-	rm core/*.o
-	rm data/*.o
-	rm screen.o
-	rm btest.o
+clean: noobj
 	rm *.bin
 
 test:
@@ -84,3 +81,12 @@ test:
 prod:
 	mv ptabs ptabs.test
 	mv ptabs.prod ptabs
+
+noobj:
+	rm indicators/*.o
+	rm backtest/*.o
+	rm core/*.o
+	rm data/*.o
+	rm screen.o
+	rm btest.o
+

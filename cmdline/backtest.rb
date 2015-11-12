@@ -56,6 +56,7 @@ def print_results(buf)
 
   puts ''
   puts 'Equity: ' + results['stats']['equity'].to_s
+  puts 'Dividends: ' + results['stats']['dividends'].to_s
   puts 'Return: ' + results['stats']['return'].to_s
   puts 'Winners: ' + results['stats']['winners'].to_s
   puts 'Losers: ' + results['stats']['losers'].to_s
