@@ -2,7 +2,6 @@
 
 load 'codegen.rb'
 require 'trollop'
-require 'open3'
 require 'date'
 require 'json'
 require 'pry'
@@ -58,6 +57,11 @@ def print_results(buf)
   puts 'Equity: ' + results['stats']['equity'].to_s
   puts 'Dividends: ' + results['stats']['dividends'].to_s
   puts 'Return: ' + results['stats']['return'].to_s
+
+  if(results['stats']['benchmark'])
+    puts 'Benchmark: ' + results['stats']['benchmark'].to_s
+  end
+
   puts 'Winners: ' + results['stats']['winners'].to_s
   puts 'Losers: ' + results['stats']['losers'].to_s
   puts 'Win %: ' + results['stats']['winpercent'].to_s
@@ -175,17 +179,7 @@ if (opts[:dumpcmd])
   puts cmdline
 end
 
-stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
-stdin.puts(processed.to_json + "\n")
-stdin.close
-
-sys_stat = wait_thr.value.to_i
-if(sys_stat != 0)
-  abort("RUNTIME ERROR: #{sys_stat}")
-end
-
-buf = ''
-stdout.each_line {|line| buf += line }
+buf = `echo '#{processed.to_json}' | #{cmdline}`
 
 if(opts[:raw])
   puts buf

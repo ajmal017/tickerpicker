@@ -2,7 +2,6 @@
 
 load 'codegen.rb'
 require 'trollop'
-require 'open3'
 require 'date'
 require 'json'
 
@@ -42,14 +41,4 @@ puts screen if opts[:dump]
 Dir.chdir(opts[:engine])
 cmdline = "./#{opts[:exename]} #{opts[:date]} "
 cmdline += (opts[:list].nil? ? "-l #{opts[:tickers]}" : "-f #{opts[:list]}")
-
-stdin, stdout, stderr, wait_thr = Open3.popen3(cmdline)
-stdin.puts({screen: screen}.to_json + "\n")
-stdin.close
-
-sys_stat = wait_thr.value.to_i
-if(sys_stat != 0)
-  abort("RUNTIME ERROR: #{sys_stat}")
-end
-
-stdout.each_line {|line| puts line }
+puts `echo '#{{screen: screen}.to_json}' | #{cmdline}`
