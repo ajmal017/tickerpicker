@@ -1,8 +1,8 @@
 #ifndef CMDLINE
 #define CMDLINE
 #include "rapidjson/document.h"
+#include "screen.h"
 #include <fstream>
-#include <iostream>
 #include <vector>
 
 void tokenize(const std::string& str, std::vector<std::string>& tokens) {
@@ -35,22 +35,46 @@ std::vector<std::string> get_universe(char *argv[], int startidx) {
   return u;
 }
 
-std::pair<std::vector<std::string>, std::vector<std::string> > process_screen(rapidjson::Value& v) {
+screen* process_screen(rapidjson::Value& v) {
   rapidjson::Value& rules = v["rules"];
   rapidjson::Value& symbols = v["symbols"];
-  std::vector<std::string> r, s;
+  std::vector<std::string> rulevec, symvec, sortvec;
+  rapidjson::Value sort;
+  bool sflag;
 
   for(rapidjson::SizeType i = 0; i < rules.Size(); i++) {
     std::string t = rules[i].GetString();
-    r.push_back(t);
+    rulevec.push_back(t);
   }
 
   for(rapidjson::SizeType i = 0; i < symbols.Size(); i++) {
     std::string t = symbols[i].GetString();
-    s.push_back(t);
+    symvec.push_back(t);
   }
 
-  return std::make_pair(r, s);
+  screen *rval = new screen(rulevec, symvec);
+
+  if(v.HasMember("asort")) {
+    sort = v["asort"];
+    sflag = true;
+  }
+
+  if(v.HasMember("dsort")) {
+    sort = v["dsort"];
+    sflag = false;
+  }
+
+  if(!sort.IsNull()) {
+
+    for(rapidjson::SizeType i = 0; i < sort.Size(); i++) {
+      std::string t = sort[i].GetString();
+      sortvec.push_back(t);
+    }
+
+    rval->set_sort_exp(sortvec, sflag);
+  }
+
+  return rval;
 }
 
 #endif

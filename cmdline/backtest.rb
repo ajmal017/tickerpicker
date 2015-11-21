@@ -4,7 +4,6 @@ load 'codegen.rb'
 require 'trollop'
 require 'date'
 require 'json'
-require 'pry'
 
 def dehash(key, raw)
    raw.gsub(/#{key}\s*:\s*\{(.+)\}/, key + ': [\1]')
@@ -31,16 +30,16 @@ def add_to_hash(value, base, *keys)
 end
 
 def process_expression(exp)
- exp = exp.join(' ') if exp.is_a? Array
- p = CodeGenerator::Parser.new(exp)
- p.parse_exp
- p.table.symboltable 
+  exp = exp.join(' ') if exp.is_a? Array
+  p = CodeGenerator::Parser.new(exp)
+  p.parse_exp
+  p.table.symboltable 
 end
 
 def process_screen(s)
- p = CodeGenerator::Parser.new(s)
- p.parse_rules
- {rules: p.table.rules, symbols: p.table.symboltable} 
+  p = CodeGenerator::Parser.new(s)
+  p.parse_rules
+  {rules: p.table.rules, symbols: p.table.symboltable} 
 end
 
 def print_results(buf)
@@ -101,6 +100,8 @@ opts = Trollop::options do
   opt :slippage, "Per-transaction slippage expression", :type => :string
   opt :raw, "Dump raw trade results", :type => :boolean
   opt :dumpcmd, "Dump engine command line", :type => :boolean
+  opt :asort, "Ascending sort expression for screener results", :type => :string
+  opt :dsort, "Descending sort expression for screener results", :type => :string
 end
 
 Trollop::die "You must specify a list of stocks" unless opts[:list] || opts[:tickers]
@@ -152,6 +153,18 @@ if(strategy[:long])
   processed[:long][:trail] = process_expression(raw[:trail]) if raw[:trail]
   processed[:long][:filter] = process_expression(raw[:filter]) if raw[:filter]
   processed[:long][:reject] = process_expression(raw[:reject]) if raw[:reject]
+end
+
+if(opts[:asort])
+   p = CodeGenerator::Parser.new(opts[:asort])
+   p.parse_exp
+   processed[:long][:enter][:signal][:asort] = p.table.symboltable 
+end
+
+if(opts[:dsort])
+   p = CodeGenerator::Parser.new(opts[:dsort])
+   p.parse_exp
+   processed[:long][:enter][:signal][:dsort] = p.table.symboltable 
 end
 
 processed[:config] = {}

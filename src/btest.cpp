@@ -16,8 +16,7 @@ strategy process_strategy(rapidjson::Document& doc, string dir) {
   strategy sys;
 
   if(side["enter"].HasMember("signal")) {
-    pair<vector<string>, vector<string> > e = process_screen(side["enter"]["signal"]);
-    screen *es = new screen(e.first, e.second);
+    screen* es = process_screen(side["enter"]["signal"]);
     sys.entry_signal(es);
   }
 
@@ -28,8 +27,7 @@ strategy process_strategy(rapidjson::Document& doc, string dir) {
 //  }
 
   if(side["exit"].HasMember("signal")) {
-    pair<vector<string>, vector<string> > e = process_screen(side["exit"]["signal"]);
-    screen *xs = new screen(e.first, e.second);
+    screen* xs = process_screen(side["exit"]["signal"]);
     sys.exit_signal(xs);
   }
 

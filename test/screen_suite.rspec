@@ -14,9 +14,16 @@ CHECKSUMS = {
 	'ABV-C' => '8dd6bb7329a71449b0a1b292b5999164',
 	} 
 
-def run_screen(screen, tickers, date)
+def run_screen(screen, tickers, date, opts=nil)
   Dir.chdir("../cmdline")
   cmdline = "./screen.rb -t #{tickers.join(',')} -d #{date} -c \"#{screen}\""
+
+  unless(opts.nil?)
+    opts.each_key do |k|
+      cmdline += " --" + k.to_s + " \"#{opts[k]}\""
+    end
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   output.split 
@@ -249,10 +256,6 @@ RSpec.describe "Dates and data handling" do
       expect(hits).to be_empty
     end
   
-    it "does not alter dates when splitting" do
-  
-    end
-
     it "does not alter volume when splitting" do
       hits = run_screen("V = 87484600;", %w(AAPL), "2014-06-06")
       expect(hits).to match_array(%w(AAPL))
@@ -500,6 +503,24 @@ RSpec.describe "Logical Operations" do
 
     hits = run_screen("AGE = 1234;", %w(IKAN), "2010-08-10")
     expect(hits).to match_array(%w(IKAN))
+  end
+end
+
+RSpec.describe "Result sorting" do
+  it "should allow ascending sort by an expression" do
+    hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02", {:asort => "C"})
+    expect(hits).to eq(%w(IKAN SPEX FLEX XOM AAPL))
+
+    hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2012-02-02", {:asort => "((C - C20) / C20) * 100"})
+    expect(hits).to eq(%w(SPEX XOM IKAN AAPL FLEX))
+  end
+
+  it "should allow ascending sort by an expression" do
+    hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02", {:dsort => "C"})
+    expect(hits).to eq(%w(AAPL XOM FLEX SPEX IKAN))
+
+    hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2012-02-02", {:dsort => "((C - C20) / C20) * 100"})
+    expect(hits).to eq(%w(FLEX AAPL IKAN XOM SPEX))
   end
 end
 

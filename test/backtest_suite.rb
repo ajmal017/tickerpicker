@@ -34,6 +34,14 @@ def run_test(tickers, start, done, sys)
     cmdline += " --benchmark '#{sys[:benchmark]}'"
   end
 
+  if(sys[:asort])
+    cmdline += " --asort '#{sys[:asort]}'"
+  end
+
+  if(sys[:dsort])
+    cmdline += " --dsort '#{sys[:dsort]}'"
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -526,6 +534,11 @@ RSpec.describe "Long trades" do
       results = run_test(%w(AAPL), '2015-02-20', '2015-03-20', {:longsig => "H = 133", :longxsig => "H = 0", :longstop => "0", :longsize => "16 / 2" })
       expect(results['trades']).to match_array([["AAPL", "2015-02-24", "8", "132.94"]])
     end
+
+    it "should skip trades with a position size of zero" do
+      results = run_test(%w(XOM AAPL), '2013-01-01', '2013-02-01', {:longsig => "O > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longstop => "0", :longsize => "PORTFOLIO_CASH / O" })
+      expect(results['trades'].last).not_to match_array(["XOM","2013-02-01","0","90.44"])
+    end
   end
 
   describe "Stock splits" do
@@ -660,6 +673,30 @@ RSpec.describe "Long trades" do
       results = run_test(%w(SPEX), '2011-04-20', '2011-05-20', {:longsig => "O = 0.3", :longxsig => "O = 0", :longtrail => "L - 0.2", :longsize => "10" })
       expect(results['trades']).to match_array([["SPEX", "2011-04-25", "1", "3", "2011-05-18", "3.08", "2.66"]])
       expect(results['equity']).to match_array([9999.8, 9999.8, 9999.8, 9999.8, 9999.8, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.1, 10000.1, 10000.16, 10000.44, 10000.44, 10000.44, 10000.73, 10000.8, 10000.9, 10000.9, 10000.9, 10001.04])
+    end
+  end
+
+  describe "Screener sorting" do
+    it "should reflect screen ascending sorting in results" do
+      results = run_test(%w(AAPL XOM), '2013-01-01', '2013-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O", :asort => "C"})
+      expect(results['trades']).to eq([["XOM","2013-01-03","113","88.46","2013-01-31","90.69","2.52"],["AAPL","2013-01-31","22","456.98","2013-02-28","444.05","-2.83"],["XOM","2013-02-01","1","90.44","2013-03-01","89.07","-1.52"],["AAPL","2013-03-01","22","438"]])
+      expect(results['stats']['return']).to eq(-2.81)
+
+      results = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O", :asort => "C"})
+      expect(results['trades']).to eq([["FLEX","2014-01-03","1293","7.73","2014-01-31","8.23","6.46"],["SPEX","2014-01-31","1827","5.77","2014-02-28","4.7","-18.55"],["FLEX","2014-02-28","946","9.02"]])
+      expect(results['stats']['return']).to eq(-15.43)
+    end
+
+    it "should reflect screen descending sorting in results" do
+      results = run_test(%w(AAPL XOM), '2013-01-01', '2013-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O", :dsort => "C"})
+      expect(results['trades']).to eq([["AAPL","2013-01-03","18","547.88","2013-01-31","456.98","-16.6"],["XOM","2013-01-03","1","88.46","2013-01-31","90.69","2.52"],["AAPL","2013-02-01","18","459.11","2013-03-01","438","-4.6"],["XOM","2013-02-08","1","88.5"]])
+      expect(results['stats']['return']).to eq(-21.29)
+
+      results = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O", :dsort => "C"})
+      expect(results['trades']).to eq([["SPEX","2014-01-03","1150","8.69","2014-01-31","5.77","-33.61"],["FLEX","2014-01-31","794","8.23","2014-02-28","9.02","9.59"],["SPEX","2014-02-28","1511","4.7"]])
+      expect(results['stats']['return']).to eq(-29.44)
+
+
     end
   end
 end

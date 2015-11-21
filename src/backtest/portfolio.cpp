@@ -155,18 +155,22 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
   for(int i = 0; i < list.size(); i++) {
     try {
       int count = strats[i]->position_size(sday, list[i]);
-      position* newpos = new position(sday, list[i], count, strats[i]);   
-      float cost = newpos->cost();
 
-      if(config::slippage != NULL) {
-        stock cur(list[i]);
-        cur.onday(sday);
-        cost += config::slippage->eval(cur);
-      }
+      if(count > 0) {
 
-      if(cost < cur_cash) {
-        cur_positions.push_back(newpos);
-        cur_cash -= cost;
+        position* newpos = new position(sday, list[i], count, strats[i]);   
+        float cost = newpos->cost();
+  
+        if(config::slippage != NULL) {
+          stock cur(list[i]);
+          cur.onday(sday);
+          cost += config::slippage->eval(cur);
+        }
+  
+        if(cost < cur_cash) {
+          cur_positions.push_back(newpos);
+          cur_cash -= cost;
+        }
       }
 
     } catch(runtime_error e) {
