@@ -2,9 +2,16 @@
 #include <iostream>
 #include <stdexcept>
 
+std::map<string, ptable*> stock::alldata; 
+
 stock::stock(string ticker) {
-  data = new ptable(ticker);
   this->ticker = ticker;
+  if(alldata.count(ticker) == 0) {
+    data = new ptable(ticker);
+    alldata[ticker] = data;
+  } else {
+    data = alldata[ticker];
+  }
 }
 
 void stock::onday(date d) {

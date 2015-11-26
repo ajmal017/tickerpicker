@@ -2,8 +2,6 @@
 #include <algorithm>
 #include <iostream>
 
-map<string, stock> screen::all;
-
 screen::screen(vector<string> rules, vector<string> table) {
   srules = new ruleset(rules, table);
   sort = NULL;  
@@ -25,18 +23,7 @@ vector<string> screen::eval(date curdate, restrictor* filter) {
       continue;
     }
 
-    if(all.count(ticker) == 0) {
-
-      try {
-        stock cur(ticker);
-        all.insert(std::pair<string, stock>(ticker, cur));
-      } catch(exception e) {
-        continue;
-      }
-      
-    }
-
-    stock cur = all.find(ticker)->second; 
+    stock cur(ticker);
     cur.onday(curdate);
 
     if(srules->eval(cur)) {
@@ -48,15 +35,7 @@ vector<string> screen::eval(date curdate, restrictor* filter) {
 }
 
 bool screen::eval(date curdate, string ticker) {
-    if(all.count(ticker) == 0) {
-
-      try {
-        stock cur(ticker);
-        all.insert(std::pair<string, stock>(ticker, cur));
-      } catch(exception e) {}
-    }
-
-    stock cur = all.find(ticker)->second; 
+    stock cur(ticker);
     cur.onday(curdate);
     return srules->eval(cur);
 }

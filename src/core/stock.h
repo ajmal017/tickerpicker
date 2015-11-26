@@ -18,6 +18,8 @@ class stock {
     void pull_history(int);
     void concat_history(pdata);
 
+    static std::map<string, ptable*> alldata; 
+
     indicators icore;
     date* pulldate;
     string ticker;

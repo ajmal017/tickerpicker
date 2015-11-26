@@ -33,11 +33,19 @@
 #include <iostream>
 #include <utility>
 #include "ptable.h"
+#include <errno.h>
+#include <string.h>
 
 ptable::ptable(string ticker) {
   replace(ticker.begin(), ticker.end(), '/', '-');
   symbol = ticker;
   open();
+}
+
+ptable::~ptable() {
+  if(binfile.is_open()) {
+    binfile.close();
+  }
 }
 
 void ptable::open() {
@@ -50,6 +58,7 @@ void ptable::open() {
     read_rowcount();
     rstart = binfile.tellg();
   } else {
+    cerr << "Error code: " << strerror(errno) << endl;;
     throw exception();
   }
 }

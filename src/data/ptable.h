@@ -10,6 +10,7 @@ class ptable {
 
   enum dayindices { DATE, OPEN, HIGH, LOW, CLOSE, VOLUME };
 
+  ~ptable();
   ptable(string);
   pdata read(int);
   pdata pull_history_by_limit(date, int);

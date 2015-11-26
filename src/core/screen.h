@@ -29,7 +29,6 @@ class screen {
   ruleset* srules;
   expression* sort;
   vector<string> universe;
-  static map<string, stock> all;
 
   struct asc_pred {
       bool operator()(const std::pair<float, string> &left, const std::pair<float, string> &right) {
