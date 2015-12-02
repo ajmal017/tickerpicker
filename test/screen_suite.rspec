@@ -558,4 +558,17 @@ RSpec.describe "Defect Tests" do
      expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
      expect($?).to eq(0)
   end
+
+  it "should silently drop tickers that don't exist" do
+    hits = run_screen("C > 0", %w(AAPL XOM IKAN FOO BAR BAZ), "2014-02-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN))
+
+    hits = run_screen("C > 0", %w(FOO BAR BAZ BUX QUX), "2014-02-02")
+    expect(hits).to be_empty
+  end
+
+  it "should not drop tickers occuring after a non-existent ticker" do
+    hits = run_screen("C > 0", %w(AAPL XOM FOO BAR IKAN SPEX), "2014-02-02")
+    expect(hits).to match_array(%w(AAPL XOM IKAN SPEX))
+  end
 end

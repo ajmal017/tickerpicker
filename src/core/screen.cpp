@@ -23,11 +23,17 @@ vector<string> screen::eval(date curdate, restrictor* filter) {
       continue;
     }
 
-    stock cur(ticker);
-    cur.onday(curdate);
+    try {
 
-    if(srules->eval(cur)) {
-      results.push_back(ticker);
+      stock cur(ticker);
+      cur.onday(curdate);
+  
+      if(srules->eval(cur)) {
+        results.push_back(ticker);
+      }
+
+    } catch (exception e) {
+      universe.erase(universe.begin() + i);
     }
   }
 

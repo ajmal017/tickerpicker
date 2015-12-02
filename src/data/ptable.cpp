@@ -58,7 +58,8 @@ void ptable::open() {
     read_rowcount();
     rstart = binfile.tellg();
   } else {
-    cerr << "Error code: " << strerror(errno) << endl;;
+    //cerr << "Error code: " << strerror(errno) << endl;
+    //cerr << "On file: " << symbol << endl;
     throw exception();
   }
 }
