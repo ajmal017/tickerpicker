@@ -23,6 +23,12 @@ std::vector<std::string> get_universe(char *argv[], int startidx) {
   if(std::string(argv[startidx]).compare("-f") == 0) {
 
     std::ifstream listfile(argv[startidx + 1]);
+
+    if(!listfile) {
+      cout << "File " << argv[startidx + 1] << " not found\n";
+      exit(1);
+    }
+
     while(getline(listfile, ticker)) {
       u.push_back(ticker);
     }
