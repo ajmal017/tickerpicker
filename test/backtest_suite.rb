@@ -700,3 +700,10 @@ RSpec.describe "Long trades" do
     end
   end
 end
+
+describe "Defect tests" do
+  it "should handle missing data during position sizing" do
+    results = run_test(%w(AAPL), '1984-09-10', '1984-09-20', {:longsig => "C > 0", :longxsig => "C = 100", :longsize => "PORTFOLIO_CASH / AVGC200"})
+    expect(results['trades']).to be_empty
+  end
+end

@@ -571,4 +571,12 @@ RSpec.describe "Defect Tests" do
     hits = run_screen("C > 0", %w(AAPL XOM FOO BAR IKAN SPEX), "2014-02-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN SPEX))
   end
+
+  it "should silently drop results without enough data to sort" do
+    hits = run_screen("C > 0", %w(AAPL), "1984-09-10", {:asort => "AVGC200"})
+    expect(hits).to be_empty
+
+    hits = run_screen("C > 0", %w(AAPL), "1984-09-10", {:dsort => "AVGC200"})
+    expect(hits).to be_empty
+  end
 end

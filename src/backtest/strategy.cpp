@@ -83,12 +83,17 @@ float strategy::stop_loss(date strat_date, string ticker, bool trail) {
 }
 
 int strategy::position_size(date strat_date, string ticker) {
+
   if(size_rule == NULL) {
     return 1;
-  } else {
+  }
+
+  try {
     stock cur(ticker);
     cur.onday(strat_date);
     return floor(size_rule->eval(cur));
+  } catch (exception e) {
+    return 0;
   }
 }
 

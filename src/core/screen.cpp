@@ -61,12 +61,17 @@ vector<string> screen::sort_set(vector<string> inset, date d) {
   }
 
   for(int i = 0; i < inset.size(); i++) {
-    stock cur(inset[i]);
-    cur.onday(d);
+    try {
 
-    float val = sort->eval(cur); 
-    pair<float, string> p = make_pair(val, inset[i]);
-    sset.push_back(p);
+      stock cur(inset[i]);
+      cur.onday(d);
+
+      float val = sort->eval(cur); 
+      pair<float, string> p = make_pair(val, inset[i]);
+      sset.push_back(p);
+
+    } catch(exception e) {
+    }
   }
 
   if(sort_dflag) {

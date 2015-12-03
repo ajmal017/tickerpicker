@@ -68,7 +68,11 @@ def print_results(buf)
   puts 'Avg Win: ' + results['stats']['avgwin'].to_s 
   puts 'Avg Loss: ' + results['stats']['avgloss'].to_s
   puts 'Max Drawdown: ' + results['stats']['drawdown'].to_s
-  puts 'Profit / Drawdown: ' + '%.2f' % (results['stats']['return'] / results['stats']['drawdown']).to_s
+
+  if(results['stats']['drawdown'] && results['stats']['drawdown'] > 0)
+    puts 'Profit / Drawdown: ' + '%.2f' % (results['stats']['return'] / results['stats']['drawdown']).to_s
+  end
+  
   puts 'Expectancy: ' + results['stats']['expect'].to_s
   puts ''
 end
