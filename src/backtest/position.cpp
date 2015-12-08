@@ -64,10 +64,6 @@ int position::share_count() {
   return count;
 }
 
-bool position::matches(string t) {
-  return t == ticker;
-}
-
 void position::close(date cdate) {
   close_date = new date(cdate);
   ptable* thispos = open_equities[ticker];

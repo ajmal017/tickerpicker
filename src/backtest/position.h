@@ -13,7 +13,6 @@ class position : public restrictor, position_metric {
     position(date, string, int, strategy*, float);
     position(date, string, int, strategy*);
     float position_value(date);
-    bool matches(string);
     void print_state();
     float update(date);
     string symbol();

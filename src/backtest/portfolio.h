@@ -60,7 +60,7 @@ class portfolio : public restrictor, portfolio_metric {
   private:
 
     void close_positions(std::vector<std::string>*, date);
-    void close_position(date, int, std::vector<std::string>*, float p=0);
+    void close_position(date, position*, std::vector<std::string>*, float p=0);
     void open_positions(std::vector<std::string>*, std::vector<strategy*>*, date);
     void entry_signals(date, std::vector<std::string>*, std::vector<strategy*>*);
     void exit_signals(date, std::vector<std::string>*);

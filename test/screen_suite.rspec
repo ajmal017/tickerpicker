@@ -524,19 +524,19 @@ RSpec.describe "Result sorting" do
   end
 
   it "should compute an optional value" do
-    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:calc => "C"})
+    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "C"})
     expect(hits).to eq(%w(AAPL 118.63))
 
-    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:calc => "H"})
+    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "H"})
     expect(hits).to eq(%w(AAPL 119.17))
 
-    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:calc => "L"})
+    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "L"})
     expect(hits).to eq(%w(AAPL 116.08))
 
-    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:calc => "BOLLINGER_UPPER"})
+    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "BOLLINGER_UPPER"})
     expect(hits).to eq(%w(AAPL 118.892))
 
-    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:calc => "BOLLINGER_LOWER"})
+    hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "BOLLINGER_LOWER"})
     expect(hits).to eq(%w(AAPL 103.321))
   end
 end

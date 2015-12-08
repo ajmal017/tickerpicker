@@ -191,8 +191,8 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
 //on to the sell list and tried the next day
 
 void portfolio::close_positions(vector<string>* pos, date sday) {
+  vector<position*> templist;
   vector<int> closelist;
-  vector<string> closeticks;
 
   if(pos->size() > 0) {
     vector<string> targets = *pos;
@@ -202,9 +202,8 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
     for(int i = 0; i < targets.size(); i++) {
       for(int x = 0; x < cur_positions.size(); x++) {
         position* p = cur_positions[x];
-        if(p->matches(targets[i])) {
+        if(targets[i] == p->symbol()) {
           closelist.push_back(x);
-          closeticks.push_back(targets[i]);
         }       
       }
     }
@@ -212,18 +211,20 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
     std::vector<int>::iterator last;
     last = std::unique(closelist.begin(), closelist.end());
     closelist.erase(last, closelist.end());
+
+    for(int i = 0; i < closelist.size(); i++) {
+      int closeindex = closelist[i];
+      templist.push_back(cur_positions[closeindex]);
+    }
   
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
-      int closeindex = closelist[i];
-      close_position(sday, closeindex, pos, 0);
+      close_position(sday, templist[i], pos, 0);
     }
   }
 }
 
-void portfolio::close_position(date sday, int index, vector<string>* pos, float price) {
-
-   position* p = cur_positions[index]; 
+void portfolio::close_position(date sday, position* p, vector<string>* pos, float price) {
 
    try {
 
@@ -261,7 +262,7 @@ void portfolio::update_positions(date d) {
 bool portfolio::skip_ticker(string target) {
   if(config::single_pos()) {
     for(int i = 0; i < cur_positions.size(); i++) {
-      if(cur_positions[i]->matches(target)) {
+      if(cur_positions[i]->symbol() == target) {
         return true;
       }
     }
