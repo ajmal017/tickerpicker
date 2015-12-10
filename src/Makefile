@@ -12,7 +12,7 @@ data: data/date.o data/pdata.o data/ptable.o data/dividends.o
 
 core: core/ruleset.o core/screen.o core/stock.o
 
-backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o backtest/config.o backtest/archive.o
+backtest: backtest/strategy.o backtest/portfolio.o backtest/position.o backtest/config.o backtest/archive.o backtest/deposits.o
 
 btest.o : btest.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o btest.o btest.cpp
@@ -34,6 +34,9 @@ backtest/portfolio.o : backtest/portfolio.cpp
 
 backtest/config.o : backtest/config.cpp
 	$(CC) $(CFLAGS) -c -o ./backtest/config.o backtest/config.cpp
+
+backtest/deposits.o : backtest/deposits.cpp
+	$(CC) $(CFLAGS) -c -o ./backtest/deposits.o backtest/deposits.cpp
 
 indicators/indicators.o: indicators/indicators.cpp
 	$(CC) $(CFLAGS) $(TAFLAGS) -c -o ./indicators/indicators.o indicators/indicators.cpp

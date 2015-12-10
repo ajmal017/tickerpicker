@@ -106,6 +106,8 @@ opts = Trollop::options do
   opt :dumpcmd, "Dump engine command line", :type => :boolean
   opt :asort, "Ascending sort expression for screener results", :type => :string
   opt :dsort, "Descending sort expression for screener results", :type => :string
+  opt :deposit, "Deposit schedule in days/amount format", :type => :string, :multi => true
+  opt :equity, "Starting portfolio equity", :type => :integer, :default => 10_000
 end
 
 Trollop::die "You must specify a list of stocks" unless opts[:list] || opts[:tickers]
@@ -172,6 +174,7 @@ if(opts[:dsort])
 end
 
 processed[:config] = {}
+processed[:config][:equity] = opts[:equity].to_s()
 processed[:config][:multipos] = opts[:multi]
 
 if(opts[:slippage])
@@ -182,6 +185,10 @@ end
 
 if(opts[:benchmark]) 
   processed[:config][:benchmark] = opts[:benchmark]
+end
+
+unless(opts[:deposit].empty?)
+  processed[:deposits] = opts[:deposit]
 end
 
 if(opts[:dump])

@@ -13,11 +13,13 @@ class config {
   private:
     bool bvalue(rapidjson::Value&, std::string);
 
+    static float initial_equity();
     static bool single_pos();
     static string benchmark();
     static bool multiple_positions;
     static expression* slippage;
     static string benchticker;
+    static float start_equity;
 };
 
 #endif

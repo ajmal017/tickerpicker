@@ -42,6 +42,20 @@ def run_test(tickers, start, done, sys)
     cmdline += " --dsort '#{sys[:dsort]}'"
   end
 
+  if(sys[:equity])
+    cmdline += " --equity #{sys[:equity]}"
+  end
+
+  if(sys[:deposit])
+    sys[:deposit].each do |x|
+      cmdline += " --deposit \"#{x}\""
+    end
+  end
+
+  if(sys[:multi])
+    cmdline += " --multi"
+  end
+
   output = `#{cmdline}`
   Dir.chdir(HOMEDIR)
   JSON.parse(output)
@@ -280,6 +294,14 @@ RSpec.describe "Long trades" do
   end
 
   describe "Equity curve" do
+    it "should accept an initial equity value" do
+      results = run_test(%w(AAPL), '2015-01-01', '2015-01-08', {:longsig => "O > 1000", :longxsig => "O = 0", :equity => "1234"})
+      expect(results['equity']).to match_array([1234, 1234, 1234, 1234, 1234])
+
+      results = run_test(%w(AAPL), '2015-01-01', '2015-01-08', {:longsig => "O > 1000", :longxsig => "O = 0", :equity => "99999"})
+      expect(results['equity']).to match_array([99999, 99999, 99999, 99999, 99999])
+    end
+
     it "should have an entry for every day of the test" do
       results = run_test(%w(AAPL), '2015-01-01', '2015-01-08', {:longsig => "O < 0", :longxsig => "O = 0", :longtrail => "0" })
       expect(results['equity']).to match_array([10_000, 10_000, 10_000, 10_000, 10_000]) 
@@ -358,6 +380,43 @@ RSpec.describe "Long trades" do
       expect(results['trades']).to match_array([["AAPL","2015-02-03","1","118.5"]])
       expect(results['stats']['equity']).to eq(10008.91)
       expect(results['stats']['dividends']).to eq(1.51)
+    end
+  end
+
+  describe "Deposits" do
+    it "should add money to equity when a deposit is specified" do
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["5/100"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10000.00,10000.00,10100.00,10100.00,10100.00,10100.00,10100.00,10200.00,10200.00,10200.00,10200.00,10200.00,10300.00,10300.00,10300.00,10300.00,10300.00,10400.00])
+
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["10/100"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10000.00,10000.00,10000.00,10000.00,10000.00,10000.00,10000.00,10100.00,10100.00,10100.00,10100.00,10100.00,10100.00,10100.00,10100.00,10100.00,10100.00,10200.00])
+    end
+
+    it "should accept multiple deposits" do
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["5/50", "7/100"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10000.00,10000.00,10050.00,10050.00,10150.00,10150.00,10150.00,10200.00,10200.00,10200.00,10200.00,10300.00,10350.00,10350.00,10350.00,10350.00,10350.00,10400.00])
+
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["3/30", "5/50"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10030.00,10030.00,10080.00,10110.00,10110.00,10110.00,10140.00,10190.00,10190.00,10220.00,10220.00,10220.00,10300.00,10300.00,10300.00,10330.00,10330.00,10380.00])
+    end
+
+    it "should accept overlapping deposits" do
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["5/50", "10/100"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10000.00,10000.00,10050.00,10050.00,10050.00,10050.00,10050.00,10200.00,10200.00,10200.00,10200.00,10200.00,10250.00,10250.00,10250.00,10250.00,10250.00,10400.00])
+
+      results = run_test(%w(AAPL), '2009-12-10', '2010-01-10', {:longsig => "O < 0", :longxsig => "O = 0", :deposit => ["3/10", "6/20"]})
+      expect(results['equity']).to match_array([10000.00,10000.00,10010.00,10010.00,10010.00,10040.00,10040.00,10040.00,10050.00,10050.00,10050.00,10080.00,10080.00,10080.00,10090.00,10090.00,10090.00,10120.00,10120.00,10120.00])
+    end
+
+    it "should account for total return using deposits" do
+      results = run_test(%w(AAPL), '2014-01-01', '2015-01-01', {:longsig => "O > 0", :longxsig => "O = 0", :longsize => "PORTFOLIO_CASH / O", :deposit => ["10/500"]})
+      expect(results['stats']['equity']).to eq(26629.74)
+      expect(results['stats']['return']).to eq(18.35)
+
+      results = run_test(%w(AAPL), '2014-01-01', '2015-01-01', {:longsig => "O > 0", :longxsig => "O = 0", :longsize => "PORTFOLIO_CASH / O", :deposit => ["10/500"], :multi => true})
+      expect(results['stats']['equity']).to eq(29484.27)
+      expect(results['stats']['return']).to eq(31.04)
+      expect(results['trades'].size).to eq(26)
     end
   end
 
@@ -695,8 +754,6 @@ RSpec.describe "Long trades" do
       results = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O", :dsort => "C"})
       expect(results['trades']).to eq([["SPEX","2014-01-03","1150","8.69","2014-01-31","5.77","-33.61"],["FLEX","2014-01-31","794","8.23","2014-02-28","9.02","9.59"],["SPEX","2014-02-28","1511","4.7"]])
       expect(results['stats']['return']).to eq(-29.44)
-
-
     end
   end
 end

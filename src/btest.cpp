@@ -76,6 +76,20 @@ void process_configuration(rapidjson::Document& doc) {
   }
 }
 
+void process_deposits(rapidjson::Document& doc, portfolio* p) {
+  if(doc.HasMember("deposits")) {
+    vector<string> deposits;
+    rapidjson::Value& schedule = doc["deposits"];
+
+    for(rapidjson::SizeType i = 0; i < schedule.Size(); i++) {
+      std::string t = schedule[i].GetString();
+      deposits.push_back(t);
+    }
+   
+    p->set_deposit_schedule(deposits);
+  }
+}
+
 int main(int argc, char* argv[]) {
 
   string inp;
@@ -93,6 +107,7 @@ int main(int argc, char* argv[]) {
 
   port.set_long_strategies(longstrats);
   port.set_universe(universe);
+  process_deposits(d, &port);
   process_configuration(d);
 
   port.run();

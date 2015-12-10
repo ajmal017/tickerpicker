@@ -17,6 +17,7 @@ class target_list : public restrictor {
 class archive {
   public:
     void push(position*);
+    void set_initial(float);
     void update_equity(float);
     void push_benchmark(float);
     void print_state(vector<position*>);
@@ -37,7 +38,18 @@ class archive {
 
     float avgwin, avgloss, expectancy;
     float winpercent, losepercent;
+    float initial_equity;
     int winners, losers;
+};
+
+class deposits {
+  public:
+    float update();
+    void add_deposits(vector<string>);
+  private:
+    void process_deposit(string);
+    vector<int> periods, counters;
+    vector<float> amounts;
 };
 
 class portfolio : public restrictor, portfolio_metric {
@@ -50,6 +62,7 @@ class portfolio : public restrictor, portfolio_metric {
     void set_date_range(date, date);
     void set_universe(vector<std::string>);
     void set_long_strategies(std::vector<strategy>);
+    void set_deposit_schedule(vector<string>);
     bool skip_ticker(string);
 
     int position_count();
@@ -75,8 +88,10 @@ class portfolio : public restrictor, portfolio_metric {
     std::vector<position*> cur_positions;
 
     archive past_performance;
+    deposits* new_equity;
     date firstdate;
     date lastdate;
+    float start_cash;
     float cur_cash;
 };
 

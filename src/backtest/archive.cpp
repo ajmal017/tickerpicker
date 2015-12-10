@@ -14,10 +14,13 @@ void archive::update_equity(float equity) {
   equity_curve.push_back(equity);
 }
 
+void archive::set_initial(float equity) {
+  initial_equity = equity;
+}
+
 float archive::total_return() {
-  float start = equity_curve.front();
   float end = equity_curve.back();
-  float diff = ((end - start) / start) * 100;
+  float diff = ((end - initial_equity) / initial_equity) * 100;
   return floor(diff * 100) / 100;
 }
 

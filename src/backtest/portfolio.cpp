@@ -18,6 +18,7 @@ using namespace std;
 
 portfolio::portfolio() {
   indicators::set_portfolio(this);
+  new_equity = new deposits();
 }
 
 //since portfolio only runs once, I'm not
@@ -58,6 +59,10 @@ void portfolio::set_universe(vector<std::string> u) {
   }
 }
 
+void portfolio::set_deposit_schedule(vector<string> sched) {
+  new_equity->add_deposits(sched);
+}
+
 //This is the top level function
 //that drives each tick of the test
 void portfolio::run() {
@@ -66,7 +71,9 @@ void portfolio::run() {
   update_benchmark(today);
   vector<string> hits, exits;
   vector<strategy*> hitstrats;
-  cur_cash = 10000;
+  start_cash = config::initial_equity();
+  past_performance.set_initial(start_cash);
+  cur_cash = start_cash;
 
   if(!today.is_business_day()) {
     today.next_business_day();
@@ -250,6 +257,11 @@ void portfolio::update_equity_curve(date d) {
     posvalues += cur_positions[i]->position_value(d);
   }
  
+  float deposit = new_equity->update();
+
+  cur_cash += deposit;
+  start_cash += deposit;
+  past_performance.set_initial(start_cash);
   past_performance.update_equity(posvalues + cur_cash);
 }
 
