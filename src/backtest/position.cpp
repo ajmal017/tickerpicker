@@ -76,6 +76,7 @@ void position::close(date cdate) {
 
   if(divdata != NULL) {
     delete divdata;
+    divdata = NULL;
   }
 
   close_cost = t.open[0];

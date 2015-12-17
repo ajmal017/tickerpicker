@@ -794,4 +794,8 @@ describe "Defect tests" do
     results = run_test(%w(FAS FAZ URE LMLP), '2009-12-10', '2010-04-20', {:longsig => "C > 0", :longsize => "PORTFOLIO_CASH / O", :longxsig => "POSITION_DAYS_HELD = 20", :dsort=> "((C - C120) / C120) * 100"})
     expect(results['trades']).to eq([["FAS","2009-12-11","140","71.22","2010-01-12","83.03","16.58"],["FAZ","2009-12-11","1","20.53","2010-01-12","17.22","-16.13"],["URE","2009-12-11","1","6.29","2010-01-12","6.83","8.58"],["LMLP","2009-12-11","2","0.82","2010-01-12","1.5","82.92"],["LMLP","2010-01-13","7386","1.55","2010-02-10","1.53","-1.3"],["URE","2010-02-10","1979","5.86","2010-03-10","7.54","28.66"],["LMLP","2010-03-10","5992","2.5","2010-04-07","2.4","-4"],["URE","2010-04-07","1596","8.86"]])
   end
+
+  it "should not do a double free on dividends when closing positions" do
+    run_test(%w(AAPL XOM), '2010-01-01', '2012-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD > 20"})
+  end
 end
