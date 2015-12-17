@@ -9,6 +9,7 @@ class config {
 
   public:
     config(rapidjson::Value&);
+    static bool shuffle();
 
   private:
     bool bvalue(rapidjson::Value&, std::string);
@@ -20,6 +21,7 @@ class config {
     static expression* slippage;
     static string benchticker;
     static float start_equity;
+    static bool shuffle_universe;
 };
 
 #endif

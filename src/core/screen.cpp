@@ -56,7 +56,6 @@ vector<string> screen::sort_set(vector<string> inset, date d) {
   vector<string> rval;
 
   if(sort == NULL) {
-    std::sort(inset.begin(), inset.end());
     return inset;
   }
 

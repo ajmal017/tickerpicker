@@ -1,6 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    gruff (0.6.0)
+      rmagick (>= 2.13.4)
+    rmagick (2.15.4)
     sequel (4.20.0)
     trollop (2.1.1)
 
@@ -8,5 +11,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  gruff
   sequel (= 4.20.0)
   trollop (~> 2.1.1)

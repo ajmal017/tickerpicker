@@ -189,6 +189,10 @@ if(opts[:benchmark])
   processed[:config][:benchmark] = opts[:benchmark]
 end
 
+if(opts[:random])
+  processed[:config][:shuffle] = true
+end
+
 unless(opts[:deposit].empty?)
   processed[:deposits] = opts[:deposit]
 end

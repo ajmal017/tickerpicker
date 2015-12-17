@@ -488,6 +488,28 @@ RSpec.describe "Logical Operations" do
 end
 
 RSpec.describe "Result sorting" do
+  it "should have a deterministic order by default" do
+    hits1 = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02")
+    hits2 = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02")
+    hits3 = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02")
+    hits4 = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02")
+
+    expect(hits1).to eq(hits2)
+    expect(hits2).to eq(hits3)
+    expect(hits3).to eq(hits4)
+  end
+
+  it "should depend on the input universe order by default" do
+    hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02")
+    expect(hits).to eq(%w(XOM AAPL IKAN FLEX SPEX))
+
+    hits = run_screen("O > 0", %w(AAPL IKAN XOM SPEX FLEX), "2013-02-02")
+    expect(hits).to eq(%w(AAPL IKAN XOM SPEX FLEX))
+
+    hits = run_screen("O > 0", %w(IKAN XOM SPEX AAPL FLEX), "2013-02-02")
+    expect(hits).to eq(%w(IKAN XOM SPEX AAPL FLEX))
+  end
+
   it "should allow ascending sort by an expression" do
     hits = run_screen("O > 0", %w(XOM AAPL IKAN FLEX SPEX), "2013-02-02", {:asort => "C"})
     expect(hits).to eq(%w(IKAN SPEX FLEX XOM AAPL))

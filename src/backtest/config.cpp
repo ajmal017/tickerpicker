@@ -6,12 +6,14 @@ using namespace std;
 string config::benchticker;
 expression* config::slippage;
 bool config::multiple_positions;
+bool config::shuffle_universe;
 float config::start_equity;
 
 config::config(rapidjson::Value& cblock) {
   config::slippage = NULL;
   config::benchticker = "";
   config::start_equity = 10000;
+  config::shuffle_universe = false;
 
   config::multiple_positions = bvalue(cblock, "multipos");
   rapidjson::Value& slippage = cblock["slippage"];
@@ -34,6 +36,10 @@ config::config(rapidjson::Value& cblock) {
     string t = cblock["equity"].GetString();
     config::start_equity = atof(t.c_str());
   }
+
+  if(cblock.HasMember("shuffle")) {
+    shuffle_universe = bvalue(cblock, "shuffle");
+  }
 }
 
 float config::initial_equity() {
@@ -52,4 +58,8 @@ bool config::bvalue(rapidjson::Value& cblock, string key) {
 
 string config::benchmark() {
   return config::benchticker;
+}
+
+bool config::shuffle() {
+  return config::shuffle_universe;
 }

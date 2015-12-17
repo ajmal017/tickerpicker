@@ -1,7 +1,9 @@
 #include "rapidjson/document.h"
+#include <algorithm>
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <ctime>
 #include "portfolio.h"
 #include "strategy.h"
 #include "screen.h"
@@ -102,13 +104,18 @@ int main(int argc, char* argv[]) {
   strategy strat = process_strategy(d, "long");
   longstrats.push_back(strat);
 
+  process_configuration(d);
   port.set_date_range(date(argv[1]), date(argv[2]));
   vector<string> universe = get_universe(argv, 3);
+
+  if(config::shuffle()) {
+    std::srand(std::time(0));
+    std::random_shuffle(universe.begin(), universe.end());
+  }
 
   port.set_long_strategies(longstrats);
   port.set_universe(universe);
   process_deposits(d, &port);
-  process_configuration(d);
 
   port.run();
   port.print_state();

@@ -755,6 +755,32 @@ RSpec.describe "Long trades" do
       expect(results['trades']).to eq([["SPEX","2014-01-03","1150","8.69","2014-01-31","5.77","-33.61"],["FLEX","2014-01-31","794","8.23","2014-02-28","9.02","9.59"],["SPEX","2014-02-28","1511","4.7"]])
       expect(results['stats']['return']).to eq(-29.44)
     end
+
+    it "should reflect deterministic ordering by default" do
+      results1 = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      results2 = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      results3 = run_test(%w(SPEX FLEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+
+      expect(results1['trades']).to eq([["SPEX","2014-01-03","1150","8.69","2014-01-31","5.77","-33.61"],["FLEX","2014-01-31","794","8.23","2014-02-28","9.02","9.59"],["SPEX","2014-02-28","1511","4.7"]])
+      expect(results1['trades']).to eq(results2['trades'])
+      expect(results2['trades']).to eq(results3['trades'])
+
+      expect(results1['stats']['return']).to eq(-29.44)
+      expect(results2['stats']['return']).to eq(-29.44)
+      expect(results3['stats']['return']).to eq(-29.44)
+
+      results1 = run_test(%w(FLEX SPEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      results2 = run_test(%w(FLEX SPEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+      results3 = run_test(%w(FLEX SPEX), '2014-01-01', '2014-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD = 20", :longsize => "PORTFOLIO_CASH / O"})
+
+      expect(results1['trades']).to eq([["FLEX", "2014-01-03", "1293", "7.73", "2014-01-31", "8.23", "6.46"], ["SPEX", "2014-01-31", "1827", "5.77", "2014-02-28", "4.7", "-18.55"], ["FLEX", "2014-02-28", "946", "9.02"]])
+      expect(results1['trades']).to eq(results2['trades'])
+      expect(results2['trades']).to eq(results3['trades'])
+
+      expect(results1['stats']['return']).to eq(-15.43)
+      expect(results2['stats']['return']).to eq(-15.43)
+      expect(results3['stats']['return']).to eq(-15.43)
+    end
   end
 end
 
