@@ -2,6 +2,7 @@
 
 load 'codegen.rb'
 require 'trollop'
+require 'gruff'
 require 'date'
 require 'json'
 
@@ -108,6 +109,7 @@ opts = Trollop::options do
   opt :dsort, "Descending sort expression for screener results", :type => :string
   opt :deposit, "Deposit schedule in days/amount format", :type => :string, :multi => true
   opt :equity, "Starting portfolio equity", :type => :integer, :default => 10_000
+  opt :draw, "Save equity curve chart to file", :type => :string
 end
 
 Trollop::die "You must specify a list of stocks" unless opts[:list] || opts[:tickers]
@@ -209,4 +211,13 @@ if(opts[:raw])
   puts buf
 else
   print_results(buf)
+end
+
+if(opts[:draw])
+  graph = Gruff::Line.new(1024)
+  graph.title = "Equity Curve"
+
+  results = JSON.parse(buf)
+  graph.data :equity, results['equity']
+  graph.write(opts[:draw])
 end
