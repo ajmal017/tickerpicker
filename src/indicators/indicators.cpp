@@ -102,6 +102,12 @@ float indicators::max_close(indicators* thisptr) {
 }
 
 float indicators::max_volume(indicators* thisptr) {
+  std::vector<uint32_t>::iterator result;
+  std::vector<uint32_t>::iterator start = thisptr->current_prices->volume.begin() + thisptr->offset;
+  std::vector<uint32_t>::iterator end = start + thisptr->arglist[0] + 1;
+  result = std::max_element(start, end);
+  int offset = std::distance(start, result);
+  return thisptr->current_prices->volume[thisptr->offset + offset];
 }
 
 float indicators::min_open(indicators* thisptr) {
@@ -121,7 +127,12 @@ float indicators::min_close(indicators* thisptr) {
 }
 
 float indicators::min_volume(indicators* thisptr) {
-  //return internal_minval(thisptr->current_prices->volume, (int)thisptr->arglist[0]);
+  std::vector<uint32_t>::iterator result;
+  std::vector<uint32_t>::iterator start = thisptr->current_prices->volume.begin() + thisptr->offset;
+  std::vector<uint32_t>::iterator end = start + thisptr->arglist[0] + 1;
+  result = std::min_element(start, end);
+  int offset = std::distance(start, result);
+  return thisptr->current_prices->volume[thisptr->offset + offset];
 }
 
 float indicators::internal_minval(indicators* thisptr, std::vector<float> series) {

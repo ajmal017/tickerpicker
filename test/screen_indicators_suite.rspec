@@ -10,29 +10,7 @@ def run_screen(screen, tickers, date)
   output.split 
 end
 
-RSpec.describe "Indicators" do
-
-  before(:each) do
-   Dir.chdir(HOMEDIR)
-  end
-
-  it "Absolute Value" do
-    hits = run_screen("ABS(1) = ABS(1);", %w(AAPL), "2010-01-12")
-    expect(hits).to match_array(%w(AAPL))
-
-    hits = run_screen("ABS(1) = ABS(-1);", %w(AAPL), "2010-01-12")
-    expect(hits).to match_array(%w(AAPL))
-
-    hits = run_screen("1 = ABS(-1);", %w(AAPL), "2010-01-12")
-    expect(hits).to match_array(%w(AAPL))
-
-    hits = run_screen("ABS(ROC20) = 2.941;", %w(IKAN), "2015-03-02")
-    expect(hits).to match_array(%w(IKAN))
-
-    hits = run_screen("-1 * ABS(ROC20) = -2.941;", %w(IKAN), "2015-03-02")
-    expect(hits).to match_array(%w(IKAN))
-  end
-
+RSpec.describe "Minimum and Maximum" do
   it "Minimum Close" do
     hits = run_screen("MINC50 = 1.61;", %w(IKAN), "2010-01-12")
     expect(hits).to match_array(%w(IKAN))
@@ -61,6 +39,118 @@ RSpec.describe "Indicators" do
     expect(hits).to match_array(%w(IKAN))
 
     hits = run_screen("MAXC300 = 3.41;", %w(IKAN), "2010-07-01")
+    expect(hits).to match_array(%w(IKAN))
+  end
+
+  it "Minimum Open" do
+    hits = run_screen("MINO20 = 94.26", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINO20 = 456.86", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINO20 = 613.63", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Maximum Open" do
+    hits = run_screen("MAXO20 = 102.86", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXO20 = 509.71", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXO20 = 679.99", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Maximum High" do
+    hits = run_screen("MAXH20 = 102.9", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXH20 = 513.74", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXH20 = 680.87", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Minimum High" do
+    hits = run_screen("MINH20 = 94.82", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINH20 = 460.46", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINH20 = 617.98", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Maximum Low" do
+    hits = run_screen("MAXL20 = 102.2", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXL20 = 504", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXL20 = 673.54", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Minimum Low" do
+    hits = run_screen("MINL20 = 93.28", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINL20 = 453.65", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINL20 = 611.55", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Minimum Volume" do
+    hits = run_screen("MINV20 = 28089300", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINV20 = 7877000", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MINV20 = 6962100", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Maximum Volume" do
+    hits = run_screen("MAXV20 = 69274700", %w(AAPL), "2014-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXV20 = 31360700", %w(AAPL), "2013-09-01")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("MAXV20 = 28996800", %w(AAPL), "2012-09-01")
+    expect(hits).to match_array(%w(AAPL))
+  end
+end
+
+RSpec.describe "Indicators" do
+
+  before(:each) do
+   Dir.chdir(HOMEDIR)
+  end
+
+  it "Absolute Value" do
+    hits = run_screen("ABS(1) = ABS(1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(1) = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("1 = ABS(-1);", %w(AAPL), "2010-01-12")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("ABS(ROC20) = 2.941;", %w(IKAN), "2015-03-02")
+    expect(hits).to match_array(%w(IKAN))
+
+    hits = run_screen("-1 * ABS(ROC20) = -2.941;", %w(IKAN), "2015-03-02")
     expect(hits).to match_array(%w(IKAN))
   end
 
