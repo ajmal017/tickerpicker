@@ -100,7 +100,7 @@ opts = Trollop::options do
   opt :all, "Perform an all-trades backtest", :type => :boolean, :default => false
   opt :random, "Randomize candidate selection", :type => :boolean, :default => false
   opt :benchmark, "Benchmark ticker", :type => :string
-  opt :exclude, "Comma separated list of tickers to skip", :type => :string
+  opt :without, "Comma separated list of tickers to skip", :type => :string
   opt :multi, "Allow multiple positions for the same ticker", :type => :boolean
   opt :slippage, "Per-transaction slippage expression", :type => :string
   opt :raw, "Dump raw trade results", :type => :boolean
@@ -195,6 +195,10 @@ end
 
 unless(opts[:deposit].empty?)
   processed[:deposits] = opts[:deposit]
+end
+
+if(opts[:without])
+  processed[:blacklist] =  opts[:without].split(',')
 end
 
 if(opts[:dump])

@@ -92,6 +92,41 @@ void process_deposits(rapidjson::Document& doc, portfolio* p) {
   }
 }
 
+void subtract_vector(std::vector<std::string>& a, const std::vector<std::string>& b) {
+  std::vector<std::string>::iterator       it = a.begin();                                                          
+  std::vector<std::string>::const_iterator it2 = b.begin();                                                     
+  std::vector<std::string>::iterator       end = a.end();                                                           
+  std::vector<std::string>::const_iterator end2 = b.end();                                                      
+
+  while (it != end) {
+    while (it2 != end2) {
+      if (*it == *it2) {
+        it = a.erase(it);                                                                                
+        end = a.end();                                                                                   
+        it2 = b.begin();                                                                                         
+      } else {
+        ++it2; 
+      }
+    }
+
+    ++it;
+    it2 = b.begin();
+  }
+}
+
+void process_blacklist(rapidjson::Document& doc, std::vector<std::string>& u) {
+  if(doc.HasMember("blacklist")) {
+    vector<string> blist;
+    rapidjson::Value &list = doc["blacklist"];
+    for(rapidjson::SizeType i = 0; i < list.Size(); i++) {
+      std::string t = list[i].GetString();
+      blist.push_back(t);
+    }
+
+    subtract_vector(u, blist);
+  }
+}
+
 int main(int argc, char* argv[]) {
 
   string inp;
@@ -107,6 +142,7 @@ int main(int argc, char* argv[]) {
   process_configuration(d);
   port.set_date_range(date(argv[1]), date(argv[2]));
   vector<string> universe = get_universe(argv, 3);
+  process_blacklist(d, universe);
 
   if(config::shuffle()) {
     std::srand(std::time(0));

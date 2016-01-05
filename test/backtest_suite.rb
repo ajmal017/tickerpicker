@@ -52,6 +52,10 @@ def run_test(tickers, start, done, sys)
     end
   end
 
+  if(sys[:without])
+    cmdline += " --without " + sys[:without].join(',')
+  end
+
   if(sys[:multi])
     cmdline += " --multi"
   end
@@ -781,6 +785,22 @@ RSpec.describe "Long trades" do
       expect(results2['stats']['return']).to eq(-15.43)
       expect(results3['stats']['return']).to eq(-15.43)
     end
+  end
+end
+
+describe "Stock universe" do
+  it "should blacklist specified stocks" do
+    results = run_test(%w(AAPL XOM FLEX SPEX), '2014-01-01', '2015-01-01', {:longsig => "C > 0", :longxsig => "C < 0"})
+    expect(results['trades']).to eq([["AAPL","2014-01-03","7","78.98"],["XOM","2014-01-03","1","99.77"],["FLEX","2014-01-03","1","7.73"],["SPEX","2014-01-03","1","8.69"]])
+
+    results = run_test(%w(AAPL XOM FLEX SPEX), '2014-01-01', '2015-01-01', {:longsig => "C > 0", :longxsig => "C < 0", :without => %w(AAPL)})
+    expect(results['trades']).to eq([["XOM","2014-01-03","1","99.77"],["FLEX","2014-01-03","1","7.73"],["SPEX","2014-01-03","1","8.69"]])
+
+    results = run_test(%w(AAPL XOM FLEX SPEX), '2014-01-01', '2015-01-01', {:longsig => "C > 0", :longxsig => "C < 0", :without => %w(AAPL XOM)})
+    expect(results['trades']).to eq([["FLEX","2014-01-03","1","7.73"],["SPEX","2014-01-03","1","8.69"]])
+
+    results = run_test(%w(AAPL XOM FLEX SPEX), '2014-01-01', '2015-01-01', {:longsig => "C > 0", :longxsig => "C < 0", :without => %w(AAPL XOM FLEX)})
+    expect(results['trades']).to eq([["SPEX","2014-01-03","1","8.69"]])
   end
 end
 
