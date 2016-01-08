@@ -818,4 +818,10 @@ describe "Defect tests" do
   it "should not do a double free on dividends when closing positions" do
     run_test(%w(AAPL XOM), '2010-01-01', '2012-03-01', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD > 20"})
   end
+
+  it "should not run exit signals on positions that are already pending exit" do
+    results = run_test(%w(AAPL XOM SPEX FLEX FUEL), '2014-08-28', '2014-09-03', {:longsig => "C > 0", :longxsig => "POSITION_DAYS_HELD > 0", :longsize => "(PORTFOLIO_EQUITY * .2) / O"})
+    expect(results['trades']).to eq([["AAPL","2014-08-29","19","102.86","2014-09-02","103.06","0.19"],["XOM","2014-08-29","20","99.38","2014-09-02","99.43","0.05"],["SPEX","2014-08-29","1324","1.51","2014-09-02","1.5","-0.67"],["FLEX","2014-08-29","182","10.97","2014-09-02","11.06","0.82"],["FUEL","2014-08-29","128","15.51","2014-09-02","16.45","6.06"],["AAPL","2014-09-03","19","103.1"],["XOM","2014-09-03","20","98.86"],["SPEX","2014-09-03","1352","1.49"],["FLEX","2014-09-03","175","11.5"],["FUEL","2014-09-03","122","16.45"]])
+    expect(results['stats']['return']).to eq(-0.85)
+  end
 end

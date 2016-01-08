@@ -77,6 +77,7 @@ class portfolio : public restrictor, portfolio_metric {
     void open_positions(std::vector<std::string>*, std::vector<strategy*>*, date);
     void entry_signals(date, std::vector<std::string>*, std::vector<strategy*>*);
     void exit_signals(date, std::vector<std::string>*);
+    bool exit_pending(string, vector<string>*);
     target_list get_current_restrictor();
     void update_equity_curve(date);
     void update_positions(date);

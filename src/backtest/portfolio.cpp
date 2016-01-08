@@ -126,6 +126,10 @@ void portfolio::exit_signals(date today, vector<string>* longhits) {
   for(int i = 0; i < cur_positions.size(); i++) {
     position* p = cur_positions[i];
 
+    if(exit_pending(p->symbol(), longhits)) {
+      continue;
+    }
+
     if(p->exit(today)) {
       longhits->push_back(p->symbol());
     } 
@@ -165,6 +169,7 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
 
       if(count > 0) {
 
+
         position* newpos = new position(sday, list[i], count, strats[i]);   
         float cost = newpos->cost();
   
@@ -201,6 +206,8 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
   vector<position*> templist;
   vector<int> closelist;
 
+//cout << "CLOSE POSITIONS WITH TARGETLIST SIZE " << pos->size() << endl;
+
   if(pos->size() > 0) {
     vector<string> targets = *pos;
     pos->clear();
@@ -223,12 +230,16 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
       int closeindex = closelist[i];
       templist.push_back(cur_positions[closeindex]);
     }
+
+//cout << "CLOSELIST SIZE " << closelist.size() << endl;
   
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
       close_position(sday, templist[i], pos, 0);
     }
   }
+
+//cout << "DONE CLOSE POSITIONS\n";
 }
 
 void portfolio::close_position(date sday, position* p, vector<string>* pos, float price) {
@@ -245,7 +256,10 @@ void portfolio::close_position(date sday, position* p, vector<string>* pos, floa
      cur_cash += p->position_value(sday);      
      cur_positions.erase(std::remove(cur_positions.begin(), cur_positions.end(), p), cur_positions.end());
 
+//     cout << "CLOSED VALUE " << p->position_value(sday) << endl;
+
    } catch(exception e) {
+//     cout << "CAUGHT EXCEPTION CLOSING " << p->symbol() << " ON " << sday.to_s() << endl;
      pos->push_back(p->symbol()); 
    }
 }
@@ -289,6 +303,20 @@ void portfolio::update_benchmark(date d) {
     pdata t = foo->pull_history_by_limit(d, 1);
     past_performance.push_benchmark(t.close[0]);
   }
+}
+
+bool portfolio::exit_pending(string t, vector<string>* list) {
+
+  if(list->size() > 0) {
+
+    for(int i = 0; i < list->size(); i++) {
+      if((*list)[i] == t) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 target_list portfolio::get_current_restrictor() {
