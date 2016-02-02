@@ -21,11 +21,11 @@ class strategy {
     std::vector<std::string> exit_signal(date, restrictor*);
     float stop_loss(date, std::string, bool);
     int position_size(date, std::string);
+    bool exit_signal(date, std::string);
     bool has_trail();
 
   private:
 
-    bool exit_signal(date, std::string);
 
     expression* trail_stop;
     expression* init_stop;

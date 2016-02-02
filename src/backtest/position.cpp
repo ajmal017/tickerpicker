@@ -85,8 +85,7 @@ void position::close(date cdate) {
 
 bool position::exit(date edate) {
   indicators::set_position(this);
-  vector<string> t = this_strat->exit_signal(edate, this);
-  return t.size() > 0;
+  return this_strat->exit_signal(edate, ticker);
 }
 
 bool position::stopped_out(date cdate) {

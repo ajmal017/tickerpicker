@@ -130,7 +130,9 @@ void portfolio::exit_signals(date today, vector<string>* longhits) {
       continue;
     }
 
+//cout << "TRY FOR " << p->symbol() << endl;
     if(p->exit(today)) {
+  //  cout << "EXIT HIT ON " << p->symbol() << " ON DATE " << today.to_s() << endl;
       longhits->push_back(p->symbol());
     } 
   }
@@ -206,8 +208,6 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
   vector<position*> templist;
   vector<int> closelist;
 
-//cout << "CLOSE POSITIONS WITH TARGETLIST SIZE " << pos->size() << endl;
-
   if(pos->size() > 0) {
     vector<string> targets = *pos;
     pos->clear();
@@ -231,15 +231,11 @@ void portfolio::close_positions(vector<string>* pos, date sday) {
       templist.push_back(cur_positions[closeindex]);
     }
 
-//cout << "CLOSELIST SIZE " << closelist.size() << endl;
-  
     //now close all marked positions
     for(int i = 0; i < closelist.size(); i++) {
       close_position(sday, templist[i], pos, 0);
     }
   }
-
-//cout << "DONE CLOSE POSITIONS\n";
 }
 
 void portfolio::close_position(date sday, position* p, vector<string>* pos, float price) {
@@ -256,10 +252,7 @@ void portfolio::close_position(date sday, position* p, vector<string>* pos, floa
      cur_cash += p->position_value(sday);      
      cur_positions.erase(std::remove(cur_positions.begin(), cur_positions.end(), p), cur_positions.end());
 
-//     cout << "CLOSED VALUE " << p->position_value(sday) << endl;
-
    } catch(exception e) {
-//     cout << "CAUGHT EXCEPTION CLOSING " << p->symbol() << " ON " << sday.to_s() << endl;
      pos->push_back(p->symbol()); 
    }
 }
