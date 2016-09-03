@@ -17,11 +17,19 @@ require 'sequel'
   opt :user, "User for database connection", :type => :string
 end
 
+def fetch(url)
+  begin
+    raw = open(url).read
+    raw.lines.to_a[1..-1]
+  rescue => e
+    puts "\nURL: #{url}\n#{e.message}"  
+  end
+end
+
 def fetch_from_google(ticker, startdate, enddate)
     abort('No exchange specified') if @opts[:exchange].nil?
     url = "http://www.google.com/finance/historical?q=#{@opts[:exchange]}:#{ticker}&startdate=#{startdate}&enddate=#{enddate}&output=csv";
-    raw = open(url).read
-    raw.lines.to_a[1..-1]
+    fetch(url)
 end
 
 def fetch_from_yahoo(ticker, startdate, enddate)
@@ -35,9 +43,7 @@ def fetch_from_yahoo(ticker, startdate, enddate)
 
     url = "http://ichart.finance.yahoo.com/table.csv?s=#{ticker}&a=#{first[0]}&b=#{first[1]}&c=#{first[2]}";
     url += "&g=d&d=#{last[0]}&e=#{last[1]}&f=#{last[2]}&ignore=.csv";
-
-    raw = open(url).read
-    raw.lines.to_a[1..-1]
+    fetch(url)
 end
 
 def connect_to_db
@@ -66,6 +72,11 @@ tickers.each do |ticker|
     data = fetch_from_google(ticker, @opts[:start], enddate)  
   else
     data = fetch_from_yahoo(ticker, @opts[:start], enddate) 
+  end
+
+  if data.nil?
+    puts "SKIPPING #{ticker}"
+    next
   end
 
   data.each do |cur|
