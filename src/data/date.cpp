@@ -1,6 +1,8 @@
 #include <sstream>
 #include <iostream>
+#include <stdint.h>
 #include <iomanip>
+#include <cstdio>
 #include <time.h>
 #include "date.h"
 

@@ -1,5 +1,6 @@
 #ifndef PDATA
 #define PDATA
+#include <stdint.h>
 #include <vector>
 #include <map>
 #include "date.h"
