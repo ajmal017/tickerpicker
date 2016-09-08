@@ -1,4 +1,5 @@
 #include <string>
+#include <time.h>
 #ifndef TP_DATE
 #define TP_DATE
 using namespace std;

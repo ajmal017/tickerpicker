@@ -56,7 +56,7 @@ void expression_parser::parse(vector<string> symbols, vector<expression*>* table
       continue;
     }
 
-    table->push_back(new function(cur, *table));
+    table->push_back(new fn(cur, *table));
   }
 }
 
@@ -278,7 +278,7 @@ float ternary::eval(stock s, int shift = 0) {
   return (decision->eval(s, shift) ? truebranch->eval(s, shift) : falsebranch->eval(s, shift));
 }
 
-function::function(string t, vector<expression*> table) {
+fn::fn(string t, vector<expression*> table) {
   vector<string> parts = split(t);
   indicator = parts[0];
 
@@ -291,7 +291,7 @@ function::function(string t, vector<expression*> table) {
   }
 }
 
-int function::lookback() {
+int fn::lookback() {
   vector<float> argvals; 
   int maxval = 0;
 
@@ -307,7 +307,7 @@ int function::lookback() {
   return (ilook > maxval ? ilook : maxval);
 }
 
-float function::eval(stock s, int shift = 0) {
+float fn::eval(stock s, int shift = 0) {
   vector<float> args;
 
   for(int i = 0; i < arglist.size(); i++) {

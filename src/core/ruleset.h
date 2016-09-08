@@ -77,9 +77,9 @@ class ternary : public expression {
     expression* falsebranch;  
 };
 
-class function : public expression {
+class fn : public expression {
   public:
-    function(string, vector<expression*>);
+    fn(string, vector<expression*>);
     int lookback();
     float eval(stock, int);
   private:
