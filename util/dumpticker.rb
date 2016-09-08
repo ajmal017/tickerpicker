@@ -7,6 +7,9 @@ require 'sequel'
   opt :tickers, "Comma separated list of tickers to dump", :type => :string
   opt :list, "Stock universe to dump data for", :type => :string
   opt :path, "Directory to store bin files in", :type => :string
+  opt :password, "Password for database login", :type => :string
+  opt :user, "User for database login", :type => :string
+  opt :db, "Database to pull data from", :type => :string, :default => 'finance'
   opt :debug, "Show debug information", :type => :boolean
 end
 
@@ -66,7 +69,7 @@ def write_price_data(rows, out)
   end
 end
 
-DB = Sequel::mysql('finance', :host => 'localhost', :user => 'perldb') 
+DB = Sequel::mysql(@opts[:db], :host => 'localhost', :user => @opts[:user], :password => @opts[:password]) 
 prices = DB[:historical]
 @splits = DB[:splits]
 

@@ -15,6 +15,7 @@ require 'sequel'
   opt :database, "Database to write results to", :type => :string, :default => "finance"
   opt :password, "Password for database connection", :type => :string
   opt :user, "User for database connection", :type => :string
+  opt :dump, "Dump data without writing to db", :type => :boolean
 end
 
 def fetch(url)
@@ -85,7 +86,11 @@ tickers.each do |ticker|
     values.unshift(ticker)
 
     begin
-      prices.insert(Hash[labels.zip(values)])
+      if @opts[:dump]
+        puts values.join("\t")
+      else
+        prices.insert(Hash[labels.zip(values)])
+      end
     rescue => e
       puts e.message
     end
