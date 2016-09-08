@@ -85,6 +85,15 @@ float indicators::low_at(indicators* thisptr) {
   }
 }
 
+float indicators::date_at(indicators* thisptr) {
+  if(thisptr->arglist.size() == 0) {
+    return thisptr->current_prices->date[thisptr->offset];
+  } else {
+    int idx = (int) thisptr->arglist[0];
+    return thisptr->current_prices->date[idx + thisptr->offset];
+  }
+}
+
 float indicators::max_open(indicators* thisptr) {
   return indicators::internal_maxval(thisptr, thisptr->current_prices->open);
 }

@@ -9,6 +9,7 @@ void indicators::init_fntable() {
   indicators::fn_table["O"] = &indicators::open_at;
   indicators::fn_table["H"] = &indicators::high_at;
   indicators::fn_table["L"] = &indicators::low_at;
+  indicators::fn_table["DATE"] = &indicators::date_at;
 
   indicators::fn_table["MAXO"] = &indicators::max_open;
   indicators::fn_table["MAXH"] = &indicators::max_high;
@@ -79,6 +80,7 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["L"] = &indicators::ohlcv_lookback;
   indicators::lookback_table["C"] = &indicators::ohlcv_lookback;
   indicators::lookback_table["V"] = &indicators::ohlcv_lookback;
+  indicators::lookback_table["DATE"] = &indicators::ohlcv_lookback;
 
   indicators::lookback_table["MAXO"] = &indicators::minimax_lookback;
   indicators::lookback_table["MAXH"] = &indicators::minimax_lookback;

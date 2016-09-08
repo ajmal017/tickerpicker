@@ -1,8 +1,9 @@
 #include "rapidjson/document.h"
 #include "common.h"
-#include <sstream>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
+#include <sstream>
 #include <vector>
 #include "screen.h"
 
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
     cout << results[i];
 
     if(supplement != NULL) {
-      cout << "\t" << eval_supplement(results[i], today);
+      cout << "\t" << fixed << setprecision(2) << eval_supplement(results[i], today);
     }
 
     cout << endl;

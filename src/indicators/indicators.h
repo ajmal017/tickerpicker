@@ -94,6 +94,7 @@ class indicators {
   static float open_at(indicators*);
   static float high_at(indicators*);
   static float low_at(indicators*);
+  static float date_at(indicators*);
   static float max_open(indicators*);
   static float max_high(indicators*);
   static float max_low(indicators*);
