@@ -16,6 +16,7 @@ class target_list : public restrictor {
 
 class archive {
   public:
+    archive();
     void push(position*);
     void set_initial(float);
     void update_equity(float);

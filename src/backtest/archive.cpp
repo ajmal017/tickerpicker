@@ -2,6 +2,11 @@
 #include <cmath>
 #define YEAR_SIZE 260
 
+archive::archive() {
+  winpercent = 0;
+  losepercent = 0;
+}
+
 void archive::push(position* p) {
   old_positions.push_back(p);
 }
