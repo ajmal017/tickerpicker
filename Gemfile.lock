@@ -1,9 +1,25 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    diff-lcs (1.2.5)
+    gnuplot (2.6.2)
     gruff (0.6.0)
       rmagick (>= 2.13.4)
+    mysql (2.9.1)
     rmagick (2.15.4)
+    rspec (3.5.0)
+      rspec-core (~> 3.5.0)
+      rspec-expectations (~> 3.5.0)
+      rspec-mocks (~> 3.5.0)
+    rspec-core (3.5.3)
+      rspec-support (~> 3.5.0)
+    rspec-expectations (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-mocks (3.5.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.5.0)
+    rspec-support (3.5.0)
     sequel (4.20.0)
     trollop (2.1.1)
 
@@ -11,6 +27,12 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  gnuplot
   gruff
+  mysql
+  rspec (= 3.5.0)
   sequel (= 4.20.0)
   trollop (~> 2.1.1)
+
+BUNDLED WITH
+   1.12.5
