@@ -5,6 +5,7 @@ require 'sequel'
 @opts = Trollop::options do
   opt :date, "Snapshot Date", :type => :string
   opt :tickers, "Tickers to draw data for", :type => :string
+  opt :list, "File with list of tickers to draw", :type => :string
   opt :after, "Days after snapshot", :type => :integer, :default => 63 
   opt :before, "Days before snapshot", :type => :integer, :default => 500
   opt :db, "Database to get data from", :type => :string, :default => 'finance'
@@ -17,12 +18,12 @@ def pull_data(ticker, date)
   prices = DB[:historical]
   splits = DB[:splits]
 
-  end_date = prices.where('date >= ? and ticker = ?', @opts[:date], ticker).limit(1).offset(@opts[:after] - 1).first[:date].to_s
+  end_date = prices.where('date >= ? and ticker = ?', @opts[:date], ticker).limit(1).offset(@opts[:after] - 1).first
   start_date = prices.where('date <= ? and ticker = ?', @opts[:date], ticker).limit(1).offset(@opts[:before] - 1).reverse_order(:date).first
-  return if start_date.nil?
+  return if start_date.nil? || end_date.nil?
 
-  unsplit_prices = prices.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date).all 
-  price_splits = splits.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date).all
+  unsplit_prices = prices.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date[:date].to_s).all 
+  price_splits = splits.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date[:date].to_s).all
 
   price_splits.each do |split|
     days_before = unsplit_prices.select { |p| p[:date] < split[:date] }
@@ -88,7 +89,6 @@ tickers.each do |ticker|
 
   if data.nil? || data.empty?
     puts "NOT ENOUGH DATA"
-    exit(1)
   else
     draw_data(data, ticker, @opts[:date])
   end
