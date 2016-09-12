@@ -428,6 +428,20 @@ RSpec.describe "Indicators" do
     expect(hits).to match_array(%w(AAPL))
   end
 
+  it "Fractal Efficiency" do
+    hits = run_screen("FRACTAL_RATIO60 = 0.3297", %w(AAPL), "1992-12-22")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("FRACTAL_RATIO90 = -0.221", %w(AAPL), "1992-06-22")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("FRACTAL_RATIO60 = 0.295", %w(XOM), "2007-06-18")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("FRACTAL_RATIO60 = -0.013", %w(XOM), "2003-07-17")
+    expect(hits).to match_array(%w(XOM))
+  end
+
   it "Arithmetic parameter lists" do
     hits = run_screen("ATR30 = ATR(15+15)", %w(AAPL XOM IKAN FLEX), "2015-01-02")
     expect(hits).to match_array(%w(AAPL XOM IKAN FLEX))
@@ -883,6 +897,20 @@ RSpec.describe "Timeframe shifting" do
     
     hits = run_screen("ACCELERATION_LOWER30 = 107.407; DAYS_AGO(12, ACCELERATION_LOWER80) = 100.7;", %w(AAPL), "2015-01-02")
     expect(hits).to match_array(%w(AAPL))
+  end
+
+  it "Shifts Fractal Efficiency" do
+    hits = run_screen("DAYS_AGO(20, FRACTAL_RATIO60) = 0.3297", %w(AAPL), "1993-01-21")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(10, FRACTAL_RATIO90) = -0.221", %w(AAPL), "1992-07-07")
+    expect(hits).to match_array(%w(AAPL))
+
+    hits = run_screen("DAYS_AGO(30, FRACTAL_RATIO60) = 0.295", %w(XOM), "2007-07-31")
+    expect(hits).to match_array(%w(XOM))
+
+    hits = run_screen("DAYS_AGO(40, FRACTAL_RATIO60) = -0.013", %w(XOM), "2003-09-12")
+    expect(hits).to match_array(%w(XOM))
   end
 
   it "Shifts transitively" do

@@ -62,6 +62,8 @@ void indicators::init_fntable() {
   indicators::fn_table["FLOOR"] = &indicators::floor;
   indicators::fn_table["CEIL"] = &indicators::ceil;
 
+  indicators::fn_table["FRACTAL_RATIO"] = &indicators::fractal_ratio;
+
   indicators::fn_table["PORTFOLIO_POSITION_COUNT"] = &indicators::portfolio_count;
   indicators::fn_table["PORTFOLIO_EQUITY"] = &indicators::portfolio_equity;
   indicators::fn_table["PORTFOLIO_RETURN"] = &indicators::portfolio_return;
@@ -132,6 +134,8 @@ void indicators::init_lookback_table() {
   indicators::lookback_table["ROUND"] = &indicators::null_lookback;
   indicators::lookback_table["FLOOR"] = &indicators::null_lookback;
   indicators::lookback_table["CEIL"] = &indicators::null_lookback;
+
+  indicators::lookback_table["FRACTAL_RATIO"] = &indicators::ohlcv_lookback;
 
   indicators::lookback_table["PORTFOLIO_POSITION_COUNT"] = &indicators::null_lookback;
   indicators::lookback_table["PORTFOLIO_EQUITY"] = &indicators::null_lookback;

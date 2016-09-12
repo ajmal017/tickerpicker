@@ -537,10 +537,10 @@ RSpec.describe "Result sorting" do
     expect(hits).to eq(%w(AAPL 116.08))
 
     hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "BOLLINGER_UPPER"})
-    expect(hits).to eq(%w(AAPL 118.892))
+    expect(hits).to eq(%w(AAPL 118.89))
 
     hits = run_screen("O > 0", %w(AAPL), "2015-02-02", {:exp => "BOLLINGER_LOWER"})
-    expect(hits).to eq(%w(AAPL 103.321))
+    expect(hits).to eq(%w(AAPL 103.32))
   end
 end
 

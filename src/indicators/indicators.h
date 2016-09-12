@@ -108,6 +108,7 @@ class indicators {
   static float abs_value(indicators*);
   static float accl_upper(indicators*);
   static float accl_lower(indicators*);
+  static float fractal_ratio(indicators*);
   static float avg_true_range(indicators*);
   static float bollinger_upper(indicators*);
   static float bollinger_lower(indicators*);

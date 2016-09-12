@@ -1,19 +1,18 @@
-/*
-* As you look at this, you may be asking yourself, "why the Perl style thisptr
-* being passed everywhere?"  The reason is that profiling revealed a hotspot
-* in the table initialization code for the indicator class, which was spending
-* about 20% of the runtime just building new copies of the lookukp tables.  So
-* the lookup tables were changed to static members, which meant that the members
-* they pointed to had to be static too.  The easiest way to have all static 
-* indicator functions and still access per-object data was to just...pass a pointer
-* around...
-*/
+// As you look at this, you may be asking yourself, "why the Perl style thisptr
+// being passed everywhere?"  The reason is that profiling revealed a hotspot
+// in the table initialization code for the indicator class, which was spending
+// about 20% of the runtime just building new copies of the lookup tables.  So
+// the lookup tables were changed to static members, which meant that the members
+// they pointed to had to be static too.  The easiest way to have all static 
+// indicator functions and still access per-object data was to just...pass a pointer
+// around...
 
 
 #include "indicators.h"
 #include <ta_libc.h>
 #include <algorithm>
 #include <iostream>
+#include <cmath>
 
 portfolio_metric* indicators::fn_portfolio;
 position_metric* indicators::fn_position;
@@ -417,6 +416,21 @@ float indicators::aroon_osc(indicators* thisptr) {
 
   TA_S_AROONOSC(0, highs.size() - 1, h, l, period, &ostart, &onum, &rval[0]);
   return (float) rval[onum - thisptr->offset - 1];
+}
+
+float indicators::fractal_ratio(indicators* thisptr) {
+
+  int period = indicators::ohlcv_lookback(thisptr) - 1;
+  float num = thisptr->current_prices->close[thisptr->offset] - thisptr->current_prices->close[thisptr->offset + period];
+  float denom = 0;
+
+  for(int i = thisptr->offset; i < thisptr->offset + period; i++) {
+    float cur = thisptr->current_prices->close[i] - thisptr->current_prices->close[i+1];
+    denom += abs(cur);
+  }
+
+  denom += 0.001;
+  return num / denom;
 }
 
 float indicators::data_age(indicators* thisptr) {
