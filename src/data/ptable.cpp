@@ -1,32 +1,31 @@
-/* A word about the file format, here:
- * Since this is read only data with a primary key that increases in strictly 
- * monotonic fashion, there's no need for something with locking and consistency
- * features.  There's no need to incur the overhead of even the fastest nosql 
- * platforms available, so we just do straight binary reads of what is essentially
- * a simple little ISAM table.
- *
- * All values are written as 32 bit unsigned integers in network order.
- *
- * There are two headers that come before the start of the price data:
- *
- * The index starts with a single int giving the number of index records.
- * Each index record is a key/value pair, giving the year as the key and
- * the number of the row that contains the first day of data for that year.
- * This index is used by the search routines to narrow down the search and 
- * avoid sweeping the whole file.
- *
- * The second header starts with a single int giving the number of split
- * records, and stores the stock split data.  A record is a serialized 
- * date, and two ints for the before and after values.
- *
- * The last value before prices gives the number of rows in the table.
- *
- * Price data is stored in descending order, with the most recent data at
- * the start, and the oldest day of data being the last.  The data is in 
- * date/open/high/low/close/volume order.  Dates are serialized ints (easier
- * for the search routines and for compact storage), and the prices are
- * stored as fixed point data with two decimal places of precision.
- */
+// A word about the file format, here:
+// Since this is read only data with a primary key that increases in strictly 
+// monotonic fashion, there's no need for something with locking and consistency
+// features.  There's no need to incur the overhead of even the fastest nosql 
+// platforms available, so we just do straight binary reads of what is essentially
+// a simple little ISAM table.
+// 
+// All values are written as 32 bit unsigned integers in network order.
+// 
+// There are two headers that come before the start of the price data:
+// 
+// The index starts with a single int giving the number of index records.
+// Each index record is a key/value pair, giving the year as the key and
+// the number of the row that contains the first day of data for that year.
+// This index is used by the search routines to narrow down the search and 
+// avoid sweeping the whole file.
+// 
+// The second header starts with a single int giving the number of split
+// records, and stores the stock split data.  A record is a serialized 
+// date, and two ints for the before and after values.
+// 
+// The last value before prices gives the number of rows in the table.
+// 
+// Price data is stored in descending order, with the most recent data at
+// the start, and the oldest day of data being the last.  The data is in 
+// date/open/high/low/close/volume order.  Dates are serialized ints (easier
+// for the search routines and for compact storage), and the prices are
+// stored as fixed point data with two decimal places of precision.
 
 #include <arpa/inet.h>
 #include <algorithm>

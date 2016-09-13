@@ -1,17 +1,16 @@
-/* This is the collection of classes that ultimately evaluates the expressions
- * given to the screener and backtester.  Rules are passed as three address code
- * into the ruleset class through the constructor, and parsed into a set of 
- * expression trees built up from classes that encapsulate each type of code 
- * (Interpeter design pattern). A table mapping the index references in the  
- * three adress code to pointers pointing to objects implementing those
- * codes is passed to each constructor. Lvalue and rvalue references are
- * populated using the pointers so that we dont have to parse things repeatedly,
- * and so that repeated subexpressions are not evaluated redundantly. Once the
- * parse trees are built the evaluation consists of looping through each rule,
- * and building up the value of the expression until we arrive at a true or false
- * for the rule as a whole.  Note that the expression class can also be used
- * independently of rules to evaluate numerical expressions. 
- */
+// This is the collection of classes that ultimately evaluates the expressions
+// given to the screener and backtester.  Rules are passed as three address code
+// into the ruleset class through the constructor, and parsed into a set of 
+// expression trees built up from classes that encapsulate each type of code 
+// (Interpeter design pattern). A table mapping the index references in the  
+// three adress code to pointers pointing to objects implementing those
+// codes is passed to each constructor. Lvalue and rvalue references are
+// populated using the pointers so that we dont have to parse things repeatedly,
+// and so that repeated subexpressions are not evaluated redundantly. Once the
+// parse trees are built the evaluation consists of looping through each rule,
+// and building up the value of the expression until we arrive at a true or false
+// for the rule as a whole.  Note that the expression class can also be used
+// independently of rules to evaluate numerical expressions. 
 
 #include "ruleset.h"
 #include <algorithm>

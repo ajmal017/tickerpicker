@@ -1,11 +1,10 @@
-/* This is the top level construct that drives a backtest.  It emulates a 
- * portfolio, which consists of one or more positions and some amount of cash.
- * The algorithm is that triggers (intraday criteria) are evaluated first, and
- * then signals (interday criteria).  Triggers execute and update the portfolio
- * right away, while signals are queued until the next day (next bar on the price
- * chart).  The equity curve is updated with close of day prices for each day of
- * the simulation.
- */
+// This is the top level construct that drives a backtest.  It emulates a 
+// portfolio, which consists of one or more positions and some amount of cash.
+// The algorithm is that triggers (intraday criteria) are evaluated first, and
+// then signals (interday criteria).  Triggers execute and update the portfolio
+// right away, while signals are queued until the next day (next bar on the price
+// chart).  The equity curve is updated with close of day prices for each day of
+// the simulation.
 
 #include "portfolio.h"
 #include "position.h"
