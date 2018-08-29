@@ -30,6 +30,7 @@ std::vector<std::string> get_universe(char *argv[], int startidx) {
     }
 
     while(getline(listfile, ticker)) {
+      ticker.erase(ticker.find_last_not_of(" \n\r\t")+1);
       u.push_back(ticker);
     }
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'open-uri'
+require 'open_uri_redirections'
 require 'csv'
 
 urls = {
@@ -10,7 +11,7 @@ urls = {
 }
 
 urls.each do |k, v|
-  raw = open(v).read
+  raw = open(v, :allow_redirections => :safe).read
   csv = CSV.parse(raw)
 
   File.open(k.to_s + '.txt', 'w') do |f|

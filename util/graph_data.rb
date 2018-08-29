@@ -72,6 +72,9 @@ def draw_data(data, ticker, date)
       plot.data << Gnuplot::DataSet.new() do |ds|
         ds.with = "lines"
       end
+
+      plot.style("rect fc lt -1 fs solid 0.15 noborder")
+      plot.obj("rect from #{ @opts[:before] }, graph 0 to #{ @opts[:before] + @opts[:after] }, graph 1")
     end 
   end
 end

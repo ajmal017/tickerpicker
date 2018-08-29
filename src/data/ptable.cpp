@@ -35,6 +35,8 @@
 #include <errno.h>
 #include <string.h>
 
+const float ptable::SCALE = 100.0;
+
 ptable::ptable(string ticker) {
   replace(ticker.begin(), ticker.end(), '/', '-');
   symbol = ticker;
@@ -57,8 +59,8 @@ void ptable::open() {
     read_rowcount();
     rstart = binfile.tellg();
   } else {
-    //cerr << "Error code: " << strerror(errno) << endl;
-    //cerr << "On file: " << symbol << endl;
+    cerr << "Error code: " << strerror(errno) << endl;
+    cerr << "On file: " << fname << endl;
     throw exception();
   }
 }

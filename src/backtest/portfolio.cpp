@@ -170,10 +170,9 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
 
       if(count > 0) {
 
-
         position* newpos = new position(sday, list[i], count, strats[i]);   
         float cost = newpos->cost();
-  
+
         if(config::slippage != NULL) {
           stock cur(list[i]);
           cur.onday(sday);
@@ -192,8 +191,11 @@ void portfolio::open_positions(vector<string>* pos, vector<strategy*>* slist, da
         pos->push_back(list[i]);
         slist->push_back(strats[i]);
       }
+    } catch(std::out_of_range e) {
+      cerr << "Out of range, dropped" << endl;
     }
   }
+
 }
 
 //It works better to just mark and close all

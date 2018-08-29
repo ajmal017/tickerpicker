@@ -42,7 +42,7 @@ class ptable {
   static const int UINT_BYTES = 4;
   static const int ROW_SIZE = 24; 
   static const int ROW_COUNT = 6;
-  static const float SCALE = 100.0;
+  static const float SCALE;
 };
 
 #endif

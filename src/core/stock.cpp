@@ -37,7 +37,7 @@ void stock::pull_history(int pull_len) {
     history = data->pull_history_by_limit(*pulldate, pull_len);
 
     if(!history.is_valid(*pulldate, pull_len)) {
-      throw std::out_of_range("insufficient data");
+      throw std::out_of_range("invalid data: " + this->ticker);
     }
 
   } else {
@@ -50,6 +50,6 @@ void stock::pull_history(int pull_len) {
   }
 
   if(history.has_gaps() || history.size() < pull_len) {
-    throw std::out_of_range("insufficient data");
+    throw std::out_of_range("insufficient data: " + this->ticker);
   }
 }
