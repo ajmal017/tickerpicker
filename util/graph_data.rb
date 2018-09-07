@@ -1,8 +1,8 @@
-require 'trollop'
+require 'optimist'
 require 'gnuplot'
 require 'sequel'
 
-@opts = Trollop::options do
+@opts = Optimist::options do
   opt :date, "Snapshot Date", :type => :string
   opt :tickers, "Tickers to draw data for", :type => :string
   opt :list, "File with list of tickers to draw", :type => :string
@@ -18,12 +18,12 @@ def pull_data(ticker, date)
   prices = DB[:historical]
   splits = DB[:splits]
 
-  end_date = prices.where('date >= ? and ticker = ?', @opts[:date], ticker).limit(1).offset(@opts[:after] - 1).first
-  start_date = prices.where('date <= ? and ticker = ?', @opts[:date], ticker).limit(1).offset(@opts[:before] - 1).reverse_order(:date).first
+  end_date = prices.where(ticker: ticker).where(Sequel[:date] >= @opts[:date]).limit(1).offset(@opts[:after] - 1).first
+  start_date = prices.where(ticker: ticker).where(Sequel[:date] <= @opts[:date]).limit(1).offset(@opts[:before] - 1).reverse_order(:date).first
   return if start_date.nil? || end_date.nil?
 
-  unsplit_prices = prices.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date[:date].to_s).all 
-  price_splits = splits.where('ticker = ? and date >= ? and date <= ?', ticker, start_date[:date].to_s, end_date[:date].to_s).all
+  unsplit_prices = prices.where(ticker: ticker).where(date: start_date[:date].to_s..end_date[:date].to_s).all 
+  price_splits = splits.where(ticker: ticker).where(date: start_date[:date].to_s..end_date[:date].to_s).all
 
   price_splits.each do |split|
     days_before = unsplit_prices.select { |p| p[:date] < split[:date] }

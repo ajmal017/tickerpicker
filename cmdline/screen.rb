@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 
 load 'codegen.rb'
-require 'trollop'
+require 'optimist'
 require 'date'
 require 'json'
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :screen, "Screening criteria file", :type => :string, :multi => true
   opt :list, "Stock universe to run screen against", :type => :string
   opt :tickers, "Comma separated list of tickers to screen", :type => :string

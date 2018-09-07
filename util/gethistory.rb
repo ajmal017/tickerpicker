@@ -1,16 +1,15 @@
 #!/usr/bin/env ruby
 
 require 'stock_quote'
-require 'trollop'
+require 'optimist'
 require 'sequel'
 
-@opts = Trollop::options do
+@opts = Optimist::options do
   opt :tickers, "Comma separated list of tickers to fetch", :type => :string
   opt :list, "Stock universe to fetch data for", :type => :string
   opt :database, "Database to write results to", :type => :string, :default => "finance"
   opt :password, "Password for database connection", :type => :string
   opt :user, "User for database connection", :type => :string
-  opt :dump, "Dump data without writing to db", :type => :boolean
 end
 
 def connect_to_db

@@ -1,10 +1,10 @@
 #!/usr/bin/env ruby
 
-require 'trollop'
+require 'optimist'
 require 'sequel'
 require 'pry'
 
-@opts = Trollop::options do
+@opts = Optimist::options do
   opt :tickers, "Comma separated list of tickers to audit", :type => :string
   opt :list, "Stock universe to audit", :type => :string
   opt :database, "Database to get data from", :type => :string, :default => "finance"

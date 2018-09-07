@@ -16,6 +16,7 @@ GEM
     mysql (2.9.1)
     netrc (0.11.0)
     open_uri_redirections (0.2.1)
+    optimist (3.0.0)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
@@ -34,11 +35,10 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.5.0)
     rspec-support (3.5.0)
-    sequel (4.20.0)
+    sequel (5.12.0)
     stock_quote (2.0.0)
       json
       rest-client (~> 2.0.2)
-    trollop (2.1.1)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.5)
@@ -51,10 +51,10 @@ DEPENDENCIES
   gruff
   mysql
   open_uri_redirections
+  optimist (= 3.0.0)
   rspec (= 3.5.0)
-  sequel (= 4.20.0)
+  sequel (= 5.12.0)
   stock_quote (= 2.0.0)
-  trollop (~> 2.1.1)
 
 BUNDLED WITH
    1.12.5

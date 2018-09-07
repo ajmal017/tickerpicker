@@ -1,9 +1,9 @@
 #!/usr/bin/env ruby
 
-require 'trollop'
+require 'optimist'
 require 'sequel'
 
-@opts = Trollop::options do
+@opts = Optimist::options do
   opt :tickers, "Comma separated list of tickers to dump", :type => :string
   opt :list, "Stock universe to dump data for", :type => :string
   opt :path, "Directory to store bin files in", :type => :string

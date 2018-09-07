@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 load 'codegen.rb'
-require 'trollop'
+require 'optimist'
 require 'gruff'
 require 'date'
 require 'json'
@@ -78,7 +78,7 @@ def print_results(buf)
   puts ''
 end
 
-opts = Trollop::options do
+opts = Optimist::options do
   opt :start, "Starting date", :type => :string, :required => true
   opt :finish, "Ending date", :type => :string, :default => DateTime.now.strftime("%Y-%m-%d")
   opt :periods, "Backtest length in bars", :type => :string

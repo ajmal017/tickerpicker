@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
-gem 'trollop', '~> 2.1.1'
+gem 'optimist', '3.0.0'
 gem 'stock_quote', '2.0.0'
-gem 'sequel', '4.20.0'
+gem 'sequel', '5.12.0'
 gem 'rspec', '3.5.0'
 gem 'mysql'
 
